@@ -1,7 +1,6 @@
-from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-class CustomUser(AbstractUser):
+class UsersLegacy(models.Model):  # Class name MUST match the import
     employee_id = models.CharField(unique=True, max_length=6)
     first_name = models.CharField(max_length=100, blank=True, null=True)
     surname = models.CharField(max_length=100, blank=True, null=True)
@@ -13,5 +12,6 @@ class CustomUser(AbstractUser):
     status = models.IntegerField(blank=True, null=True)
     preset_name = models.CharField(max_length=100, blank=True, null=True)
 
-    # Remove redundant fields from AbstractUser
-    last_name = None  # You're using 'surname' instead
+    class Meta:
+        managed = False  # Ensure this line exists
+        db_table = 'users'  # Maps to your legacy table

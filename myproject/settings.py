@@ -77,11 +77,11 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'ojt_db',  # Replace with your database name
+        'NAME': 'agridom_attendance_management',  # Replace with your database name
         'USER': 'root',               # Default MySQL username
-        'PASSWORD': '',  # Replace with your MySQL password
+        'PASSWORD': 'root',  # Replace with your MySQL password
         'HOST': '127.0.0.1',          # Default MySQL host
-        'PORT': '3306',  
+        'PORT': '3306',
     }
 }
 
@@ -131,3 +131,5 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "myapp", "static"),]  # Add this line
 STATIC_URL = '/static/'
 
 APPEND_SLASH = False
+
+AUTH_USER_MODEL = 'myapp.CustomUser'
