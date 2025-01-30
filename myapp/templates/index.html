@@ -39,7 +39,7 @@
             {% if error %}
                 <div class="error">{{ error }}</div>
             {% endif %}
-            <form action="/login" method="POST">
+            <form action="{% url 'login' %}" method="POST">
                 {% csrf_token %}
                 <div class="input-group">
                     <input type="text" name="employee_id" placeholder="Employee ID" required>
