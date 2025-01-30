@@ -6,7 +6,7 @@
 }
 
 body {
-    background-image: url('ojt photos/white8.jpg');
+    background-image: url('/static/images/white8.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -269,7 +269,7 @@ header {
     right: 0;
     top: 0;
     width: 15%;
-    background-image: url('ojt photos/red1.jpg');
+    background-image: url('/static/images/red1.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
