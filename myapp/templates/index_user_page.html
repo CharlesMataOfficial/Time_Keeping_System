@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SF Group Dashboard</title>
+    <link rel="stylesheet" href="styles_dboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <img src="ojt photos/SFgroup.png" alt="SF Group of Companies">
+            </div>
+            <div class="partner-logo">
+                <img src="ojt photos/agrilogo2.png" alt="Agridom">
+            </div>
+        </header>
+        <div class="clock">
+            <div class="clock-content">
+                <h1 id="time">00:00:00 PM</h1>
+                <p id="date">
+                    <span>January 21, 2025</span>
+                    <span>Tuesday</span>
+                </p>
+                <div>
+                    <button class="btn"> TIME IN</button>
+                    <button class="btn"> TIME OUT</button>
+                </div>
+            </div>
+            <div class="camera">
+                <video id="video" autoplay></video>
+            </div>
+        </div>  
+
+        <div class="attendance-list">
+            <h2>Attendance List</h2>
+            <div class="note"></div>
+            <ul id="attendance-items">
+                <!-- JavaScript dynamically appends list items here -->
+            </ul>
+        </div>
+
+        <div class="sidebar">
+            <div class="birthdays">
+                <div class="panel">
+                    <h3><i class="fas fa-birthday-cake"></i> Birthdays</h3>
+                    <div class="note"></div>
+                </div>
+            </div>
+            
+            <div class="milestones">
+                <div class="panel">
+                    <h3><i class="fas fa-trophy"></i> Milestones</h3>
+                    <div class="note"></div>
+                </div>
+            </div>
+            
+            <div class="announcements">
+                <div class="panel">
+                    <h3><i class="fas fa-bullhorn"></i> Announcements</h3>
+                    <div class="note"></div>
+                </div>
+            </div>
+        
+            <button class="sign-out-btn"><i class="fas fa-sign-out-alt"></i> Sign Out</button>
+        </div>
+    </div>
+    
+    <script src="function_dboard.js"></script>
+</body>
+</html>
