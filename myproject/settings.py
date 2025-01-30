@@ -79,7 +79,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'agri_db',  # Replace with your database name
         'USER': 'root',               # Default MySQL username
-        'PASSWORD': '',  # Replace with your MySQL password
+        'PASSWORD': 'root',  # Replace with your MySQL password
         'HOST': '127.0.0.1',          # Default MySQL host
         'PORT': '3306',
     }
