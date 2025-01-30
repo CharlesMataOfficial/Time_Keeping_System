@@ -14,8 +14,8 @@ def login_view(request):
 
             # Check if the pin matches
             if user.pin == pin:
-                # return redirect('index')  # Redirect to a successful login page or dashboard
-                return render(request, 'index.html', {'error': 'Successfully logged in'})
+                return redirect('user_page')  # Redirect to a successful login page or dashboard
+                # return render(request, 'index.html', {'error': 'Successfully logged in'})
             else:
                 return render(request, 'index.html', {'error': 'Incorrect PIN'})
         except CustomUser.DoesNotExist:
@@ -23,3 +23,5 @@ def login_view(request):
 
     return render(request, 'index.html')
 
+def user_page(request):
+    return render(request, 'user_page.html')

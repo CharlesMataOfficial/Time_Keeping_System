@@ -7,7 +7,7 @@ function updateClock() {
 
     hours = hours % 12 || 12;
 
-    document.getElementById('time').textContent = 
+    document.getElementById('time').textContent =
         `${padZero(hours)}:${padZero(minutes)}:${padZero(seconds)} ${ampm}`;
 
     const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -50,5 +50,5 @@ addAttendanceItem('Jane Smith', '10:15 AM, January 25, 2025');
 const signOutBtn = document.querySelector('.sign-out-btn');
 
 signOutBtn.addEventListener('click', () => {
-    window.location.href = 'index_login.html';
+    window.location.href = 'index.html';
 });
