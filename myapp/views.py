@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login  # Add this import
+from django.contrib.auth import login, logout  # Add this import
 from django.urls import reverse
 from .models import CustomUser
 
@@ -32,3 +32,9 @@ def login_view(request):
 def user_page(request):
     # Optionally pass data to the template from your database
     return render(request, 'user_page.html')
+
+from django.shortcuts import redirect
+
+def logout_view(request):
+    logout(request)  # Logs out the user
+    return redirect('login')  # Redirects to the login page
