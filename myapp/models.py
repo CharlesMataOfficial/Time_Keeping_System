@@ -20,14 +20,16 @@ class CustomUser(AbstractUser):
     last_name = None  # You're using 'surname' instead
 
 class TimeEntry(models.Model):
-    id = models.CharField(primary_key=True, max_length=6)
-    employee_id = models.CharField(max_length=6, unique=True)
-    date = models.DateField(null=True)
-    time_in = models.DateTimeField()
-    time_out = models.DateTimeField()
+    employee_id = models.CharField(max_length=6)  # Remove unique=True
+    time_in = models.DateTimeField(auto_now_add=True)  # Auto-set on creation
+    time_out = models.DateTimeField(null=True, blank=True)  # Manually set later
 
-    def save(self, *args, **kwargs):
-        if not self.id:
-            self.time_in = timezone.now()
+    # Derive date from time_in (optional)
+    @property
+    def date(self):
+        return self.time_in.date()
+
+    # Custom save not needed; handle time_out in views
+    def clock_out(self):
         self.time_out = timezone.now()
-        return super(TimeEntry, self).save(*args, **kwargs)
+        self.save()
