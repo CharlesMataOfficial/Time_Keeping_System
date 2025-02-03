@@ -4,13 +4,14 @@ from .models import CustomUser
 
 class CustomUserAdmin(UserAdmin):
     # Fields to display in the admin list view
-    list_display = ('username', 'employee_id', 'email', 'first_name', 'surname', 'is_staff')
+    list_display = ('is_staff', 'employee_id', 'first_name', 'surname', 'company', 'position', 'status')
+    list_display_links = ('employee_id',)
     # Fields to include in the admin edit form
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
-        ('Personal Info', {'fields': ('employee_id', 'first_name', 'surname', 'email')}),
+        ('Personal Info', {'fields': ('employee_id', 'first_name', 'surname','birth_date',)}),
+        ('Other Info', {'fields': ('company', 'position',  'date_hired', 'pin', 'status', 'preset_name')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
-        ('Other Info', {'fields': ('company', 'position', 'birth_date', 'date_hired', 'pin', 'status', 'preset_name')}),
     )
 
 admin.site.register(CustomUser, CustomUserAdmin)

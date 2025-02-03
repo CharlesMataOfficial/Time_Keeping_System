@@ -18,13 +18,16 @@ class CustomUser(AbstractUser):
     is_superuser = models.BooleanField(default=False)
 
     # Remove redundant fields from AbstractUser
+    email = None  # This removes email from the database
     last_name = None  # You're using 'surname' instead
+
+    # Set employee_id as the unique identifier
+    USERNAME_FIELD = "employee_id"
+    REQUIRED_FIELDS = []  # No extra required fields
+
     @classmethod
     def authenticate_by_pin(cls, employee_id, pin):
-        """
-        Tries to authenticate a user based on employee_id and pin.
-        Returns the user instance if successful, or None if not.
-        """
+        """Tries to authenticate a user based on employee_id and pin."""
         try:
             user = cls.objects.get(employee_id=employee_id)
             if user.pin == pin:
