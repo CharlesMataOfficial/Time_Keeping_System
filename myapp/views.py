@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout  # Add this import
+from django.contrib.auth import login, logout
 from django.urls import reverse
 from .models import CustomUser
 
@@ -8,32 +8,25 @@ def login_view(request):
         employee_id = request.POST.get('employee_id')
         pin = request.POST.get('pin')
 
-        try:
-            user = CustomUser.objects.get(employee_id=employee_id)
+        # Use the model's business logic for authentication.
+        user = CustomUser.authenticate_by_pin(employee_id, pin)
+        if user:
+            # Log the user in using Django's authentication system.
+            login(request, user)
 
-            if user.pin == pin:
-                # Log the user into Django's authentication system
-                login(request, user)  # 👈 Critical for admin access
-
-                # Check admin status and redirect
-                if user.is_staff or user.is_superuser:
-                    return redirect(reverse('admin:index'))  # Admin dashboard
-                else:
-                    return redirect('user_page')  # Regular user page
-
+            # Redirect based on user type.
+            if user.is_staff or user.is_superuser:
+                return redirect(reverse('admin:index'))  # Admin dashboard
             else:
-                return render(request, 'index.html', {'error': 'Incorrect PIN'})
-
-        except CustomUser.DoesNotExist:
-            return render(request, 'index.html', {'error': 'Employee ID not found'})
+                return redirect('user_page')  # Regular user page
+        else:
+            # Handle failed authentication.
+            return render(request, 'index.html', {'error': 'Invalid employee ID or PIN'})
 
     return render(request, 'index.html')
 
 def user_page(request):
-    # Optionally pass data to the template from your database
     return render(request, 'user_page.html')
-
-from django.shortcuts import redirect
 
 def logout_view(request):
     logout(request)  # Logs out the user

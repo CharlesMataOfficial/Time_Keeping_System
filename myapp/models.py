@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
 
 class CustomUser(AbstractUser):
     employee_id = models.CharField(unique=True, max_length=6)
@@ -18,9 +19,21 @@ class CustomUser(AbstractUser):
 
     # Remove redundant fields from AbstractUser
     last_name = None  # You're using 'surname' instead
+    @classmethod
+    def authenticate_by_pin(cls, employee_id, pin):
+        """
+        Tries to authenticate a user based on employee_id and pin.
+        Returns the user instance if successful, or None if not.
+        """
+        try:
+            user = cls.objects.get(employee_id=employee_id)
+            if user.pin == pin:
+                return user
+        except cls.DoesNotExist:
+            return None
 
 class TimeEntry(models.Model):
-    employee_id = models.CharField(max_length=6)  # Remove unique=True
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     time_in = models.DateTimeField(auto_now_add=True)  # Auto-set on creation
     time_out = models.DateTimeField(null=True, blank=True)  # Manually set later
 
