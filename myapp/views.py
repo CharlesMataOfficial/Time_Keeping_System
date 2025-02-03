@@ -1,23 +1,29 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.contrib.auth import login  # Add this import
+from django.urls import reverse
 from .models import CustomUser
 
-# # This is your login view
 def login_view(request):
     if request.method == 'POST':
         employee_id = request.POST.get('employee_id')
         pin = request.POST.get('pin')
 
         try:
-            # Attempt to find the user in the database using employee_id
             user = CustomUser.objects.get(employee_id=employee_id)
 
-            # Check if the pin matches
             if user.pin == pin:
-                print("Login successful! Redirecting to user page...")
-                return redirect('user_page')
+                # Log the user into Django's authentication system
+                login(request, user)  # 👈 Critical for admin access
+
+                # Check admin status and redirect
+                if user.is_staff or user.is_superuser:
+                    return redirect(reverse('admin:index'))  # Admin dashboard
+                else:
+                    return redirect('user_page')  # Regular user page
+
             else:
                 return render(request, 'index.html', {'error': 'Incorrect PIN'})
+
         except CustomUser.DoesNotExist:
             return render(request, 'index.html', {'error': 'Employee ID not found'})
 
