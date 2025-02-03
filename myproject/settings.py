@@ -133,3 +133,5 @@ STATIC_URL = '/static/'
 APPEND_SLASH = False
 
 AUTH_USER_MODEL = 'myapp.CustomUser'
+
+LOGOUT_REDIRECT_URL = 'login'
