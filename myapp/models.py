@@ -12,7 +12,7 @@ class CustomUser(AbstractUser):
     birth_date = models.DateField(null=True)
     date_hired = models.DateField(null=True)
     pin = models.CharField(max_length=4, null=True)
-    status = models.IntegerField(null=True)
+    status = models.BooleanField(default=True)
     preset_name = models.CharField(max_length=100, null=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
