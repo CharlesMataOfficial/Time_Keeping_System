@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 
 class CustomUser(AbstractUser):
     employee_id = models.CharField(unique=True, max_length=6)
@@ -17,3 +18,16 @@ class CustomUser(AbstractUser):
 
     # Remove redundant fields from AbstractUser
     last_name = None  # You're using 'surname' instead
+
+class TimeEntry(models.Model):
+    id = models.CharField(primary_key=True, max_length=6)
+    employee_id = models.CharField(max_length=6, unique=True)
+    date = models.DateField(null=True)
+    time_in = models.DateTimeField()
+    time_out = models.DateTimeField()
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.time_in = timezone.now()
+        self.time_out = timezone.now()
+        return super(TimeEntry, self).save(*args, **kwargs)
