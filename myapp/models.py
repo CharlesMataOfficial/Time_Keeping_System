@@ -38,7 +38,7 @@ class CustomUserManager(BaseUserManager):
 class CustomUser(AbstractUser):
     # Remove the username field
     username = None
-    employee_id = models.CharField(unique=True, max_length=6, editable=False)
+    employee_id = models.CharField(unique=True, max_length=6)
     first_name = models.CharField(max_length=100, null=True, blank=True)
     surname = models.CharField(max_length=100, null=True, blank=True)
     company = models.CharField(max_length=100, null=True, blank=True)
