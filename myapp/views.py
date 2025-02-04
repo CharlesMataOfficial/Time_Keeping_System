@@ -2,7 +2,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.urls import reverse
 from .models import CustomUser
+from django.views.decorators.cache import never_cache
 
+@never_cache
 def login_view(request):
     if request.method == 'POST':
         employee_id = request.POST.get('employee_id')
