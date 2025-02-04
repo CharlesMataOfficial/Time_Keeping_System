@@ -10,20 +10,25 @@ def login_view(request):
         employee_id = request.POST.get('employee_id')
         pin = request.POST.get('pin')
 
-        # Use the model's business logic for authentication.
-        user = CustomUser.authenticate_by_pin(employee_id, pin)
-        if user:
-            # Log the user in using Django's authentication system.
-            login(request, user)
+        try:
+            # Try to retrieve the user by employee_id.
+            user = CustomUser.objects.get(employee_id=employee_id)
+        except CustomUser.DoesNotExist:
+            # If no user is found, return a specific error.
+            return render(request, 'index.html', {'error': 'Employee ID not found'})
 
-            # Redirect based on user type.
-            if user.is_staff or user.is_superuser:
-                return redirect(reverse('admin:index'))  # Admin dashboard
-            else:
-                return redirect('user_page')  # Regular user page
+        # Check if the PIN is correct.
+        if user.pin != pin:
+            return render(request, 'index.html', {'error': 'Incorrect PIN'})
+
+        # If both are correct, log the user in.
+        login(request, user)
+
+        # Redirect based on user type.
+        if user.is_staff or user.is_superuser:
+            return redirect(reverse('admin:index'))  # Admin dashboard
         else:
-            # Handle failed authentication.
-            return render(request, 'index.html', {'error': 'Invalid employee ID or PIN'})
+            return redirect('user_page')  # Regular user page
 
     return render(request, 'index.html')
 
