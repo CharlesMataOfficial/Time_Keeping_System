@@ -8,8 +8,8 @@ class CustomUserAdmin(UserAdmin):
     list_display_links = ('employee_id',)
     # Fields to include in the admin edit form
     fieldsets = (
-        (None, {'fields': ('username', 'password')}),
-        ('Personal Info', {'fields': ('employee_id', 'first_name', 'surname','birth_date',)}),
+        (None, {'fields': ('employee_id','password',)}),
+        ('Personal Info', {'fields': ('first_name', 'surname','birth_date',)}),
         ('Other Info', {'fields': ('company', 'position',  'date_hired', 'pin', 'status', 'preset_name')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
     )
