@@ -1,3 +1,4 @@
+# views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.urls import reverse
@@ -39,6 +40,7 @@ def logout_view(request):
     logout(request)  # Logs out the user
     return redirect('login')  # Redirects to the login page
 
+
 import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
@@ -59,11 +61,20 @@ def clock_in_view(request):
     if user.pin != pin:
         return JsonResponse({'success': False, 'error': 'Incorrect PIN'})
 
-    # Use the clock_in classmethod from TimeEntry
+    # Use the clock_in classmethod from TimeEntry to create a new time entry.
     entry = TimeEntry.clock_in(user)
-    timestamp = timezone.localtime(entry.time_in).strftime("%I:%M %p, %B %d, %Y")
+    time_in_formatted = timezone.localtime(entry.time_in).strftime("%I:%M %p, %B %d, %Y")
 
-    return JsonResponse({'success': True, 'name': user.preset_name or user.employee_id, 'timestamp': timestamp})
+    # For clock in, time_out is not yet set (so null)
+    return JsonResponse({
+        'success': True,
+        'employee_id': user.employee_id,
+        'first_name': user.first_name,
+        'surname': user.surname,
+        'company': user.company,
+        'time_in': time_in_formatted,
+        'time_out': None
+    })
 
 @require_POST
 def clock_out_view(request):
@@ -80,11 +91,21 @@ def clock_out_view(request):
         return JsonResponse({'success': False, 'error': 'Incorrect PIN'})
 
     try:
+        # Get the most recent open time entry for the user and clock it out.
         open_entry = TimeEntry.objects.filter(user=user, time_out__isnull=True).latest('time_in')
         open_entry.clock_out()
     except TimeEntry.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'No active clock in found.'})
 
-    timestamp = timezone.localtime(open_entry.time_out).strftime("%I:%M %p, %B %d, %Y")
+    time_in_formatted = timezone.localtime(open_entry.time_in).strftime("%I:%M %p, %B %d, %Y")
+    time_out_formatted = timezone.localtime(open_entry.time_out).strftime("%I:%M %p, %B %d, %Y")
 
-    return JsonResponse({'success': True, 'name': user.preset_name or user.employee_id, 'timestamp': timestamp})
+    return JsonResponse({
+        'success': True,
+        'employee_id': user.employee_id,
+        'first_name': user.first_name,
+        'surname': user.surname,
+        'company': user.company,
+        'time_in': time_in_formatted,
+        'time_out': time_out_formatted
+    })
