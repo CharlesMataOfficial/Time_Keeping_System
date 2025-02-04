@@ -10,7 +10,7 @@ class Command(BaseCommand):
         legacy_users = UsersLegacy.objects.all()
 
         for legacy_user in legacy_users:
-            pin_password = legacy_user.pin.toString()
+            pin_password = legacy_user.pin
             # Hash the password properly
             hashed_password = make_password(pin_password)
 

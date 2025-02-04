@@ -1,38 +1,77 @@
-from django.contrib.auth.models import AbstractUser
+# models.py
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
 import datetime
 
+class CustomUserManager(BaseUserManager):
+    """
+    Custom user model manager where employee_id is the unique identifier.
+    """
+    def create_user(self, employee_id, password=None, **extra_fields):
+        """
+        Creates and saves a User with the given employee_id and password.
+        """
+        if not employee_id:
+            raise ValueError('The Employee ID must be set')
+        user = self.model(employee_id=employee_id, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, employee_id, password=None, **extra_fields):
+        """
+        Creates and saves a SuperUser with the given employee_id and password.
+        """
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(employee_id, password, **extra_fields)
+
 class CustomUser(AbstractUser):
+    # Remove the username field
+    username = None
     employee_id = models.CharField(unique=True, max_length=6, editable=False)
-    first_name = models.CharField(max_length=100, null=True)
-    surname = models.CharField(max_length=100, null=True)
-    company = models.CharField(max_length=100, null=True)
-    position = models.CharField(max_length=100, null=True)
-    birth_date = models.DateField(null=True)
-    date_hired = models.DateField(null=True)
-    pin = models.CharField(max_length=4, null=True)
+    first_name = models.CharField(max_length=100, null=True, blank=True)
+    surname = models.CharField(max_length=100, null=True, blank=True)
+    company = models.CharField(max_length=100, null=True, blank=True)
+    position = models.CharField(max_length=100, null=True, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+    date_hired = models.DateField(null=True, blank=True)
+    pin = models.CharField(max_length=4, null=True, blank=True)
     status = models.BooleanField(default=True)
     preset_name = models.CharField(max_length=100, null=True, blank=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
 
-    # Remove redundant fields from AbstractUser
-    email = None  # This removes email from the database
-    last_name = None  # You're using 'surname' instead
+    # Remove other redundant fields
+    email = None
+    last_name = None  # Since you're using 'surname'
 
-    # Set employee_id as the unique identifier
-    USERNAME_FIELD = "employee_id"
-    REQUIRED_FIELDS = []  # No extra required fields
+    USERNAME_FIELD = 'employee_id'
+    REQUIRED_FIELDS = []
+
+    objects = CustomUserManager()
 
     @classmethod
     def authenticate_by_pin(cls, employee_id, pin):
-        """Tries to authenticate a user based on employee_id and pin."""
+        """Authenticate a user by employee_id and pin."""
         try:
             user = cls.objects.get(employee_id=employee_id)
-            if user.pin == pin:
+            if user.is_staff or user.is_superuser:
+                if user.check_password(pin):  # Use check_password for hashed passwords
+                    return user
+            elif user.pin == pin:  # Only check pin for non-staff/superuser
                 return user
+            else: # Important: Return None explicitly if no match
+                return None # Prevents potential timing attacks by always returning None after a successful get() call
         except cls.DoesNotExist:
             return None
 
