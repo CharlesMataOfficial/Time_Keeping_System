@@ -37,15 +37,24 @@ navigator.mediaDevices.getUserMedia({ video: true })
         alert('Unable to access the camera. Please ensure your camera is connected and permissions are granted.');
     });
 
-function addAttendanceItem(name, timestamp) {
-    const list = document.getElementById('attendance-items');
-    const listItem = document.createElement('li');
-    listItem.textContent = `${name} - ${timestamp}`;
-    list.appendChild(listItem);
-}
+    function addAttendanceItem(data) {
+        const list = document.getElementById('attendance-items');
+        const listItem = document.createElement('li');
 
-addAttendanceItem('John Doe', '10:00 AM, January 25, 2025');
-addAttendanceItem('Jane Smith', '10:15 AM, January 25, 2025');
+        // Extract values safely
+        const employeeId = data.employee_id || "N/A";
+        const firstName = data.first_name || "N/A";
+        const surname = data.surname || "N/A";
+        const company = data.company || "N/A";
+        const timeIn = data.time_in || "N/A";
+        const timeOut = data.time_out ? data.time_out : "Still Clocked In"; // Handle null time_out
+
+        // Format the text properly
+        listItem.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
+
+        list.appendChild(listItem);
+    }
+
 
 const signOutBtn = document.querySelector('.sign-out-btn');
 
@@ -126,7 +135,7 @@ clockInForm.addEventListener('submit', (e) => {
     .then(data => {
         if (data.success) {
             // Update attendance list in the UI
-            addAttendanceItem(data.name, data.timestamp);
+            addAttendanceItem(data);
             alert("Clock In successful!");
         } else {
             alert("Error: " + data.error);
@@ -160,7 +169,7 @@ clockOutForm.addEventListener('submit', (e) => {
     .then(data => {
         if (data.success) {
             // Optionally update the attendance list or UI
-            addAttendanceItem(data.name, data.timestamp + " (Clock Out)");
+            addAttendanceItem(data);
             alert("Clock Out successful!");
         } else {
             alert("Error: " + data.error);
