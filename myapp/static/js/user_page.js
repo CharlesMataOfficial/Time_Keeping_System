@@ -52,3 +52,124 @@ const signOutBtn = document.querySelector('.sign-out-btn');
 signOutBtn.addEventListener('click', () => {
     window.location.href = 'index.html';
 });
+
+
+// Helper to get CSRF token from cookies (if you need it for AJAX)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+// --- Modal handling code ---
+
+const clockInModal = document.getElementById('clockInModal');
+const clockOutModal = document.getElementById('clockOutModal');
+const timeInBtn = document.getElementById('timeInBtn');
+const timeOutBtn = document.getElementById('timeOutBtn');
+const closeClockIn = document.getElementById('closeClockIn');
+const closeClockOut = document.getElementById('closeClockOut');
+
+timeInBtn.addEventListener('click', () => {
+    clockInModal.style.display = "block";
+});
+
+timeOutBtn.addEventListener('click', () => {
+    clockOutModal.style.display = "block";
+});
+
+closeClockIn.addEventListener('click', () => {
+    clockInModal.style.display = "none";
+});
+closeClockOut.addEventListener('click', () => {
+    clockOutModal.style.display = "none";
+});
+
+// Close modal if user clicks outside of modal content
+window.addEventListener('click', (e) => {
+    if (e.target === clockInModal) {
+        clockInModal.style.display = "none";
+    }
+    if (e.target === clockOutModal) {
+        clockOutModal.style.display = "none";
+    }
+});
+
+// --- Handling Clock In form submission ---
+const clockInForm = document.getElementById('clockInForm');
+clockInForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const employee_id = document.getElementById('employeeIdIn').value;
+    const pin = document.getElementById('pinIn').value;
+
+    fetch('/clock_in/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
+        },
+        body: JSON.stringify({ employee_id, pin }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update attendance list in the UI
+            addAttendanceItem(data.name, data.timestamp);
+            alert("Clock In successful!");
+        } else {
+            alert("Error: " + data.error);
+        }
+        clockInModal.style.display = "none";
+        clockInForm.reset();
+    })
+    .catch(error => {
+        console.error("Error during Clock In:", error);
+        alert("There was an error. Please try again.");
+    });
+});
+
+// --- Handling Clock Out form submission ---
+const clockOutForm = document.getElementById('clockOutForm');
+clockOutForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const employee_id = document.getElementById('employeeIdOut').value;
+    const pin = document.getElementById('pinOut').value;
+
+    fetch('/clock_out/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
+        },
+        body: JSON.stringify({ employee_id, pin }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Optionally update the attendance list or UI
+            addAttendanceItem(data.name, data.timestamp + " (Clock Out)");
+            alert("Clock Out successful!");
+        } else {
+            alert("Error: " + data.error);
+        }
+        clockOutModal.style.display = "none";
+        clockOutForm.reset();
+    })
+    .catch(error => {
+        console.error("Error during Clock Out:", error);
+        alert("There was an error. Please try again.");
+    });
+});
