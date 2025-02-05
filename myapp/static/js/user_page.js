@@ -53,7 +53,7 @@ navigator.mediaDevices.getUserMedia({ video: true })
         listItem.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
 
         list.prepend(listItem);
-    }
+        }
 
 
 const signOutBtn = document.querySelector('.sign-out-btn');

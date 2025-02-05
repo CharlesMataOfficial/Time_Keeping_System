@@ -5,6 +5,8 @@ from .models import CustomUser
 from django.views.decorators.cache import never_cache
 from .models import TimeEntry
 from django.contrib.auth.decorators import login_required
+from django.utils.timezone import localtime, now
+from datetime import timedelta
 
 @never_cache
 def login_view(request):
@@ -33,9 +35,15 @@ def login_view(request):
 # User page and also shows the attendance log.
 def user_page(request):
     user = request.user  
-    all_entries = TimeEntry.objects.filter(user=user).order_by('-time_in')  # Get all entries
+    today_pht = localtime(now()).date()  # Get today's date in Asia/Manila
 
-    return render(request, 'user_page.html', {'all_entries': all_entries})
+    # Filter only today's entries (converting time_in to PHT)
+    today_entries = TimeEntry.objects.filter(
+        user=user, 
+        time_in__date=today_pht  # Ensure filtering is done using Philippine Time
+    ).order_by('-time_in')
+
+    return render(request, 'user_page.html', {'all_entries': today_entries})
 
 def logout_view(request):
     logout(request)  # Logs out the user
