@@ -3,6 +3,8 @@ from django.contrib.auth import login, logout
 from django.urls import reverse
 from .models import CustomUser
 from django.views.decorators.cache import never_cache
+from .models import TimeEntry
+from django.contrib.auth.decorators import login_required
 
 @never_cache
 def login_view(request):
@@ -28,8 +30,12 @@ def login_view(request):
             return render(request, 'index.html', {'error': error_message})  # Same rendering as before
     return render(request, 'index.html')
 
+# User page and also shows the attendance log.
 def user_page(request):
-    return render(request, 'user_page.html')
+    user = request.user  
+    all_entries = TimeEntry.objects.filter(user=user).order_by('-time_in')  # Get all entries
+
+    return render(request, 'user_page.html', {'all_entries': all_entries})
 
 def logout_view(request):
     logout(request)  # Logs out the user

@@ -66,8 +66,8 @@ function addAttendanceItem(data) {
   // Format the text properly
   listItem.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
 
-  list.appendChild(listItem);
-}
+        list.prepend(listItem);
+    }
 
 const signOutBtn = document.querySelector(".sign-out-btn");
 

@@ -57,10 +57,11 @@ header {
 }
 
 .logo img {
-  width: 475px;
-  height: auto;
-  margin-top: 125px;
-  margin-right: 10px;
+  width: 20%;
+  height: 200%;
+  position: absolute;
+  left: 0%;
+  top: 5%;
 }
 
 .partner-logo {
@@ -117,6 +118,8 @@ header {
 
 .camera {
   position: relative;
+  top: -10%;
+  left: -9%;
   width: 420px;
   height: 350px;
   border: 2px solid #621c1c;
@@ -167,7 +170,8 @@ header {
   top: -30px;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
   position: relative;
-  height: 170px;
+  left: -7%;
+  height: 270px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -187,17 +191,16 @@ header {
 
 .attendance-list .note {
   background: #e2e2e2;
-  width: 1190px;
-  height: 120px;
-  margin-top: 20px;
-  border-radius: 10px;
-  position: absolute;
-  top: 20px;
-  left: 15px;
-  padding: 20px;
-  box-sizing: border-box;
-  z-index: 1;
-  overflow-y: auto;
+    width: 96%;
+    height: 81%;
+    margin-top: 12px;
+    border-radius: 10px;
+    position: absolute;
+    top: 20px;
+    padding: 5px;
+    box-sizing: border-box;
+    z-index: 1;
+    overflow-y: auto;
 }
 
 #attendance-items {
@@ -206,7 +209,7 @@ header {
 }
 
 #attendance-items li {
-  padding: 10px 15px;
+  padding: 1px 15px;
   border-bottom: 1px solid #ddd;
   font-size: 18px;
   color: #be6364;
