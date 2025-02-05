@@ -52,7 +52,7 @@ navigator.mediaDevices.getUserMedia({ video: true })
         // Format the text properly
         listItem.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
 
-        list.appendChild(listItem);
+        list.prepend(listItem);
     }
 
 
