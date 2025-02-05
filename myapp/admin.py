@@ -24,8 +24,8 @@ class CustomUserAdmin(UserAdmin):
         }),
     )
 
-    def save_model(self, request, obj, form, change):
-        obj.pin = obj.password  # Store PIN (not hashed, if required)
-        super().save_model(request, obj, form, change)
+    # def save_model(self, request, obj, form, change):
+    #     obj.pin = obj.password  # Store PIN (not hashed, if required)
+    #     super().save_model(request, obj, form, change)
 
 admin.site.register(CustomUser, CustomUserAdmin)
