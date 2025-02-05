@@ -25,7 +25,6 @@ class Command(BaseCommand):
                 pin=legacy_user.pin,
                 status=legacy_user.status,
                 preset_name=legacy_user.preset_name,
-                username=legacy_user.employee_id,  # Use employee_id as username
                 password=hashed_password,  # Hashed password
                 is_active=True  # Ensure users are active
             )
