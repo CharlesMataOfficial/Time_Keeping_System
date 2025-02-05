@@ -6,16 +6,18 @@ from django.conf import settings
 from django.core.validators import MinLengthValidator
 import datetime
 
+
 class CustomUserManager(BaseUserManager):
     """
     Custom user model manager where employee_id is the unique identifier.
     """
+
     def create_user(self, employee_id, password=None, **extra_fields):
         """
         Creates and saves a User with the given employee_id and password.
         """
         if not employee_id:
-            raise ValueError('The Employee ID must be set')
+            raise ValueError("The Employee ID must be set")
         user = self.model(employee_id=employee_id, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -25,16 +27,17 @@ class CustomUserManager(BaseUserManager):
         """
         Creates and saves a SuperUser with the given employee_id and password.
         """
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True)
 
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError('Superuser must have is_staff=True.')
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError('Superuser must have is_superuser=True.')
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True.")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
 
         return self.create_user(employee_id, password, **extra_fields)
+
 
 class CustomUser(AbstractUser):
     # Remove the username field
@@ -46,7 +49,9 @@ class CustomUser(AbstractUser):
     position = models.CharField(max_length=100, null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     date_hired = models.DateField(null=True, blank=True)
-    pin = models.CharField(max_length=4, validators=[MinLengthValidator(4)], null=True, blank=True)
+    pin = models.CharField(
+        max_length=4, validators=[MinLengthValidator(4)], null=True, blank=True
+    )
     status = models.BooleanField(default=True)
     preset_name = models.CharField(max_length=100, null=True, blank=True)
     is_staff = models.BooleanField(default=False)
@@ -56,7 +61,7 @@ class CustomUser(AbstractUser):
     email = None
     last_name = None  # Since you're using 'surname'
 
-    USERNAME_FIELD = 'employee_id'
+    USERNAME_FIELD = "employee_id"
     REQUIRED_FIELDS = []
 
     objects = CustomUserManager()
@@ -71,10 +76,11 @@ class CustomUser(AbstractUser):
                     return user
             elif user.pin == pin:  # Only check pin for non-staff/superuser
                 return user
-            else: # Important: Return None explicitly if no match
-                return None # Prevents potential timing attacks by always returning None after a successful get() call
+            else:  # Important: Return None explicitly if no match
+                return None  # Prevents potential timing attacks by always returning None after a successful get() call
         except cls.DoesNotExist:
             return None
+
 
 class TimeEntry(models.Model):
     ordering = ["-time_in"]
@@ -116,10 +122,7 @@ class TimeEntry(models.Model):
         Then create a new entry.
         """
         # Find any open entries (i.e. not clocked out)
-        open_entries = cls.objects.filter(
-            user=user,
-            time_out__isnull=True
-        )
+        open_entries = cls.objects.filter(user=user, time_out__isnull=True)
         for entry in open_entries:
             entry.clock_out()
 
@@ -127,13 +130,18 @@ class TimeEntry(models.Model):
         new_entry = cls.objects.create(user=user)
 
         # Determine lateness (only for first entry of the day)
-        if not cls.objects.filter(user=user, time_in__date=timezone.now().date()).exists():
+        if not cls.objects.filter(
+            user=user, time_in__date=timezone.now().date()
+        ).exists():
             time_in_local = timezone.localtime(new_entry.time_in)
-            expected_start = datetime.time(8, 0) # Adjust time here, currently 9am
+            expected_start = datetime.time(8, 0)  # Adjust time here, currently 9am
 
             # Add 5-minute grace period
             grace_period = datetime.timedelta(minutes=5)
-            expected_start_with_grace = datetime.datetime.combine(time_in_local.date(), expected_start) + grace_period
+            expected_start_with_grace = (
+                datetime.datetime.combine(time_in_local.date(), expected_start)
+                + grace_period
+            )
 
             # Check if the user clocked in after the grace period
             if time_in_local > expected_start_with_grace:
