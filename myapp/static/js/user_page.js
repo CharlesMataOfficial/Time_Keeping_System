@@ -47,7 +47,7 @@ navigator.mediaDevices.getUserMedia({ video: true })
         const surname = data.surname || "N/A";
         const company = data.company || "N/A";
         const timeIn = data.time_in || "N/A";
-        const timeOut = data.time_out ? data.time_out : "Still Clocked In"; // Handle null time_out
+        const timeOut = data.time_out ? data.time_out : "N/A"; // Handle null time_out
 
         // Format the text properly
         listItem.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
