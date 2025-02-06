@@ -156,32 +156,25 @@ import datetime
 @require_GET
 @login_required
 def get_todays_entries(request):
-    user = request.user
     local_now = timezone.localtime(timezone.now())
     today_start = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
     today_end = today_start + datetime.timedelta(days=1)
 
+    # Remove the user filter to get all entries
     entries = TimeEntry.objects.filter(
-        user=user, time_in__gte=today_start, time_in__lt=today_end
+        time_in__gte=today_start,
+        time_in__lt=today_end
     ).order_by("-time_in")
 
     entries_data = []
     for entry in entries:
-        entries_data.append(
-            {
-                "employee_id": user.employee_id,
-                "first_name": user.first_name,
-                "surname": user.surname,
-                "company": user.company,
-                "time_in": timezone.localtime(entry.time_in).strftime(
-                    "%I:%M %p, %B %d, %Y"
-                ),
-                "time_out": (
-                    timezone.localtime(entry.time_out).strftime("%I:%M %p, %B %d, %Y")
-                    if entry.time_out
-                    else None
-                ),
-            }
-        )
+        entries_data.append({
+            "employee_id": entry.user.employee_id,  # Changed from user to entry.user
+            "first_name": entry.user.first_name,    # Changed from user to entry.user
+            "surname": entry.user.surname,          # Changed from user to entry.user
+            "company": entry.user.company,          # Changed from user to entry.user
+            "time_in": timezone.localtime(entry.time_in).strftime("%I:%M %p, %B %d, %Y"),
+            "time_out": timezone.localtime(entry.time_out).strftime("%I:%M %p, %B %d, %Y") if entry.time_out else None,
+        })
 
     return JsonResponse({"entries": entries_data})
