@@ -94,8 +94,17 @@ def clock_out_view(request):
 
     if user:
         try:
-            # Find the most recent open (active) time entry for the user.
-            open_entry = TimeEntry.objects.filter(user=user, time_out__isnull=True).latest("time_in")
+            now = timezone.now()  # Naive datetime in local time
+            today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            today_end = today_start + datetime.timedelta(days=1)
+
+            open_entry = TimeEntry.objects.filter(
+                user=user,
+                time_out__isnull=True,
+                time_in__gte=today_start,
+                time_in__lt=today_end
+            ).latest("time_in")
+
             open_entry.clock_out()
 
             time_in_formatted = open_entry.time_in.strftime("%I:%M %p, %B %d, %Y")
@@ -112,8 +121,8 @@ def clock_out_view(request):
             })
         except TimeEntry.DoesNotExist:
             error_message = "No active clock in found."
-        except Exception:
-            error_message = "Incorrect PIN"
+        except Exception as e:
+            error_message = f"An error occurred: {str(e)}"
         return JsonResponse({"success": False, "error": error_message})
     else:
         try:
