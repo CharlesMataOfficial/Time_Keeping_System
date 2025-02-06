@@ -200,7 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
   fetch('/get_todays_entries/')  // You'll need to create this endpoint
     .then(response => response.json())
     .then(data => {
-      data.entries.forEach(entry => addAttendanceItem(entry));
+      data.entries.reverse().forEach(entry => addAttendanceItem(entry));
     })
     .catch(error => console.error('Error loading entries:', error));
 });
