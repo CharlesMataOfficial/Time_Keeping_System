@@ -7,7 +7,7 @@ class BlockAdminAccessMiddleware:
 
     def __call__(self, request):
         # Check if the user is trying to access the admin page
-        if request.path.startswith('/admin/'):
+        if request.path.startswith('/admin'):
 
             # Allow access if the user is an authenticated staff or superuser
             if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
