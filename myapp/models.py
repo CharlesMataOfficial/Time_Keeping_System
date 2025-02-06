@@ -1,21 +1,14 @@
 # models.py
+import datetime
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
-from django.utils import timezone
 from django.conf import settings
 from django.core.validators import MinLengthValidator
-import datetime
-
+from django.utils import timezone  # timezone.now() will now return a naive datetime
 
 class CustomUserManager(BaseUserManager):
-    """
-    Custom user model manager where employee_id is the unique identifier.
-    """
-
+    # (Keep your manager methods unchanged)
     def create_user(self, employee_id, password=None, **extra_fields):
-        """
-        Creates and saves a User with the given employee_id and password.
-        """
         if not employee_id:
             raise ValueError("The Employee ID must be set")
         user = self.model(employee_id=employee_id, **extra_fields)
@@ -24,20 +17,14 @@ class CustomUserManager(BaseUserManager):
         return user
 
     def create_superuser(self, employee_id, password=None, **extra_fields):
-        """
-        Creates and saves a SuperUser with the given employee_id and password.
-        """
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
-
         if extra_fields.get("is_staff") is not True:
             raise ValueError("Superuser must have is_staff=True.")
         if extra_fields.get("is_superuser") is not True:
             raise ValueError("Superuser must have is_superuser=True.")
-
         return self.create_user(employee_id, password, **extra_fields)
-
 
 class CustomUser(AbstractUser):
     # Remove the username field
@@ -49,9 +36,7 @@ class CustomUser(AbstractUser):
     position = models.CharField(max_length=100, null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     date_hired = models.DateField(null=True, blank=True)
-    pin = models.CharField(
-        max_length=4, validators=[MinLengthValidator(4)], null=True, blank=True
-    )
+    pin = models.CharField(max_length=4, validators=[MinLengthValidator(4)], null=True, blank=True)
     status = models.BooleanField(default=True)
     preset_name = models.CharField(max_length=100, null=True, blank=True)
     is_staff = models.BooleanField(default=False)
@@ -68,95 +53,63 @@ class CustomUser(AbstractUser):
 
     @classmethod
     def authenticate_by_pin(cls, employee_id, pin):
-        """Authenticate a user by employee_id and pin."""
         try:
             user = cls.objects.get(employee_id=employee_id)
             if user.is_staff or user.is_superuser:
-                if user.check_password(pin):  # Use check_password for hashed passwords
+                if user.check_password(pin):
                     return user
-            elif user.pin == pin:  # Only check pin for non-staff/superuser
+            elif user.pin == pin:
                 return user
-            else:  # Important: Return None explicitly if no match
-                return None  # Prevents potential timing attacks by always returning None after a successful get() call
+            else:
+                return None
         except cls.DoesNotExist:
             return None
-
 
 class TimeEntry(models.Model):
     ordering = ["-time_in"]
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    time_in = models.DateTimeField(auto_now_add=True)  # Auto-set on creation
-    time_out = models.DateTimeField(null=True, blank=True)  # Manually set later
+    time_in = models.DateTimeField(auto_now_add=True)  # Will be naive and in local time now
+    time_out = models.DateTimeField(null=True, blank=True)
     hours_worked = models.FloatField(null=True, blank=True)
     is_late = models.BooleanField(default=False)
 
     @property
     def date(self):
-        """Returns the date part of the time_in timestamp."""
         return self.time_in.date()
 
     def clock_out(self):
-        """Clocks out an entry by setting the time_out, calculating hours worked,
-        and determining lateness."""
-        self.time_out = timezone.now()
-
+        self.time_out = timezone.now()  # Now returns a naive datetime
         if self.time_in and self.time_out:
             delta = self.time_out - self.time_in
-            # Calculate hours worked (you might also consider minutes if needed)
             self.hours_worked = round(delta.total_seconds() / 3600, 2)
-
-        # For lateness, assume an expected start time of 9:00 AM (local time)
+        # For lateness, assume an expected start time of 9:00 AM
         if self.time_in:
-            # Convert time_in to local time (if your project settings use time zones)
-            time_in_local = timezone.localtime(self.time_in)
+            # Here, self.time_in is already local (naive)
+            time_in_local = self.time_in
             expected_start = datetime.time(9, 0)
             self.is_late = time_in_local.time() > expected_start
-
         self.save()
 
     @classmethod
     def clock_in(cls, user):
-        """
-        When clocking in, first check if there are any open entries (entries
-        with no time_out) for the given employee and clock them out automatically.
-        Then create a new entry.
-        """
-        # Find any open entries (i.e. not clocked out)
         open_entries = cls.objects.filter(user=user, time_out__isnull=True)
         for entry in open_entries:
             entry.clock_out()
 
-        # Create a new clock-in entry
         new_entry = cls.objects.create(user=user)
-
-        # Determine lateness (only for first entry of the day)
-        today = timezone.localtime(timezone.now()).date()
+        # Determine lateness only for the first entry of the day
+        today = new_entry.time_in.date()  # Already local date
         if not cls.objects.filter(user=user, time_in__date=today).exists():
-            # Get the localized time_in from the newly created entry.
-            time_in_local = timezone.localtime(new_entry.time_in)
-
-            # Define the expected start time (naive)
-            expected_start = datetime.time(8, 0)  # Adjust time here as needed
-
-            # Combine the date from time_in_local with the expected start time, which creates a naive datetime.
-            expected_start_dt = datetime.datetime.combine(
-                time_in_local.date(), expected_start
-            )
-
-            # Convert the naive datetime into an aware datetime using the current timezone.
-            current_tz = timezone.get_current_timezone()
-            expected_start_dt_aware = timezone.make_aware(expected_start_dt, current_tz)
-
-            # Add a 5-minute grace period.
+            time_in_local = new_entry.time_in
+            expected_start = datetime.time(8, 0)  # Adjust as needed
+            expected_start_dt = datetime.datetime.combine(time_in_local.date(), expected_start)
             grace_period = datetime.timedelta(minutes=5)
-            expected_start_with_grace = expected_start_dt_aware + grace_period
+            expected_start_with_grace = expected_start_dt + grace_period
 
-            # Compare the aware datetimes
             if time_in_local > expected_start_with_grace:
                 new_entry.is_late = True
             else:
                 new_entry.is_late = False
 
-            new_entry.save()  # Save the entry after determining lateness
-
+            new_entry.save()
         return new_entry
