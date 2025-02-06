@@ -30,12 +30,12 @@ def login_view(request):
             return render(request, 'index.html', {'error': error_message})  # Same rendering as before
     return render(request, 'index.html')
 
-# User page and also shows the attendance log.
 def user_page(request):
-    user = request.user  
-    all_entries = TimeEntry.objects.filter(user=user).order_by('-time_in')  # Get all entries
-
-    return render(request, 'user_page.html', {'all_entries': all_entries})
+    user = request.user
+    # Convert current time to local time and then extract the date
+    today = timezone.localtime(timezone.now()).date()
+    todays_entries = TimeEntry.objects.filter(user=user, time_in__date=today).order_by('-time_in')
+    return render(request, 'user_page.html', {'all_entries': todays_entries})
 
 def logout_view(request):
     logout(request)  # Logs out the user

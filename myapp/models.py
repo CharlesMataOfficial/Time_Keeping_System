@@ -130,25 +130,33 @@ class TimeEntry(models.Model):
         new_entry = cls.objects.create(user=user)
 
         # Determine lateness (only for first entry of the day)
-        if not cls.objects.filter(
-            user=user, time_in__date=timezone.now().date()
-        ).exists():
+        today = timezone.localtime(timezone.now()).date()
+        if not cls.objects.filter(user=user, time_in__date=today).exists():
+            # Get the localized time_in from the newly created entry.
             time_in_local = timezone.localtime(new_entry.time_in)
-            expected_start = datetime.time(8, 0)  # Adjust time here, currently 9am
 
-            # Add 5-minute grace period
-            grace_period = datetime.timedelta(minutes=5)
-            expected_start_with_grace = (
-                datetime.datetime.combine(time_in_local.date(), expected_start)
-                + grace_period
+            # Define the expected start time (naive)
+            expected_start = datetime.time(8, 0)  # Adjust time here as needed
+
+            # Combine the date from time_in_local with the expected start time, which creates a naive datetime.
+            expected_start_dt = datetime.datetime.combine(
+                time_in_local.date(), expected_start
             )
 
-            # Check if the user clocked in after the grace period
+            # Convert the naive datetime into an aware datetime using the current timezone.
+            current_tz = timezone.get_current_timezone()
+            expected_start_dt_aware = timezone.make_aware(expected_start_dt, current_tz)
+
+            # Add a 5-minute grace period.
+            grace_period = datetime.timedelta(minutes=5)
+            expected_start_with_grace = expected_start_dt_aware + grace_period
+
+            # Compare the aware datetimes
             if time_in_local > expected_start_with_grace:
                 new_entry.is_late = True
             else:
                 new_entry.is_late = False
 
-            new_entry.save()  # Make sure to save the new entry after determining lateness
+            new_entry.save()  # Save the entry after determining lateness
 
         return new_entry
