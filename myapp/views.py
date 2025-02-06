@@ -94,13 +94,17 @@ def clock_out_view(request):
 
     if user:
         try:
-            # Find the most recent open (active) time entry for the user.
-            today = timezone.now().date()
+            local_now = timezone.localtime(timezone.now())
+            today_start = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
+            today_end = today_start + datetime.timedelta(days=1)
+
             open_entry = TimeEntry.objects.filter(
                 user=user,
                 time_out__isnull=True,
-                time_in__date=today
+                time_in__gte=today_start,
+                time_in__lt=today_end
             ).latest("time_in")
+
             open_entry.clock_out()
 
             time_in_formatted = open_entry.time_in.strftime("%I:%M %p, %B %d, %Y")
