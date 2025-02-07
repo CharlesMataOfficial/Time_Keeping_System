@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>  
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/styles_admin.css' %}">
+  <script src="function_admin.js"></script>
+  <script src={% static "js/function_admin.js" %}></script>
+</head>
+<body>
+  <!-- Menu Icon -->
+  <div class="menu-icon" onclick="toggleMenu()">
+    <img src={% static "images/menu-icon.png" %} alt="Menu Icon">
+  </div>
+
+  <!-- Menu Pop-Up -->
+  <div class="menu" id="menu">
+    <ul>
+      <li class="menu-item" onclick="navigateTo('dashboard')">
+        <img src="ojt photos/dashboard_icon.png" alt="Dashboard">
+        Dashboard
+      </li>
+      <li class="menu-item" onclick="navigateTo('log')">
+        <img src="ojt photos/log_icon.png" alt="Log">
+        Log
+      </li>
+      <li class="menu-item" onclick="navigateTo('attendance-list')">
+        <img src="ojt photos/attendance_icon.png" alt="Attendance List">
+        Attendance List
+      </li>      
+      <li class="menu-item" onclick="navigateTo('work-hours')">
+        <img src="ojt photos/clock_icon.png" alt="Work Hours">
+        Work Hours Preset
+      </li>
+      <li class="menu-item" onclick="navigateTo('announcement')">
+        <img src="ojt photos/announcement_icon.png" alt="Announcement">
+        Announcement
+      </li>
+      <li class="menu-item" onclick="navigateTo('export-excel')">
+        <img src="ojt photos/excel_icon.png" alt="Export Excel">
+        Export Excel
+      </li>
+      <li class="menu-item" onclick="navigateTo('leave-approval')">
+        <img src="ojt photos/leave_icon.png" alt="Leave Approval">
+        Leave Approval
+      </li>
+    </ul>
+  </div>
+
+<!-- Back Button (Updated Icon) -->
+<div id="dashboard-shortcut" class="dashboard-icon-top-right" style="display: none;">
+  <img src="ojt photos/leftarrow_icon.png" alt="Back">
+</div>
+
+<!-- Screens -->
+<div id="dashboard" class="screen" style="display: flex;">
+  <h1 id="dashboard_title">Dashboard</h1>
+  <div class="dashboard-icons">
+      <div class="dashboard-icon" onclick="navigateTo('log')">
+          <img src="ojt photos/log_icon.png" alt="Log">
+      </div>
+      <div class="dashboard-icon" onclick="navigateTo('attendance-list')">
+          <img src="ojt photos/attendance_icon.png" alt="Attendance List">
+      </div>
+      <div class="dashboard-icon" onclick="navigateTo('work-hours')">
+          <img src="ojt photos/clock_icon.png" alt="Work Hours Preset">
+      </div>
+      <div class="dashboard-icon" onclick="navigateTo('announcement')">
+          <img src="ojt photos/announcement_icon.png" alt="Announcement">
+      </div>
+      <div class="dashboard-icon" onclick="navigateTo('export-excel')">
+          <img src="ojt photos/excel_icon.png" alt="Export Excel">
+      </div>
+      <div class="dashboard-icon" onclick="navigateTo('leave-approval')">
+          <img src="ojt photos/leave_icon.png" alt="Leave Approval">
+      </div>
+  </div>
+</div>
+
+<div id="log" class="screen" style="display: none;">
+  <h1>Log</h1>
+  <div id="log_rectangle"></div>
+</div>
+
+<div id="attendance-list" class="screen" style="display: none;">
+  <h1>Attendance List</h1>
+  <div class="attendance-dropdown-wrapper">
+      <div class="attendance-dropdown-container">
+        <select id="attendance-type" onchange="updateAttendanceHeader()">
+          <option value="time-log">Time Log</option>
+          <option value="users-active">Users Active</option>
+          <option value="users-inactive">Users Inactive</option>
+        </select>
+        
+        <select id="attendance-company" onchange="updateAttendanceHeader()">
+          <option value="" disabled selected class="default-option">By Company:</option>
+          <option value="all">All companies</option>
+          <option value="agridom">Agridom Solutions Corp.</option>
+          <option value="farmtech">Farmtech Agriland Corporation</option>
+          <option value="subang">Subang Farm</option>
+          <option value="djas">DJAS Servitrade Corporation</option>
+          <option value="agri-online">AGRI Online</option>
+          <option value="sunfood">Sunfood Marketing Inc.</option>
+        </select>
+        
+        <select id="attendance-department" onchange="updateAttendanceHeader()">
+          <option value="" disabled selected class="default-option">By Department:</option>
+          <option value="all">All departments</option>
+          <option value="hr">Human Resources</option>
+          <option value="it">IT Department</option>
+          <option value="finance">Finance</option>
+        </select>
+        
+        <button class="go-button" onclick="filterAttendance()">Go</button>
+        
+      </div>
+  </div>
+  <div id="attendance_rectangle"></div>
+</div>
+
+<div id="export-excel" class="screen" style="display: none;">
+  <h1>Export to Excel</h1>
+  <div class="export-container">
+      <button class="export-button">Date</button>
+      <button class="export-button">Employee ID</button>
+  </div>
+</div>
+
+<div id="announcement" class="screen" style="display: none;">
+  <h1>Announcement</h1>
+  <div class="announcement-content">
+      <div class="announcement-container">
+          <h2>Create Announcement</h2>
+          <textarea id="announcement-text" placeholder="Write announcement here..."></textarea>
+          <button class="save-button" onclick="saveAnnouncement()">Save</button>
+      </div>
+      <div class="announcement-container">
+          <h2>Saved Announcement Files</h2>
+          <textarea id="saved-announcements" readonly></textarea>
+          <div class="announcement-actions">
+              <select id="post-options">
+                  <option value="recent">Post Recent</option>
+                  <option value="selected">Post Selected</option>
+                  <option value="all">Post All</option>
+              </select>
+              <button class="post-button" onclick="postAnnouncement()">Post</button>
+              <button class="delete-button" onclick="deleteAnnouncement()">Delete</button>
+              <button class="view-button" onclick="viewAnnouncements()">View</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div id="work-hours" class="screen" style="display: none;">
+  <h1>Work Hours Preset</h1>
+  <div class="separator"></div>
+  <div class="work-hours-content">
+      <p>Additional work hours information can go here.</p>
+  </div>
+  <div class="work-hours-container">
+      <div class="work-hours-actions">
+          <button onclick="addWorkHours()">Add</button>
+          <button onclick="editWorkHours()">Edit</button>
+          <button onclick="deleteWorkHours()">Delete</button>
+      </div>
+      <div class="separator"></div>
+      <div class="grace-period">
+          <label for="grace-period">Grace Period (minutes):</label>
+          <div class="grace-period-input-container">
+              <select id="grace-period" name="grace-period">
+                  <option value="5">5 minutes</option>
+                  <option value="10">10 minutes</option>
+                  <option value="15">15 minutes</option>
+              </select>
+              <button class="save-button" onclick="saveWorkHours()">Save</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+
+
+<!-- Sign Out Button -->
+<button id="sign-out-button" onclick="signOut()">Sign Out</button>
+
+</body>
+</html>

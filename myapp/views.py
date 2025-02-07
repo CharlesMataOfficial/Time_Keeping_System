@@ -125,3 +125,8 @@ def clock_out_view(request):
         except CustomUser.DoesNotExist:
             error_message = "Employee ID not found"
         return JsonResponse({'success': False, 'error': error_message})  # Consistent JSON response
+    
+    #admin page
+
+def admin_page(request):
+    return render(request, 'admin_page.html') 
