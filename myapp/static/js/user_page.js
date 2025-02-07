@@ -51,10 +51,8 @@ navigator.mediaDevices
     );
   });
 
-<<<<<<< HEAD
 function addAttendanceItem(data) {
   const list = document.getElementById("attendance-items");
-  const listItem = document.createElement("li");
 
   // Extract values safely
   const employeeId = data.employee_id || "N/A";
@@ -64,47 +62,23 @@ function addAttendanceItem(data) {
   const timeIn = data.time_in || "N/A";
   const timeOut = data.time_out ? data.time_out : "N/A"; // Handle null time_out
 
-  // Format the text properly
-  listItem.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
+  // Find all existing records for this employee
+  const existingItems = document.querySelectorAll(
+    `li[data-employee-id="${employeeId}"]`
+  );
 
-        list.prepend(listItem);
-        }
-
-const signOutBtn = document.querySelector(".sign-out-btn");
-
-signOutBtn.addEventListener("click", () => {
-  window.location.href = "index.html";
-});
-=======
-  function addAttendanceItem(data) {
-    const list = document.getElementById("attendance-items");
-  
-    // Extract values safely
-    const employeeId = data.employee_id || "N/A";
-    const firstName = data.first_name || "N/A";
-    const surname = data.surname || "N/A";
-    const company = data.company || "N/A";
-    const timeIn = data.time_in || "N/A";
-    const timeOut = data.time_out ? data.time_out : "N/A"; // Handle null time_out
-  
-    // Find all existing records for this employee
-    const existingItems = document.querySelectorAll(`li[data-employee-id="${employeeId}"]`);
-  
-    if (existingItems.length > 0 && timeOut !== "N/A") {
-      // ✅ Update the most recent clock-in with time_out
-      const lastEntry = existingItems[0]; // Latest entry (since prepend() adds newest first)
-      lastEntry.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
-    } else {
-      // ✅ Add a new record for clock-in
-      const listItem = document.createElement("li");
-      listItem.setAttribute("data-employee-id", employeeId);
-      listItem.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
-      list.prepend(listItem);
-    }
+  if (existingItems.length > 0 && timeOut !== "N/A") {
+    // ✅ Update the most recent clock-in with time_out
+    const lastEntry = existingItems[0]; // Latest entry (since prepend() adds newest first)
+    lastEntry.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
+  } else {
+    // ✅ Add a new record for clock-in
+    const listItem = document.createElement("li");
+    listItem.setAttribute("data-employee-id", employeeId);
+    listItem.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
+    list.prepend(listItem);
   }
-  
-  
->>>>>>> 3c76234995fd05d551cfa6c40e0d3b4731459cee
+}
 
 // Helper to get CSRF token from cookies (if you need it for AJAX)
 function getCookie(name) {
@@ -227,11 +201,11 @@ clockOutForm.addEventListener("submit", (e) => {
 });
 
 // Fetch today's entries when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-  fetch('/get_todays_entries/')  // You'll need to create this endpoint
-    .then(response => response.json())
-    .then(data => {
-      data.entries.reverse().forEach(entry => addAttendanceItem(entry));
+document.addEventListener("DOMContentLoaded", function () {
+  fetch("/get_todays_entries/") // You'll need to create this endpoint
+    .then((response) => response.json())
+    .then((data) => {
+      data.entries.reverse().forEach((entry) => addAttendanceItem(entry));
     })
-    .catch(error => console.error('Error loading entries:', error));
+    .catch((error) => console.error("Error loading entries:", error));
 });

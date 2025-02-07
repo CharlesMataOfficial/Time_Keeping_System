@@ -59,9 +59,8 @@ header {
   align-items: center;
 }
 
-
 .partner-logo img { /* Company Logos */
-  background-color: white; 
+  background-color: white;
   padding: 10px; /* Adds space around the logo */
   border-radius: 10px; /* Optional rounded corners */
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
@@ -120,7 +119,6 @@ header {
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
-
 .camera video {
   width: 100%;
   height: 100%;
@@ -166,8 +164,10 @@ header {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-
 .attendance-list h2 {
+  font-size: 20px;
+  color: #ffffff;
+  margin-bottom: 15px;
   font-size: 20px;
   color: #ffffff;
   margin-bottom: 15px;
@@ -272,7 +272,7 @@ header {
   position: absolute;
   right: 0;
   top: 0;
-  width: 15%; 
+  width: 15%;
   background-image: url("/static/images/red1.jpg");
   background-size: cover;
   background-position: center;
@@ -285,7 +285,7 @@ header {
 .birthdays,
 .milestones {
   margin-bottom: 10px; /* Space between Birthdays and Milestones */
-  
+
 }
 
 .birthdays .panel,
