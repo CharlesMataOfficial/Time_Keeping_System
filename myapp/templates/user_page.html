@@ -38,13 +38,6 @@
         <h2>Attendance List</h2>
         <div class="note">
           <ul id="attendance-items">
-            {% for entry in all_entries %}
-        <li>
-            {{ entry.user.employee_id }} - {{ entry.user.first_name }} {{ entry.user.surname }} 
-            ({{ entry.user.company }}) | Time In: {{ entry.time_in|date:"h:i A, F d, Y" }} 
-            | Time Out: {% if entry.time_out %}{{ entry.time_out|date:"h:i A, F d, Y" }}{% else %}N/A{% endif %}
-        </li>
-    {% endfor %}
           </ul>
         </div>
       </div>

@@ -8,6 +8,5 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('clock_in/', views.clock_in_view, name='clock_in'),
     path('clock_out/', views.clock_out_view, name='clock_out'),
-    path('admin_page/', views.admin_page, name='admin_page'),  # Corrected to use views.user_page
-
+    path('get_todays_entries/', views.get_todays_entries, name='get_todays_entries'),
 ]
