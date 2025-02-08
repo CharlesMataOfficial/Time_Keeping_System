@@ -5,45 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard</title>  
   {% load static %}
-  <link rel="stylesheet" href="{% static 'css/styles_admin.css' %}">
-  <script src="function_admin.js"></script>
-  <script src={% static "js/function_admin.js" %}></script>
+  <link rel="stylesheet" href="{% static 'css/custom_admin_page.css' %}">
+  <script src={% static "js/custom_admin_page.js" %}></script>
 </head>
 <body>
   <!-- Menu Icon -->
   <div class="menu-icon" onclick="toggleMenu()">
-    <img src={% static "images/menu-icon.png" %} alt="Menu Icon">
+    <img src={% static "images/menu_icon.png" %} alt="Menu Icon">
   </div>
 
   <!-- Menu Pop-Up -->
   <div class="menu" id="menu">
     <ul>
       <li class="menu-item" onclick="navigateTo('dashboard')">
-        <img src="ojt photos/dashboard_icon.png" alt="Dashboard">
+        <img src={% static "images/dashboard_icon.png" %} alt="Menu Icon">
         Dashboard
       </li>
       <li class="menu-item" onclick="navigateTo('log')">
-        <img src="ojt photos/log_icon.png" alt="Log">
+        <img src={% static "images/log_icon.png" %} alt="Menu Icon">
         Log
       </li>
       <li class="menu-item" onclick="navigateTo('attendance-list')">
-        <img src="ojt photos/attendance_icon.png" alt="Attendance List">
+        <img src={% static "images/attendance_icon.png" %} alt="Menu Icon">
         Attendance List
       </li>      
       <li class="menu-item" onclick="navigateTo('work-hours')">
-        <img src="ojt photos/clock_icon.png" alt="Work Hours">
+        <img src={% static "images/clock_icon.png" %} alt="Menu Icon">
         Work Hours Preset
       </li>
       <li class="menu-item" onclick="navigateTo('announcement')">
-        <img src="ojt photos/announcement_icon.png" alt="Announcement">
+        <img src={% static "images/announcement_icon.png" %} alt="Menu Icon">
         Announcement
       </li>
       <li class="menu-item" onclick="navigateTo('export-excel')">
-        <img src="ojt photos/excel_icon.png" alt="Export Excel">
+        <img src={% static "images/excel_icon.png" %} alt="Menu Icon">
         Export Excel
       </li>
       <li class="menu-item" onclick="navigateTo('leave-approval')">
-        <img src="ojt photos/leave_icon.png" alt="Leave Approval">
+        <img src={% static "images/leave_icon.png" %} alt="Menu Icon">
         Leave Approval
       </li>
     </ul>
@@ -51,7 +50,7 @@
 
 <!-- Back Button (Updated Icon) -->
 <div id="dashboard-shortcut" class="dashboard-icon-top-right" style="display: none;">
-  <img src="ojt photos/leftarrow_icon.png" alt="Back">
+  <img src={% static "images/leftarrow_icon.png" %} alt="Menu Icon">
 </div>
 
 <!-- Screens -->
@@ -59,22 +58,22 @@
   <h1 id="dashboard_title">Dashboard</h1>
   <div class="dashboard-icons">
       <div class="dashboard-icon" onclick="navigateTo('log')">
-          <img src="ojt photos/log_icon.png" alt="Log">
+        <img src={% static "images/log_icon.png" %} alt="Menu Icon">
       </div>
       <div class="dashboard-icon" onclick="navigateTo('attendance-list')">
-          <img src="ojt photos/attendance_icon.png" alt="Attendance List">
+        <img src={% static "images/attendance_icon.png" %} alt="Menu Icon">
       </div>
       <div class="dashboard-icon" onclick="navigateTo('work-hours')">
-          <img src="ojt photos/clock_icon.png" alt="Work Hours Preset">
+        <img src={% static "images/clock_icon.png" %} alt="Menu Icon">
       </div>
       <div class="dashboard-icon" onclick="navigateTo('announcement')">
-          <img src="ojt photos/announcement_icon.png" alt="Announcement">
+        <img src={% static "images/announcement_icon.png" %} alt="Menu Icon">
       </div>
       <div class="dashboard-icon" onclick="navigateTo('export-excel')">
-          <img src="ojt photos/excel_icon.png" alt="Export Excel">
+        <img src={% static "images/excel_icon.png" %} alt="Menu Icon">
       </div>
       <div class="dashboard-icon" onclick="navigateTo('leave-approval')">
-          <img src="ojt photos/leave_icon.png" alt="Leave Approval">
+        <img src={% static "images/leave_icon.png" %} alt="Menu Icon">
       </div>
   </div>
 </div>
@@ -183,7 +182,11 @@
 
 
 <!-- Sign Out Button -->
-<button id="sign-out-button" onclick="signOut()">Sign Out</button>
-
+<form action="{% url 'logout' %}" method="POST">
+  {% csrf_token %}
+  <button type="submit" class="sign-out-btn">
+  <i class="fas fa-sign-out-alt"></i> Sign Out
+  </button>
+</form>
 </body>
 </html>

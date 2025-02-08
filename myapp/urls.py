@@ -9,4 +9,5 @@ urlpatterns = [
     path('clock_in/', views.clock_in_view, name='clock_in'),
     path('clock_out/', views.clock_out_view, name='clock_out'),
     path('get_todays_entries/', views.get_todays_entries, name='get_todays_entries'),
+    path('custom_admin_page/', views.custom_admin_page, name='custom_admin_page'),
 ]

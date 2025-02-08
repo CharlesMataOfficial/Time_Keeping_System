@@ -20,8 +20,10 @@ def login_view(request):
 
         if user:
             login(request, user)
-            if user.is_staff or user.is_superuser:
+            if user.is_staff and user.is_superuser:
                 return redirect(reverse("admin:index"))
+            elif user.is_staff and not user.is_superuser:
+                return redirect("custom_admin_page")  # Redirect to custom admin page (you need to set this URL)
             else:
                 return redirect("user_page")
         else:  # Authentication failed
@@ -156,3 +158,11 @@ def get_todays_entries(request):
         })
 
     return JsonResponse({"entries": entries_data})
+
+def custom_admin_page(request):
+    # Check if the user is staff but not a superuser (admin page access logic)
+    if not request.user.is_staff or request.user.is_superuser:
+        return redirect("user_page")  # Redirect non-admin users elsewhere
+    
+    # If the user is staff and not a superuser, show the custom admin page
+    return render(request, "custom_admin_page.html")
