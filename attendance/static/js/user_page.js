@@ -199,6 +199,7 @@ clockInForm.addEventListener("submit", (e) => {
       if (data.success) {
         addAttendanceItem(data);
         alert("Clock In successful!");
+        updatePartnerLogo(data.new_logo); // Update logo on clock in
       } else {
         alert("Error: " + data.error);
       }
@@ -233,6 +234,7 @@ clockOutForm.addEventListener("submit", (e) => {
         // Optionally update the attendance list or UI
         addAttendanceItem(data);
         alert("Clock Out successful!");
+        updatePartnerLogo(data.new_logo); // Update logo on clock out
       } else {
         alert("Error: " + data.error);
       }
@@ -244,6 +246,12 @@ clockOutForm.addEventListener("submit", (e) => {
       alert("There was an error. Please try again.");
     });
 });
+
+// Function to update the partner logo
+function updatePartnerLogo(newLogo) {
+  const partnerLogo = document.getElementById("partnerLogo");
+  partnerLogo.src = `/static/images/${newLogo}`;
+}
 
 // Fetch today's entries when the page loads
 document.addEventListener("DOMContentLoaded", function () {
