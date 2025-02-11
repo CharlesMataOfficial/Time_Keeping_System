@@ -15,7 +15,7 @@
           <img src={% static "images/SFgroup.png" %} alt="SF Group of Companies">
         </div>
         <div class="partner-logo">
-          <img src={% static "images/agrilogo2.png" %} alt="Agridom">
+          <img src="{% static 'images/' %}{{ user.company|lower }}.png" alt="{{ user.company }} logo">
         </div>
       </header>
       <div class="clock">

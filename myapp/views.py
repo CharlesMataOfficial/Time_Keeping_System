@@ -39,6 +39,18 @@ def login_view(request):
 @login_required
 def user_page(request):
     # Since USE_TZ is False, timezone.now() returns a naive datetime in local time.
+    user_company = request.user.company
+    print(f"User's company: {user_company}")  # Debugging line
+    company_logo_mapping = {
+        "sfgc": "SFgroup.png",  # Example of mapping
+        "asc": "DJas.png",  # Your custom mapping (you can use partial matching if needed)
+        "djas": "agrilogo2.png",  # Your custom mapping (you can use partial matching if needed)
+        "default": "default_logo.png",  # Fallback logo for unspecified companies
+    }
+    # Get the company logo based on the user's company
+    company_logo = company_logo_mapping.get(user_company.lower(), company_logo_mapping["default"])
+    print(f"Company logo selected: {company_logo}")
+
     now = timezone.now()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     today_end = today_start + datetime.timedelta(days=1)
@@ -49,7 +61,9 @@ def user_page(request):
         time_in__lt=today_end
     ).order_by("-time_in")
 
-    return render(request, "user_page.html", {"all_entries": todays_entries})
+    return render(request, "user_page.html", {"all_entries": todays_entries,
+                                              "partner-logo": company_logo,}) 
+
 
 def logout_view(request):
     logout(request)
@@ -166,3 +180,4 @@ def custom_admin_page(request):
     
     # If the user is staff and not a superuser, show the custom admin page
     return render(request, "custom_admin_page.html")
+
