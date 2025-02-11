@@ -51,34 +51,30 @@ navigator.mediaDevices
     );
   });
 
-function addAttendanceItem(data) {
-  const list = document.getElementById("attendance-items");
-
-  // Extract values safely
-  const employeeId = data.employee_id || "N/A";
-  const firstName = data.first_name || "N/A";
-  const surname = data.surname || "N/A";
-  const company = data.company || "N/A";
-  const timeIn = data.time_in || "N/A";
-  const timeOut = data.time_out ? data.time_out : "N/A"; // Handle null time_out
-
-  // Find all existing records for this employee
-  const existingItems = document.querySelectorAll(
-    `li[data-employee-id="${employeeId}"]`
-  );
-
-  if (existingItems.length > 0 && timeOut !== "N/A") {
-    // ✅ Update the most recent clock-in with time_out
-    const lastEntry = existingItems[0]; // Latest entry (since prepend() adds newest first)
-    lastEntry.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
-  } else {
-    // ✅ Add a new record for clock-in
+  function addAttendanceItem(data) {
+    const list = document.getElementById("attendance-items");
+  
+    // Get the employee id from the response
+    const employeeId = data.employee_id || "N/A";
+    const firstName = data.first_name || "N/A";
+    const surname = data.surname || "N/A";
+    const company = data.company || "N/A";
+    const timeIn = data.time_in || "N/A";
+    const timeOut = data.time_out ? data.time_out : "N/A";
+  
+    // Remove all existing list items for this employee
+    const existingItems = list.querySelectorAll(`li[data-employee-id="${employeeId}"]`);
+    existingItems.forEach(item => item.remove());
+  
+    // Create a new list item with the updated info
     const listItem = document.createElement("li");
     listItem.setAttribute("data-employee-id", employeeId);
     listItem.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
+  
+    // Prepend the new item so it appears at the top
     list.prepend(listItem);
   }
-}
+  
 
 // Helper to get CSRF token from cookies (if you need it for AJAX)
 function getCookie(name) {
@@ -133,7 +129,6 @@ window.addEventListener("click", (e) => {
 });
 
 // --- Handling Clock In form submission ---
-const clockInForm = document.getElementById("clockInForm");
 clockInForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
@@ -151,9 +146,10 @@ clockInForm.addEventListener("submit", (e) => {
     .then((response) => response.json())
     .then((data) => {
       if (data.success) {
-        // Update attendance list in the UI
-        addAttendanceItem(data);
+        // You can update UI elements or add attendance info here if needed
         alert("Clock In successful!");
+        // Refresh the page
+        window.location.reload();
       } else {
         alert("Error: " + data.error);
       }
@@ -166,8 +162,8 @@ clockInForm.addEventListener("submit", (e) => {
     });
 });
 
+
 // --- Handling Clock Out form submission ---
-const clockOutForm = document.getElementById("clockOutForm");
 clockOutForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
@@ -185,9 +181,9 @@ clockOutForm.addEventListener("submit", (e) => {
     .then((response) => response.json())
     .then((data) => {
       if (data.success) {
-        // Optionally update the attendance list or UI
-        addAttendanceItem(data);
         alert("Clock Out successful!");
+        // Refresh the page
+        window.location.reload();
       } else {
         alert("Error: " + data.error);
       }

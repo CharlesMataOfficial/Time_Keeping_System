@@ -183,7 +183,7 @@ def get_todays_entries(request):
 
     entries = TimeEntry.objects.filter(
         time_in__gte=today_start, time_in__lt=today_end
-    ).order_by("-time_in")
+    ).order_by("-last_modified")
 
     entries_data = []
     for entry in entries:

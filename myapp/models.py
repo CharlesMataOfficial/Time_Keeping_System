@@ -72,6 +72,7 @@ class TimeEntry(models.Model):
     time_out = models.DateTimeField(null=True, blank=True)
     hours_worked = models.FloatField(null=True, blank=True)
     is_late = models.BooleanField(default=False)
+    last_modified = models.DateTimeField(auto_now=True)
 
     @property
     def date(self):
