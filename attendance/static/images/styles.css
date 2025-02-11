@@ -1,0 +1,311 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
+
+body {
+    background-image: url('ojt photos/white8.jpg');
+    background-size: cover; /* Ensures the image fully covers the container */
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+h1, h2, h3, .clock p {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.container {
+    width: 100%;
+    height: 100vh; /* Make the container fit the screen height */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Adjust the spacing between items */
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #621c1c; /* Background color */
+    height: 8vh; /* Adjust height as needed */
+    padding: 0 20px; /* Add spacing inside the header */
+    position: relative; /* Ensures the header stays at the top layer */
+    width: 100%; /* Full width */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional shadow */
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo img { /* SF GROUP LOGO */
+    width: 475px; /* Change this to your desired size */
+    height: auto; /* Maintains aspect ratio */
+    margin-top: 125px;
+    margin-right: 10px;
+}
+
+.partner-logo {
+    display: flex;
+    align-items: center;
+}
+
+
+.partner-logo img { /* Company Logos */
+    background-color: white; 
+    padding: 10px; /* Adds space around the logo */
+    border-radius: 10px; /* Optional rounded corners */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    width: 250px; /* Change this to your desired size */
+    height: auto; /* Maintains aspect ratio */
+    margin-top: 100px;
+    margin-right: 450px;
+}
+
+.logo img:hover,
+.partner-logo img:hover {
+    transform: scale(1.05); /* Slight zoom on hover */
+    transition: transform 0.3s ease-in-out;
+}
+
+.clock {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+    margin-left: 40px;
+    flex-grow: 1;
+    justify-content: flex-start;  /* Aligns items (including the camera) to the left */
+}
+
+.clock-content {
+    flex: 1; /* Allow clock-content to take available space */
+}
+
+.clock h1 { /* Real clock time styling */
+    font-size: 130px;
+    color: #621c1c;
+    margin-top: 80px;
+    margin-bottom: 0; /* Remove bottom margin to align neatly */
+}
+
+.clock p {
+    font-size: 40px;
+    color: #be6364;
+    white-space: nowrap; /* Prevent line breaks */
+    margin-left: 55px;
+}
+
+.clock p span {
+    margin-right: 185px; /* Adjust spacing between date and day */
+}
+
+.camera {
+    position: absolute; /* Absolute positioning */
+    width: 420px;
+    height: 350px;
+    border: 2px solid #621c1c;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 35px;
+    left: 840px; /* Move camera to the very left of its parent container */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+
+.camera video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.btn { /* TIME IN TIME OUT BUTTON */
+    padding: 10px 32px;
+    font-size: 25px;
+    background: #621c1c;
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    margin: 50px;
+    margin-left: 115px;
+    transition: background 0.3s ease, transform 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional shadow */
+}
+
+.btn:focus {
+    background: #be6364;
+    transform: scale(1.05); /* Button enlarges slightly */
+}
+
+.btn:hover {
+    background-color: #be6364; /* Add color change on hover */
+    transform: scale(1.1); /* Enlarge button slightly */
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+.attendance-list {
+    width: 1220px;
+    flex: 0 0 auto; /* Remove flex-grow (flex: 1) to allow manual height setting */
+    margin: 20px 40px;
+    background: #621c1c;
+    border-radius: 5px;
+    padding: 30px;
+    top: -30px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+    position: relative;
+    height: 170px; /* Adjust this value to your desired height */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+}
+
+
+.attendance-list h2 {
+    font-size: 20px;
+    color: #ffffff;
+    margin-bottom: 15px;
+    text-align: center;
+    margin-top: -25px; /* Move Attendance List slightly up */
+}
+
+/* Adjust the attendance list items to appear over the note */
+.attendance-list ul {
+    position: relative;
+    z-index: 2; /* Ensure items are above the note */
+    padding-top: 20px; /* Give space above items to not be flush with the note */
+}
+
+.attendance-list .note {
+    background: #e2e2e2;
+    width: 1210px;  /* Make the note full width inside its container */
+    height: 130px; /* Adjust height for your needs */
+    margin-top: 15px;
+    border-radius: 5px;
+    position: absolute;
+    top: 20px; /* Position the note so it doesn't overlap the title */
+    left: 5px;
+    padding: 20px; /* Add internal padding to contain the text */
+    box-sizing: border-box; /* Ensure padding is included in width/height */
+    z-index: 1;
+    overflow-y: auto;
+}
+
+#attendance-items {
+    list-style: none;
+    padding: 0;
+}
+
+#attendance-items li {
+    padding: 10px 15px;
+    border-bottom: 1px solid #ddd;
+    font-size: 18px;
+    color: #be6364;
+}
+
+.content {
+    display: flex;
+    margin-top: 20px;
+}
+
+.panel { /*CONTENTS INSIDE THE SIDE PANEL*/
+    text-align: center;
+    font-size: 12px; /* Adjust font-size as needed */
+    background: #621c1c;
+    color: #e2e2e2;
+    padding: 25px;
+    margin-bottom: 15px; /* Adjust space between panels */
+    border-radius: 10px;
+    width: 100%;
+    height: 292px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+    background-color: #7b7b7d; /* Fallback for older browsers */
+    padding: 25px;
+}
+
+.panel:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Hover effect */
+    transform: translateY(-5px); /* Slight lift on hover */
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.birthdays .panel h3,
+.milestones .panel h3,
+.announcements .panel h3 {
+    font-size: 15px;
+    margin-top: -10px; /* Move Birthdays and Milestones header slightly up */
+}
+
+
+/* Note styles for Birthdays and Milestones */
+.birthdays .note,
+.milestones .note {
+    background: #e2e2e2;
+    width: 180px; /* Set a fixed width */
+    height: 131px; /* Set height for individual notes */
+    margin-top: 15px;
+    border-radius: 5px;
+    position: relative;
+    top: -9px;
+    left: -20px;
+}
+
+/* Note styles for Announcements (Longer Note) */
+.announcements .note {
+    background: #e2e2e2;
+    width: 180px; /* Increase width for Announcement */
+    height: 248px; /* Increase height for Announcement */
+    margin-top: 15px;
+    border-radius: 5px;
+    position: relative;
+    top: -9px;
+    left: -20px;
+}
+
+.sidebar {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 15%; 
+    background-image: url('ojt photos/red1.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100%;
+    padding: 20px;
+}
+
+/* Birthdays container */
+.birthdays,
+.milestones {
+    margin-bottom: 10px; /* Space between Birthdays and Milestones */
+    
+}
+
+.birthdays .panel,
+.milestones .panel {
+    width: 100%;
+    height: 175px; /* You can specify a fixed height here for Birthdays & Milestones */
+}
+
+.sign-out-btn {
+    color: darkred; /* Red text color */
+    text-decoration: underline; /* Underlined text */
+    background: none; /* Transparent background */
+    border: none; /* No border */
+    font-size: 15px; /* Font size for visibility */
+    cursor: pointer; /* Pointer cursor on hover */
+    margin-top: auto; /* Push button to the bottom */
+    margin-left: 60px;
+}
+
+
+.sign-out-btn:hover {
+    color: red; /* Darker red for hover effect */
+}
