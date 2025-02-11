@@ -51,6 +51,48 @@ navigator.mediaDevices
     );
   });
 
+function captureImage() {
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const context = canvas.getContext("2d");
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", 0.5); // Low quality image
+}
+
+function uploadImage(imageData, employeeId) {
+  const formData = new FormData();
+  formData.append('image', dataURItoBlob(imageData), 'clock_in_image.jpg');
+  formData.append('employee_id', employeeId);
+
+  return fetch("/upload_image/", {
+    method: "POST",
+    body: formData,
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        return data.file_path;
+      } else {
+        throw new Error(data.error);
+      }
+    });
+}
+
+function dataURItoBlob(dataURI) {
+  const byteString = atob(dataURI.split(',')[1]);
+  const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+  return new Blob([ab], { type: mimeString });
+}
+
 function addAttendanceItem(data) {
   const list = document.getElementById("attendance-items");
 
@@ -139,19 +181,22 @@ clockInForm.addEventListener("submit", (e) => {
 
   const employee_id = document.getElementById("employeeIdIn").value;
   const pin = document.getElementById("pinIn").value;
+  const imageData = captureImage();
 
-  fetch("/clock_in/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRFToken": csrftoken,
-    },
-    body: JSON.stringify({ employee_id, pin }),
-  })
+  uploadImage(imageData, employee_id)
+    .then((filePath) => {
+      return fetch("/clock_in/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrftoken,
+        },
+        body: JSON.stringify({ employee_id, pin, image_path: filePath }),
+      });
+    })
     .then((response) => response.json())
     .then((data) => {
       if (data.success) {
-        // Update attendance list in the UI
         addAttendanceItem(data);
         alert("Clock In successful!");
       } else {
@@ -209,5 +254,3 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .catch((error) => console.error("Error loading entries:", error));
 });
-
-// 

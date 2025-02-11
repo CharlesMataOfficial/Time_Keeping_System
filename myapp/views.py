@@ -4,11 +4,14 @@ from django.urls import reverse
 from .models import CustomUser, TimeEntry
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
-import datetime
 import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_GET
 from django.utils import timezone
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+import os
+from datetime import datetime, timedelta
 
 
 @never_cache
@@ -59,7 +62,7 @@ def user_page(request):
 
     now = timezone.now()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    today_end = today_start + datetime.timedelta(days=1)
+    today_end = today_start + timedelta(days=1)
 
     # Filter entries for today based on the naive datetimes.
     todays_entries = TimeEntry.objects.filter(
@@ -87,13 +90,15 @@ def clock_in_view(request):
     data = json.loads(request.body)
     employee_id = data.get("employee_id")
     pin = data.get("pin")
+    image_path = data.get("image_path")
 
     user = CustomUser.authenticate_by_pin(employee_id, pin)
 
     if user:
-        # Create a new clock-in entry using the model’s clock_in method.
         entry = TimeEntry.clock_in(user)
-        # Format the time using the naive datetime (local time).
+        if image_path:
+            entry.image_path = image_path
+            entry.save()
         time_in_formatted = entry.time_in.strftime("%I:%M %p, %B %d, %Y")
 
         return JsonResponse(
@@ -105,6 +110,7 @@ def clock_in_view(request):
                 "company": user.company,
                 "time_in": time_in_formatted,
                 "time_out": None,
+                "image_path": entry.image_path,
             }
         )
     else:
@@ -128,7 +134,7 @@ def clock_out_view(request):
         try:
             now = timezone.now()  # Naive datetime in local time
             today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-            today_end = today_start + datetime.timedelta(days=1)
+            today_end = today_start + timedelta(days=1)
 
             open_entry = TimeEntry.objects.filter(
                 user=user,
@@ -172,7 +178,7 @@ def clock_out_view(request):
 def get_todays_entries(request):
     now = timezone.now()  # Naive datetime in local time.
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    today_end = today_start + datetime.timedelta(days=1)
+    today_end = today_start + timedelta(days=1)
 
     entries = TimeEntry.objects.filter(
         time_in__gte=today_start, time_in__lt=today_end
@@ -205,3 +211,36 @@ def custom_admin_page(request):
 
     # If the user is staff and not a superuser, show the custom admin page
     return render(request, "custom_admin_page.html")
+
+
+@require_POST
+def upload_image(request):
+    image_data = request.FILES.get('image')
+    employee_id = request.POST.get('employee_id')
+
+    if image_data:
+        try:
+            user = CustomUser.objects.get(employee_id=employee_id)
+        except CustomUser.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'User not found'})
+
+        # Get the current date
+        now = datetime.now()
+        year = now.strftime("%Y")
+        month = now.strftime("%m")
+        day = now.strftime("%d")
+        timestamp = now.strftime("%H%M%S")
+
+        # Create directories based on the current date
+        directory = os.path.join('images', year, month, day)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        # Create a unique file name
+        file_name = f'{user.employee_id}_{user.surname}{user.first_name}_{timestamp}.jpg'
+        file_path = os.path.join(directory, file_name)
+
+        # Save the file
+        file_path = default_storage.save(file_path, ContentFile(image_data.read()))
+        return JsonResponse({'success': True, 'file_path': file_path})
+    return JsonResponse({'success': False, 'error': 'No image uploaded'})
