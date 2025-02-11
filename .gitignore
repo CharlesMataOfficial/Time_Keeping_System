@@ -3,7 +3,7 @@
 
 ### Custom ###
 # .vscode
-images/
+attendance_images/
 
 ### Django ###
 *.log
