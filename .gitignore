@@ -3,6 +3,7 @@
 
 ### Custom ###
 # .vscode
+images/
 
 ### Django ###
 *.log
