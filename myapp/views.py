@@ -44,20 +44,22 @@ def login_view(request):
 
 @login_required
 def user_page(request):
-    # Since USE_TZ is False, timezone.now() returns a naive datetime in local time.
-    user_company = request.user.company.strip().lower()
+    # Get company with fallback to empty string if None
+    user_company = request.user.company or ""
+    user_company = user_company.strip().lower()
 
-    #company logo mapping from fetched data to image path.
+    # Company logo mapping from fetched data to image path
     company_logo_mapping = {
         "sfgc": "SFgroup.png",
-        "asc": "agrilogo2.png",  
-        "sfgci": "SFgroup.png", 
+        "asc": "agrilogo2.png",
+        "sfgci": "SFgroup.png",
         "smi": "sunfood.png",
-        "gti": "Geniustech.png",  
-        "fac": "farmtech.png", 
-        "djas": "DJas.png",   
-        "default": "default_logo.png", 
+        "gti": "Geniustech.png",
+        "fac": "farmtech.png",
+        "djas": "DJas.png",
+        "default": "default_logo.png",
     }
+
     # Get the company logo based on the user's company
     company_logo = company_logo_mapping.get(
         user_company, company_logo_mapping["default"]
@@ -67,7 +69,7 @@ def user_page(request):
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     today_end = today_start + datetime.timedelta(days=1)
 
-    # Filter entries for today based on the naive datetimes.
+    # Filter entries for today based on the naive datetimes
     todays_entries = TimeEntry.objects.filter(
         time_in__gte=today_start, time_in__lt=today_end
     ).order_by("-time_in")
@@ -101,7 +103,7 @@ def clock_in_view(request):
         entry = TimeEntry.clock_in(user)
         # Format the time using the naive datetime (local time).
         time_in_formatted = entry.time_in.strftime("%I:%M %p, %B %d, %Y")
-        
+
 
         return JsonResponse(
             {
