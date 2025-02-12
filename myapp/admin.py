@@ -16,11 +16,12 @@ class CustomUserAdmin(UserAdmin):
         "is_staff",
     )
     list_display_links = ("employee_id",)
+    search_fields = ("employee_id", "first_name", "surname", "company")  # Define searchable fields
 
-    add_form = CustomUserCreationForm  # Assign the custom form
+    add_form = CustomUserCreationForm
 
     fieldsets = (
-        (None, {"fields": ("password",)}),
+        (None, {"fields": ("employee_id", "password")}),
         ("Personal Info", {"fields": ("first_name", "surname", "birth_date")}),
         (
             "Other Info",
