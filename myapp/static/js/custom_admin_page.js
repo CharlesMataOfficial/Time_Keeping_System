@@ -82,14 +82,94 @@ document.getElementById('dashboard-shortcut').addEventListener('click', function
     }
 });
 
+// Show the function of the add  button
+document.addEventListener("DOMContentLoaded", function () {
+  
+  //Select the "Add Work Hours" button
+  const addWorkHours= document.getElementById("addWorkHours");
 
+  if (addWorkHours) {
+    //Attach the function to the button click event
+    addWorkHours.addEventListener("click", addWorkHours()); 
+    }
+});
 
-
-
+document.getElementById("addWorkHours").addEventListener("click", addWorkHours);
 // Work Hours Functions
 function addWorkHours() {
-  alert("Add Work Hours functionality goes here.");
+  // Collect input values
+  let name = document.getElementById("name").value;
+  let presetType = document.getElementById("preset-type").value;
+  let mondayStart = document.getElementById("monday-start").value;
+  let mondayEnd = document.getElementById("monday-end").value;
+  let tuesdayStart = document.getElementById("tuesday-start").value;
+  let tuesdayEnd = document.getElementById("tuesday-end").value;
+  let wednesdayStart = document.getElementById("wednesday-start").value;
+  let wednesdayEnd = document.getElementById("wednesday-end").value;
+  let thursdayStart = document.getElementById("thursday-start").value;
+  let thursdayEnd = document.getElementById("thursday-end").value;
+  let fridayStart = document.getElementById("friday-start").value;
+  let fridayEnd = document.getElementById("friday-end").value;
+  let saturdayStart = document.getElementById("saturday-start").value;
+  let saturdayEnd = document.getElementById("saturday-end").value;
+  let sundayStart = document.getElementById("sunday-start").value;
+  let sundayEnd = document.getElementById("sunday-end").value;
+
+  // Continue collecting other day's values...
+
+  //Create an object to send
+  let WorkHoursData = {
+    name: name,
+    presetType: presetType,
+    mondayStart: mondayStart,
+    mondayEnd: mondayEnd,
+    tuesdayStart: tuesdayStart,
+    tuesdayEnd: tuesdayEnd,
+    wednesdayStart: wednesdayStart, 
+    wednesdayEnd: wednesdayEnd,
+    thursdayStart: thursdayStart,
+    thursdayEnd: thursdayEnd,
+    fridayStart: fridayStart,
+    fridayEnd: fridayEnd,
+    saturdayStart: saturdayEnd,
+    saturdayEnd: saturdayEnd,
+    sundayStart: sundayStart,
+    sundayEnd: sundayEnd
+};
 }
+
+// Function to open the modal
+function openScheduleModal() {
+  document.getElementById("setScheduleModal").style.display = "block";
+}
+
+// Function to close the modal
+function closeModal() {
+  document.getElementById("setScheduleModal").style.display = "none";
+}
+
+// Ensure the script runs only after the DOM is loaded
+document.addEventListener("DOMContentLoaded", function () {
+  // Add event listener to the "Add" button
+  var addBtn = document.getElementById("addWorkHours"); // Fixed ID to match the button in HTML
+  if (addBtn) {
+      addBtn.addEventListener("click", openScheduleModal);
+  }
+
+  // Add event listener to the "Close" button inside the modal
+  var closeBtn = document.getElementById("closeScheduleBtn");
+  if (closeBtn) {
+      closeBtn.addEventListener("click", closeModal);
+  }
+
+  // Close modal if user clicks outside the modal content
+  window.onclick = function (event) {
+      var modal = document.getElementById("setScheduleModal");
+      if (event.target === modal) {
+          closeModal();
+      }
+  };
+});
 
 function editWorkHours() {
   alert("Edit Work Hours functionality goes here.");
@@ -260,7 +340,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   dropdowns.forEach(select => {
       select.addEventListener("change", function () {
-          let options = this.options;
+           let options = this.options;
           for (let i = 0; i < options.length; i++) {
               if (options[i].selected) {
                   options[i].style.color = "black"; // Selected option turns black
@@ -283,4 +363,4 @@ document.addEventListener("DOMContentLoaded", function () {
           selectedOption.style.color = "black";
       }
   });
-});
+})

@@ -160,9 +160,9 @@
   </div>
   <div class="work-hours-container">
       <div class="work-hours-actions">
-          <button onclick="addWorkHours()">Add</button>
-          <button onclick="editWorkHours()">Edit</button>
-          <button onclick="deleteWorkHours()">Delete</button>
+          <button id="addWorkHours()">Add</button>
+          <button id="editWorkHours()">Edit</button>
+          <button id="deleteWorkHours()">Delete</button>
       </div>
       <div class="separator"></div>
       <div class="grace-period">
@@ -179,6 +179,69 @@
   </div>
 </div>
 
+<div id="setScheduleModal" class="modal" style="display: none;">
+  <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Set Schedule</h2>
+
+      <!-- Preset Selection -->
+      <div class="preset-options">
+          <button id="regularPresetBtn">Regular Preset</button>
+          <button id="customPresetBtn">Custom Preset</button>
+      </div>
+
+      <!-- Preset Name -->
+      <input type="text" id="presetName" placeholder="Preset Name">
+
+      <!-- Schedule Table -->
+      <table>
+          <tr>
+              <th>Day</th>
+              <th>Start Time</th>
+              <th>End Time</th>
+          </tr>
+          <tr>
+              <td><input type="checkbox" id="mondayCheck"> Monday</td>
+              <td><input type="time" id="mondayStart"></td>
+              <td><input type="time" id="mondayEnd"></td>
+          </tr>
+          <tr>
+              <td><input type="checkbox" id="tuesdayCheck"> Tuesday</td>
+              <td><input type="time" id="tuesdayStart"></td>
+              <td><input type="time" id="tuesdayEnd"></td>
+          </tr>
+          <tr>
+              <td><input type="checkbox" id="wednesdayCheck"> Wednesday</td>
+              <td><input type="time" id="wednesdayStart"></td>
+              <td><input type="time" id="wednesdayEnd"></td>
+          </tr>
+          <tr>
+              <td><input type="checkbox" id="thursdayCheck"> Thursday</td>
+              <td><input type="time" id="thursdayStart"></td>
+              <td><input type="time" id="thursdayEnd"></td>
+          </tr>
+          <tr>
+              <td><input type="checkbox" id="fridayCheck"> Friday</td>
+              <td><input type="time" id="fridayStart"></td>
+              <td><input type="time" id="fridayEnd"></td>
+          </tr>
+          <tr>
+              <td><input type="checkbox" id="saturdayCheck"> Saturday</td>
+              <td><input type="time" id="saturdayStart"></td>
+              <td><input type="time" id="saturdayEnd"></td>
+          </tr>
+          <tr>
+              <td><input type="checkbox" id="sundayCheck"> Sunday</td>
+              <td><input type="time" id="sundayStart"></td>
+              <td><input type="time" id="sundayEnd"></td>
+          </tr>
+      </table>
+
+      <!-- Buttons -->
+      <button id="saveScheduleBtn">Save</button>
+      <button id="closeScheduleBtn" onclick="closeModal()">Close</button>
+  </div>
+</div>
 
 
 <!-- Sign Out Button -->

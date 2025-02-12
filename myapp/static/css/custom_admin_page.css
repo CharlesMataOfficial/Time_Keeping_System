@@ -19,6 +19,7 @@ body, html {
 h1, h2 {
   background: linear-gradient(90deg, #621c1c, #be6364);
   -webkit-background-clip: text;
+  background-clip: text;
   color: transparent;
   text-shadow: none;
 }
