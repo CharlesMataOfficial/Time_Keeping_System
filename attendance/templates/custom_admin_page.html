@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard</title>  
+  <title>Admin Dashboard</title>
   {% load static %}
   <link rel="stylesheet" href="{% static 'css/custom_admin_page.css' %}">
   <script src={% static "js/custom_admin_page.js" %}></script>
@@ -28,7 +28,7 @@
       <li class="menu-item" onclick="navigateTo('attendance-list')">
         <img src={% static "images/attendance_icon.png" %} alt="Menu Icon">
         Attendance List
-      </li>      
+      </li>
       <li class="menu-item" onclick="navigateTo('work-hours')">
         <img src={% static "images/clock_icon.png" %} alt="Menu Icon">
         Work Hours Preset
@@ -92,7 +92,7 @@
           <option value="users-active">Users Active</option>
           <option value="users-inactive">Users Inactive</option>
         </select>
-        
+
         <select id="attendance-company" onchange="updateAttendanceHeader()">
           <option value="" disabled selected class="default-option">By Company:</option>
           <option value="all">All companies</option>
@@ -103,7 +103,7 @@
           <option value="agri-online">AGRI Online</option>
           <option value="sunfood">Sunfood Marketing Inc.</option>
         </select>
-        
+
         <select id="attendance-department" onchange="updateAttendanceHeader()">
           <option value="" disabled selected class="default-option">By Department:</option>
           <option value="all">All departments</option>
@@ -111,9 +111,9 @@
           <option value="it">IT Department</option>
           <option value="finance">Finance</option>
         </select>
-        
+
         <button class="go-button" onclick="filterAttendance()">Go</button>
-        
+
       </div>
   </div>
   <div id="attendance_rectangle"></div>
@@ -160,9 +160,9 @@
   </div>
   <div class="work-hours-container">
       <div class="work-hours-actions">
-          <button id="addWorkHours()">Add</button>
-          <button id="editWorkHours()">Edit</button>
-          <button id="deleteWorkHours()">Delete</button>
+          <button id="addWorkHours">Add</button>
+          <button id="editWorkHours">Edit</button>
+          <button id="deleteWorkHours">Delete</button>
       </div>
       <div class="separator"></div>
       <div class="grace-period">

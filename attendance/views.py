@@ -4,11 +4,14 @@ from django.urls import reverse
 from .models import CustomUser, TimeEntry
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
-import datetime
 import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_GET
 from django.utils import timezone
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+import os
+from datetime import datetime, timedelta
 
 
 @never_cache
@@ -67,7 +70,7 @@ def user_page(request):
 
     now = timezone.now()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    today_end = today_start + datetime.timedelta(days=1)
+    today_end = today_start + timedelta(days=1)
 
     # Filter entries for today based on the naive datetimes
     todays_entries = TimeEntry.objects.filter(
@@ -92,18 +95,27 @@ def logout_view(request):
 
 @require_POST
 def clock_in_view(request):
+    company_logo_mapping = {
+        "sfgc": "SFgroup.png",
+        "asc": "DJas.png",
+        "djas": "agrilogo2.png",
+        "default": "default_logo.png",
+    }
     data = json.loads(request.body)
     employee_id = data.get("employee_id")
     pin = data.get("pin")
+    image_path = data.get("image_path")
 
     user = CustomUser.authenticate_by_pin(employee_id, pin)
 
     if user:
-        # Create a new clock-in entry using the model’s clock_in method.
         entry = TimeEntry.clock_in(user)
-        # Format the time using the naive datetime (local time).
+        if image_path:
+            entry.image_path = image_path
+            entry.save()
         time_in_formatted = entry.time_in.strftime("%I:%M %p, %B %d, %Y")
 
+<<<<<<< HEAD:myapp/views.py
 
         return JsonResponse(
             {
@@ -115,7 +127,26 @@ def clock_in_view(request):
                 "time_in": time_in_formatted,
                 "time_out": None,
             }
+=======
+        # Use the authenticated user's company instead of request.user
+        user_company = user.company.strip().lower()  # Changed from request.user to user
+
+        company_logo = company_logo_mapping.get(
+            user_company, company_logo_mapping["default"]
+>>>>>>> loginpage_connected/von:attendance/views.py
         )
+
+        return JsonResponse({
+            "success": True,
+            "employee_id": user.employee_id,
+            "first_name": user.first_name,
+            "surname": user.surname,
+            "company": user.company,
+            "time_in": time_in_formatted,
+            "time_out": None,
+            "image_path": entry.image_path,
+            "new_logo": company_logo,  # This will now correctly reflect the clocked-in user's company logo
+        })
     else:
         try:
             CustomUser.objects.get(employee_id=employee_id)
@@ -127,6 +158,13 @@ def clock_in_view(request):
 
 @require_POST
 def clock_out_view(request):
+    company_logo_mapping = {
+        "sfgc": "SFgroup.png",  # Example of mapping
+        "asc": "DJas.png",  # Your custom mapping (you can use partial matching if needed)
+        "djas": "agrilogo2.png",  # Your custom mapping (you can use partial matching if needed)
+        "default": "default_logo.png",  # Fallback logo for unspecified companies
+    }
+
     data = json.loads(request.body)
     employee_id = data.get("employee_id")
     pin = data.get("pin")
@@ -137,7 +175,7 @@ def clock_out_view(request):
         try:
             now = timezone.now()  # Naive datetime in local time
             today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-            today_end = today_start + datetime.timedelta(days=1)
+            today_end = today_start + timedelta(days=1)
 
             open_entry = TimeEntry.objects.filter(
                 user=user,
@@ -151,6 +189,17 @@ def clock_out_view(request):
             time_in_formatted = open_entry.time_in.strftime("%I:%M %p, %B %d, %Y")
             time_out_formatted = open_entry.time_out.strftime("%I:%M %p, %B %d, %Y")
 
+            user_company = user.company.strip().lower()
+
+            # Get the company logo based on the user's company
+            company_logo = company_logo_mapping.get(
+                user_company, company_logo_mapping["default"]
+            )
+
+            new_logo_path = (
+                company_logo  # Replace with your logic to get the new logo path
+            )
+
             return JsonResponse(
                 {
                     "success": True,
@@ -160,6 +209,7 @@ def clock_out_view(request):
                     "company": user.company,
                     "time_in": time_in_formatted,
                     "time_out": time_out_formatted,
+                    "new_logo": new_logo_path,
                 }
             )
         except TimeEntry.DoesNotExist:
@@ -181,7 +231,7 @@ def clock_out_view(request):
 def get_todays_entries(request):
     now = timezone.now()  # Naive datetime in local time.
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    today_end = today_start + datetime.timedelta(days=1)
+    today_end = today_start + timedelta(days=1)
 
     entries = TimeEntry.objects.filter(
         time_in__gte=today_start, time_in__lt=today_end
@@ -214,3 +264,38 @@ def custom_admin_page(request):
 
     # If the user is staff and not a superuser, show the custom admin page
     return render(request, "custom_admin_page.html")
+
+
+@require_POST
+def upload_image(request):
+    image_data = request.FILES.get("image")
+    employee_id = request.POST.get("employee_id")
+
+    if image_data:
+        try:
+            user = CustomUser.objects.get(employee_id=employee_id)
+        except CustomUser.DoesNotExist:
+            return JsonResponse({"success": False, "error": "User not found"})
+
+        # Get the current date
+        now = datetime.now()
+        year = now.strftime("%Y")
+        month = now.strftime("%m")
+        day = now.strftime("%d")
+        timestamp = now.strftime("%H%M%S")
+
+        # Create directories based on the current date
+        directory = os.path.join("attendance_images", year, month, day)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        # Create a unique file name
+        file_name = (
+            f"{timestamp}_{user.employee_id}_{user.surname}{user.first_name}.jpg"
+        )
+        file_path = os.path.join(directory, file_name)
+
+        # Save the file
+        file_path = default_storage.save(file_path, ContentFile(image_data.read()))
+        return JsonResponse({"success": True, "file_path": file_path})
+    return JsonResponse({"success": False, "error": "No image uploaded"})

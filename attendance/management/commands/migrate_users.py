@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.hashers import make_password  # For password hashing
-from myapp.models import CustomUser
-from myapp.users_legacy import UsersLegacy
+from attendance.models import CustomUser
+from attendance.users_legacy import UsersLegacy
 
 class Command(BaseCommand):
     help = 'Migrate users from legacy table to Django CustomUser'

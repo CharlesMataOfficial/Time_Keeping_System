@@ -11,5 +11,6 @@ urlpatterns = [
     path('clock_out/', views.clock_out_view, name='clock_out'),
     path('get_todays_entries/', views.get_todays_entries, name='get_todays_entries'),
     path('custom_admin_page/', views.custom_admin_page, name='custom_admin_page'),
+    path('upload_image/', views.upload_image, name='upload_image'),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
