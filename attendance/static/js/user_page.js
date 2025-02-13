@@ -51,6 +51,7 @@ navigator.mediaDevices
     );
   });
 
+<<<<<<< HEAD:myapp/static/js/user_page.js
   function addAttendanceItem(data) {
     const list = document.getElementById("attendance-items");
   
@@ -67,6 +68,72 @@ navigator.mediaDevices
     existingItems.forEach(item => item.remove());
   
     // Create a new list item with the updated info
+=======
+function captureImage() {
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const context = canvas.getContext("2d");
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", 0.5); // Low quality image
+}
+
+function uploadImage(imageData, employeeId) {
+  const formData = new FormData();
+  formData.append('image', dataURItoBlob(imageData), 'clock_in_image.jpg');
+  formData.append('employee_id', employeeId);
+
+  return fetch("/upload_image/", {
+    method: "POST",
+    body: formData,
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        return data.file_path;
+      } else {
+        throw new Error(data.error);
+      }
+    });
+}
+
+function dataURItoBlob(dataURI) {
+  const byteString = atob(dataURI.split(',')[1]);
+  const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+  return new Blob([ab], { type: mimeString });
+}
+
+function addAttendanceItem(data) {
+  const list = document.getElementById("attendance-items");
+
+  // Extract values safely
+  const employeeId = data.employee_id || "N/A";
+  const firstName = data.first_name || "N/A";
+  const surname = data.surname || "N/A";
+  const company = data.company || "N/A";
+  const timeIn = data.time_in || "N/A";
+  const timeOut = data.time_out ? data.time_out : "N/A"; // Handle null time_out
+
+  // Find all existing records for this employee
+  const existingItems = document.querySelectorAll(
+    `li[data-employee-id="${employeeId}"]`
+  );
+
+  if (existingItems.length > 0 && timeOut !== "N/A") {
+    // ✅ Update the most recent clock-in with time_out
+    const lastEntry = existingItems[0]; // Latest entry (since prepend() adds newest first)
+    lastEntry.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
+  } else {
+    // ✅ Add a new record for clock-in
+>>>>>>> loginpage_connected/von:attendance/static/js/user_page.js
     const listItem = document.createElement("li");
     listItem.setAttribute("data-employee-id", employeeId);
     listItem.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
@@ -134,22 +201,32 @@ clockInForm.addEventListener("submit", (e) => {
 
   const employee_id = document.getElementById("employeeIdIn").value;
   const pin = document.getElementById("pinIn").value;
+  const imageData = captureImage();
 
-  fetch("/clock_in/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRFToken": csrftoken,
-    },
-    body: JSON.stringify({ employee_id, pin }),
-  })
+  uploadImage(imageData, employee_id)
+    .then((filePath) => {
+      return fetch("/clock_in/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrftoken,
+        },
+        body: JSON.stringify({ employee_id, pin, image_path: filePath }),
+      });
+    })
     .then((response) => response.json())
     .then((data) => {
       if (data.success) {
+<<<<<<< HEAD:myapp/static/js/user_page.js
         // You can update UI elements or add attendance info here if needed
         alert("Clock In successful!");
         // Refresh the page
         window.location.reload();
+=======
+        addAttendanceItem(data);
+        alert("Clock In successful!");
+        updatePartnerLogo(data.new_logo); // Update logo on clock in
+>>>>>>> loginpage_connected/von:attendance/static/js/user_page.js
       } else {
         alert("Error: " + data.error);
       }
@@ -182,8 +259,12 @@ clockOutForm.addEventListener("submit", (e) => {
     .then((data) => {
       if (data.success) {
         alert("Clock Out successful!");
+<<<<<<< HEAD:myapp/static/js/user_page.js
         // Refresh the page
         window.location.reload();
+=======
+        updatePartnerLogo(data.new_logo); // Update logo on clock out
+>>>>>>> loginpage_connected/von:attendance/static/js/user_page.js
       } else {
         alert("Error: " + data.error);
       }
@@ -196,6 +277,12 @@ clockOutForm.addEventListener("submit", (e) => {
     });
 });
 
+// Function to update the partner logo
+function updatePartnerLogo(newLogo) {
+  const partnerLogo = document.getElementById("partnerLogo");
+  partnerLogo.src = `/static/images/${newLogo}`;
+}
+
 // Fetch today's entries when the page loads
 document.addEventListener("DOMContentLoaded", function () {
   fetch("/get_todays_entries/") // You'll need to create this endpoint
@@ -205,5 +292,3 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .catch((error) => console.error("Error loading entries:", error));
 });
-
-// 

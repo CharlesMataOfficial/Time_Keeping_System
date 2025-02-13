@@ -73,6 +73,7 @@ class TimeEntry(models.Model):
     hours_worked = models.FloatField(null=True, blank=True)
     is_late = models.BooleanField(default=False)
     last_modified = models.DateTimeField(auto_now=True)
+    image_path = models.CharField(max_length=255, null=True, blank=True)
 
     @property
     def date(self):
