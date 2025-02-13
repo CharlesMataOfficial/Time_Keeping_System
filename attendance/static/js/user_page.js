@@ -51,24 +51,6 @@ navigator.mediaDevices
     );
   });
 
-<<<<<<< HEAD:myapp/static/js/user_page.js
-  function addAttendanceItem(data) {
-    const list = document.getElementById("attendance-items");
-  
-    // Get the employee id from the response
-    const employeeId = data.employee_id || "N/A";
-    const firstName = data.first_name || "N/A";
-    const surname = data.surname || "N/A";
-    const company = data.company || "N/A";
-    const timeIn = data.time_in || "N/A";
-    const timeOut = data.time_out ? data.time_out : "N/A";
-  
-    // Remove all existing list items for this employee
-    const existingItems = list.querySelectorAll(`li[data-employee-id="${employeeId}"]`);
-    existingItems.forEach(item => item.remove());
-  
-    // Create a new list item with the updated info
-=======
 function captureImage() {
   const canvas = document.createElement("canvas");
   canvas.width = video.videoWidth;
@@ -133,15 +115,14 @@ function addAttendanceItem(data) {
     lastEntry.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
   } else {
     // ✅ Add a new record for clock-in
->>>>>>> loginpage_connected/von:attendance/static/js/user_page.js
     const listItem = document.createElement("li");
     listItem.setAttribute("data-employee-id", employeeId);
     listItem.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
   
-    // Prepend the new item so it appears at the top
+  // Prepend the new item so it appears at the top
     list.prepend(listItem);
   }
-  
+}
 
 // Helper to get CSRF token from cookies (if you need it for AJAX)
 function getCookie(name) {
@@ -217,16 +198,9 @@ clockInForm.addEventListener("submit", (e) => {
     .then((response) => response.json())
     .then((data) => {
       if (data.success) {
-<<<<<<< HEAD:myapp/static/js/user_page.js
-        // You can update UI elements or add attendance info here if needed
-        alert("Clock In successful!");
-        // Refresh the page
-        window.location.reload();
-=======
         addAttendanceItem(data);
         alert("Clock In successful!");
         updatePartnerLogo(data.new_logo); // Update logo on clock in
->>>>>>> loginpage_connected/von:attendance/static/js/user_page.js
       } else {
         alert("Error: " + data.error);
       }
@@ -259,12 +233,7 @@ clockOutForm.addEventListener("submit", (e) => {
     .then((data) => {
       if (data.success) {
         alert("Clock Out successful!");
-<<<<<<< HEAD:myapp/static/js/user_page.js
-        // Refresh the page
-        window.location.reload();
-=======
         updatePartnerLogo(data.new_logo); // Update logo on clock out
->>>>>>> loginpage_connected/von:attendance/static/js/user_page.js
       } else {
         alert("Error: " + data.error);
       }

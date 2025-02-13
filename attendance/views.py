@@ -115,25 +115,11 @@ def clock_in_view(request):
             entry.save()
         time_in_formatted = entry.time_in.strftime("%I:%M %p, %B %d, %Y")
 
-<<<<<<< HEAD:myapp/views.py
-
-        return JsonResponse(
-            {
-                "success": True,
-                "employee_id": user.employee_id,
-                "first_name": user.first_name,
-                "surname": user.surname,
-                "company": user.company,
-                "time_in": time_in_formatted,
-                "time_out": None,
-            }
-=======
         # Use the authenticated user's company instead of request.user
         user_company = user.company.strip().lower()  # Changed from request.user to user
 
         company_logo = company_logo_mapping.get(
             user_company, company_logo_mapping["default"]
->>>>>>> loginpage_connected/von:attendance/views.py
         )
 
         return JsonResponse({
