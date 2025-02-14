@@ -7,45 +7,6 @@ function toggleMenu() {
     menu.style.left = '0px';
   }
 }
-
-
-function navigateTo(screenId) {
-    document.querySelectorAll('.screen').forEach(screen => {
-        screen.style.display = 'none';
-    });
-
-    const activeScreen = document.getElementById(screenId);
-    if (activeScreen) {
-        activeScreen.style.display = 'flex';
-    }
-
-    // Update the last visited section
-    lastVisitedSection = screenId;
-
-    // Hide menu if open
-    document.getElementById('menu').style.left = '-300px';
-
-}
-
-// Show Dashboard on page load
-document.addEventListener("DOMContentLoaded", function () {
-  const dropdowns = document.querySelectorAll("select");
-
-  dropdowns.forEach(select => {
-      select.addEventListener("change", function () {
-          let options = this.options;
-          for (let i = 0; i < options.length; i++) {
-              if (options[i].selected) {
-                  options[i].style.color = "black"; // Selected option turns black
-              } else {
-                  options[i].style.color = "gray"; // Unselected options remain gray
-              }
-          }
-      });
-  });
-});
-
-
 // Define the ordered menu navigation (matches sidebar order)
 const menuOrder = [
   "dashboard",
@@ -63,53 +24,74 @@ let currentScreen = "dashboard"; // Default to dashboard
 
 // Function to navigate to a screen
 function navigateTo(screenId) {
-  // Hide all screens first
+  // Hide all screens
   document.querySelectorAll('.screen').forEach(screen => {
-      screen.style.display = 'none';
+    screen.style.display = 'none';
   });
 
   // Show the selected screen
   const activeScreen = document.getElementById(screenId);
   if (activeScreen) {
-      activeScreen.style.display = 'flex';
-      currentScreen = screenId; // Update the current screen
+    activeScreen.style.display = 'flex';
+    currentScreen = screenId; // Update the current screen
   }
 
   // Hide menu when a screen is selected
-  document.getElementById('menu').style.left = '-300px';
+  const menu = document.getElementById('menu');
+  if (menu) {
+    menu.style.left = '-300px';
+  }
 
-  // Always show the back and forward buttons
+  // Always show the dashboard shortcut (if the element exists)
   const dashboardShortcut = document.getElementById('dashboard-shortcut');
-  dashboardShortcut.style.display = 'block'; // Always show on all screens
+  if (dashboardShortcut) {
+    dashboardShortcut.style.display = 'block';
+  }
 }
 
-// Function to handle back navigation based on menu order
-document.getElementById('left-arrow').addEventListener('click', function () {
-  let currentIndex = menuOrder.indexOf(currentScreen);
-  
-  if (currentIndex > 0) {
-      let previousScreen = menuOrder[currentIndex - 1]; // Get the previous screen in the list
-      navigateTo(previousScreen);
-  }
-});
-
-// Function to handle forward navigation based on menu order
-document.getElementById('right-arrow').addEventListener('click', function () {
-  let currentIndex = menuOrder.indexOf(currentScreen);
-  
-  if (currentIndex < menuOrder.length - 1) {
-      let nextScreen = menuOrder[currentIndex + 1]; // Get the next screen in the list
-      navigateTo(nextScreen);
-  }
-});
-
-// Show Dashboard on page load
 document.addEventListener("DOMContentLoaded", function () {
+  // Show Dashboard on page load
   navigateTo("dashboard");
+
+  // Setup event listener for left arrow
+  const leftArrow = document.getElementById('left-arrow');
+  if (leftArrow) {
+    leftArrow.addEventListener('click', function () {
+      let currentIndex = menuOrder.indexOf(currentScreen);
+      if (currentIndex > 0) {
+        let previousScreen = menuOrder[currentIndex - 1]; // Get the previous screen in the list
+        navigateTo(previousScreen);
+      }
+    });
+  }
+
+  // Setup event listener for right arrow
+  const rightArrow = document.getElementById('right-arrow');
+  if (rightArrow) {
+    rightArrow.addEventListener('click', function () {
+      let currentIndex = menuOrder.indexOf(currentScreen);
+      if (currentIndex < menuOrder.length - 1) {
+        let nextScreen = menuOrder[currentIndex + 1]; // Get the next screen in the list
+        navigateTo(nextScreen);
+      }
+    });
+  }
+
+  // Dropdown color change listener
+  const dropdowns = document.querySelectorAll("select");
+  dropdowns.forEach(select => {
+    select.addEventListener("change", function () {
+      let options = this.options;
+      for (let i = 0; i < options.length; i++) {
+        if (options[i].selected) {
+          options[i].style.color = "black"; // Selected option turns black
+        } else {
+          options[i].style.color = "gray"; // Unselected options remain gray
+        }
+      }
+    });
+  });
 });
-
-
-
 // Update the attendance header when dropdown selections change
 document.getElementById("attendance-type").addEventListener("change", updateAttendanceHeader);
 document.getElementById("attendance-company").addEventListener("change", updateAttendanceHeader);
@@ -407,69 +389,3 @@ function filterAttendance() {
   // Show the filter information in a prompt
   alert(filterText);
 }
-
-// Single DOMContentLoaded listener to attach event handlers
-document.addEventListener("DOMContentLoaded", function () {
-  // --- Dropdown Styling ---
-  const dropdowns = document.querySelectorAll("select");
-  dropdowns.forEach(select => {
-    // Set initial color for all options (gray)
-    for (let i = 0; i < select.options.length; i++) {
-      select.options[i].style.color = "gray";
-    }
-    // Set the selected option to black
-    const selectedOption = select.querySelector("option:checked");
-    if (selectedOption) {
-      selectedOption.style.color = "black";
-    }
-    // Change colors on change event
-    select.addEventListener("change", function () {
-      for (let i = 0; i < this.options.length; i++) {
-        this.options[i].style.color = this.options[i].selected ? "black" : "gray";
-      }
-    });
-  });
-
-  // --- Modal Event Handlers ---
-  const addBtn = document.getElementById("addWorkHours");
-  if (addBtn) {
-    addBtn.addEventListener("click", openScheduleModal);
-  } else {
-    console.error("Add button not found");
-  }
-
-  const closeBtn = document.getElementById("closeScheduleBtn");
-  if (closeBtn) {
-    closeBtn.addEventListener("click", closeModal);
-  }
-
-  // Close modal if clicking outside of it
-  window.onclick = function (event) {
-    const modal = document.getElementById("setScheduleModal");
-    if (event.target === modal) {
-      closeModal();
-    }
-  };
-
-  // --- Back Button (Dashboard Shortcut) ---
-  const dashboardShortcut = document.getElementById('dashboard-shortcut');
-  if (dashboardShortcut) {
-    dashboardShortcut.addEventListener('click', function () {
-      if (navigationHistory.length > 0) {
-        const lastPage = navigationHistory.pop();
-        navigateTo(lastPage);
-      }
-    });
-  }
-
-  // --- Attendance Dropdowns ---
-  const attendanceType = document.getElementById("attendance-type");
-  if (attendanceType) {
-    attendanceType.addEventListener("change", updateAttendanceHeader);
-  }
-  const attendanceCompany = document.getElementById("attendance-company");
-  if (attendanceCompany) {
-    attendanceCompany.addEventListener("change", updateAttendanceHeader);
-  }
-});
-
