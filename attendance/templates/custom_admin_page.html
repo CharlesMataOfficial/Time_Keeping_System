@@ -5,94 +5,112 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard</title>
   {% load static %}
+  <!-- Use your updated CSS file -->
   <link rel="stylesheet" href="{% static 'css/custom_admin_page.css' %}">
-  <script src={% static "js/custom_admin_page.js" %}></script>
+  <!-- Original custom JS (if still needed) -->
+  <script src="{% static 'js/custom_admin_page.js' %}"></script>
 </head>
 <body>
   <!-- Menu Icon -->
   <div class="menu-icon" onclick="toggleMenu()">
-    <img src={% static "images/menu_icon.png" %} alt="Menu Icon">
+    <img src="{% static 'images/menu_icon.png' %}" alt="Menu Icon">
   </div>
 
   <!-- Menu Pop-Up -->
   <div class="menu" id="menu">
     <ul>
+      <!-- New: Manage Users (for superadmin) -->
+      <li class="menu-item superadmin" onclick="redirectToSuperAdmin()">
+        <img src="{% static 'images/superadmin_icon.png' %}" alt="Superadmin">Manage Users
+      </li>
       <li class="menu-item" onclick="navigateTo('dashboard')">
-        <img src={% static "images/dashboard_icon.png" %} alt="Menu Icon">
-        Dashboard
+        <img src="{% static 'images/dashboard_icon.png' %}" alt="Dashboard"> Dashboard
       </li>
       <li class="menu-item" onclick="navigateTo('log')">
-        <img src={% static "images/log_icon.png" %} alt="Menu Icon">
-        Log
+        <img src="{% static 'images/log_icon.png' %}" alt="Log"> Log
       </li>
       <li class="menu-item" onclick="navigateTo('attendance-list')">
-        <img src={% static "images/attendance_icon.png" %} alt="Menu Icon">
-        Attendance List
+        <img src="{% static 'images/attendance_icon.png' %}" alt="Attendance List"> Attendance List
       </li>
       <li class="menu-item" onclick="navigateTo('work-hours')">
-        <img src={% static "images/clock_icon.png" %} alt="Menu Icon">
-        Work Hours Preset
+        <img src="{% static 'images/clock_icon.png' %}" alt="Work Hours"> Work Hours Preset
       </li>
       <li class="menu-item" onclick="navigateTo('announcement')">
-        <img src={% static "images/announcement_icon.png" %} alt="Menu Icon">
-        Announcement
+        <img src="{% static 'images/announcement_icon.png' %}" alt="Announcement"> Announcement
       </li>
       <li class="menu-item" onclick="navigateTo('export-excel')">
-        <img src={% static "images/excel_icon.png" %} alt="Menu Icon">
-        Export Excel
+        <img src="{% static 'images/excel_icon.png' %}" alt="Export Excel"> Export Excel
       </li>
       <li class="menu-item" onclick="navigateTo('leave-approval')">
-        <img src={% static "images/leave_icon.png" %} alt="Menu Icon">
-        Leave Approval
+        <img src="{% static 'images/leave_icon.png' %}" alt="Leave Approval"> Leave Approval
+      </li>
+      <li class="menu-item" onclick="navigateTo('about')">
+        <img src="{% static 'images/credits_icon.png' %}" alt="About"> About
+      </li>
+      <!-- New: Sign Out (triggers hidden logout form) -->
+      <li class="menu-item sign-out" onclick="redirectToSignOut()">
+        <img src="{% static 'images/signout_icon.png' %}" alt="Sign Out Icon">Sign out
       </li>
     </ul>
   </div>
 
-<!-- Back Button (Updated Icon) -->
-<div id="dashboard-shortcut" class="dashboard-icon-top-right" style="display: none;">
-  <img src={% static "images/leftarrow_icon.png" %} alt="Menu Icon">
-</div>
-
-<!-- Screens -->
-<div id="dashboard" class="screen" style="display: flex;">
-  <h1 id="dashboard_title">Dashboard</h1>
-  <div class="dashboard-icons">
-      <div class="dashboard-icon" onclick="navigateTo('log')">
-        <img src={% static "images/log_icon.png" %} alt="Menu Icon">
-      </div>
-      <div class="dashboard-icon" onclick="navigateTo('attendance-list')">
-        <img src={% static "images/attendance_icon.png" %} alt="Menu Icon">
-      </div>
-      <div class="dashboard-icon" onclick="navigateTo('work-hours')">
-        <img src={% static "images/clock_icon.png" %} alt="Menu Icon">
-      </div>
-      <div class="dashboard-icon" onclick="navigateTo('announcement')">
-        <img src={% static "images/announcement_icon.png" %} alt="Menu Icon">
-      </div>
-      <div class="dashboard-icon" onclick="navigateTo('export-excel')">
-        <img src={% static "images/excel_icon.png" %} alt="Menu Icon">
-      </div>
-      <div class="dashboard-icon" onclick="navigateTo('leave-approval')">
-        <img src={% static "images/leave_icon.png" %} alt="Menu Icon">
-      </div>
+  <!-- Dashboard Shortcut (Back/Forward Arrows) -->
+  <div id="dashboard-shortcut" class="dashboard-icon-top-right" style="display: none;">
+    <img src="{% static 'images/leftarrow_icon.png' %}" alt="Back" id="left-arrow">
+    <img src="{% static 'images/rightarrow_icon.png' %}" alt="Forward" id="right-arrow">
   </div>
-</div>
 
-<div id="log" class="screen" style="display: none;">
-  <h1>Log</h1>
-  <div id="log_rectangle"></div>
-</div>
+  <!-- Screens -->
+  <!-- Dashboard Screen (Updated with stats) -->
+  <div id="dashboard" class="screen" style="display: flex;">
+    <h1 id="dashboard_title">Dashboard</h1>
+    <div class="dashboard-stats-container">
+      <div class="total-user-time-wrapper">
+        <div class="total-user-time-container">
+          <h2>Total User Time In:</h2>
+          <p id="total-time-in">0</p>
+        </div>
+        <div class="total-user-timeout-container">
+          <h2>Total User Time Out:</h2>
+          <p id="total-time-out">0</p>
+        </div>
+      </div>
+      <div class="top-late-employees-container">
+        <h2>Top 5 Late Employees:</h2>
+        <div class="late-employees-list">
+          <p></p>
+        </div>
+        <div class="total-late-employees">
+          <h2>Total Number of Late Employees:</h2>
+          <p id="total-late-count">0</p>
+        </div>
+        <button class="view-late-button" onclick="viewLateEmployees()">View Late Employees</button>
+      </div>
+      <div class="top-early-birds-container">
+        <h2>Top 5 Early Birds:</h2>
+        <div class="early-birds-list">
+          <p></p>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<div id="attendance-list" class="screen" style="display: none;">
-  <h1>Attendance List</h1>
-  <div class="attendance-dropdown-wrapper">
+  <!-- Log Screen -->
+  <div id="log" class="screen" style="display: none;">
+    <h1>Log</h1>
+    <div id="log_rectangle"></div>
+  </div>
+
+  <!-- Attendance List Screen -->
+  <div id="attendance-list" class="screen" style="display: none;">
+    <h1>Attendance List</h1>
+    <div class="attendance-dropdown-wrapper">
       <div class="attendance-dropdown-container">
         <select id="attendance-type" onchange="updateAttendanceHeader()">
           <option value="time-log">Time Log</option>
           <option value="users-active">Users Active</option>
           <option value="users-inactive">Users Inactive</option>
         </select>
-
         <select id="attendance-company" onchange="updateAttendanceHeader()">
           <option value="" disabled selected class="default-option">By Company:</option>
           <option value="all">All companies</option>
@@ -103,7 +121,6 @@
           <option value="agri-online">AGRI Online</option>
           <option value="sunfood">Sunfood Marketing Inc.</option>
         </select>
-
         <select id="attendance-department" onchange="updateAttendanceHeader()">
           <option value="" disabled selected class="default-option">By Department:</option>
           <option value="all">All departments</option>
@@ -111,145 +128,165 @@
           <option value="it">IT Department</option>
           <option value="finance">Finance</option>
         </select>
-
         <button class="go-button" onclick="filterAttendance()">Go</button>
-
       </div>
+    </div>
+    <div id="attendance_rectangle"></div>
   </div>
-  <div id="attendance_rectangle"></div>
-</div>
 
-<div id="export-excel" class="screen" style="display: none;">
-  <h1>Export to Excel</h1>
-  <div class="export-container">
+  <!-- Export Excel Screen -->
+  <div id="export-excel" class="screen" style="display: none;">
+    <h1>Export to Excel</h1>
+    <div class="export-container">
       <button class="export-button">Date</button>
       <button class="export-button">Employee ID</button>
+    </div>
   </div>
-</div>
 
-<div id="announcement" class="screen" style="display: none;">
-  <h1>Announcement</h1>
-  <div class="announcement-content">
+  <!-- Announcement Screen -->
+  <div id="announcement" class="screen" style="display: none;">
+    <h1>Announcement</h1>
+    <div class="announcement-content">
       <div class="announcement-container">
-          <h2>Create Announcement</h2>
-          <textarea id="announcement-text" placeholder="Write announcement here..."></textarea>
-          <button class="save-button" onclick="saveAnnouncement()">Save</button>
+        <h2>Create Announcement</h2>
+        <textarea id="announcement-text" placeholder="Write announcement here..."></textarea>
+        <button class="save-button" onclick="saveAnnouncement()">Save</button>
       </div>
       <div class="announcement-container">
-          <h2>Saved Announcement Files</h2>
-          <textarea id="saved-announcements" readonly></textarea>
-          <div class="announcement-actions">
-              <select id="post-options">
-                  <option value="recent">Post Recent</option>
-                  <option value="selected">Post Selected</option>
-                  <option value="all">Post All</option>
-              </select>
-              <button class="post-button" onclick="postAnnouncement()">Post</button>
-              <button class="delete-button" onclick="deleteAnnouncement()">Delete</button>
-              <button class="view-button" onclick="viewAnnouncements()">View</button>
-          </div>
+        <h2>Saved Announcement Files</h2>
+        <textarea id="saved-announcements" readonly></textarea>
+        <div class="announcement-actions">
+          <select id="post-options">
+            <option value="recent">Post Recent</option>
+            <option value="selected">Post Selected</option>
+            <option value="all">Post All</option>
+          </select>
+          <button class="post-button" onclick="postAnnouncement()">Post</button>
+          <button class="delete-button" onclick="deleteAnnouncement()">Delete</button>
+          <button class="view-button" onclick="viewAnnouncements()">View</button>
+        </div>
       </div>
+    </div>
   </div>
-</div>
 
-<div id="work-hours" class="screen" style="display: none;">
-  <h1>Work Hours Preset</h1>
-  <div class="separator"></div>
-  <div class="work-hours-content">
+  <!-- Work Hours Preset Screen -->
+  <div id="work-hours" class="screen" style="display: none;">
+    <h1>Work Hours Preset</h1>
+    <div class="separator"></div>
+    <div class="work-hours-content">
       <p>Additional work hours information can go here.</p>
-  </div>
-  <div class="work-hours-container">
+    </div>
+    <div class="work-hours-container">
       <div class="work-hours-actions">
-          <button id="addWorkHours">Add</button>
-          <button id="editWorkHours">Edit</button>
-          <button id="deleteWorkHours">Delete</button>
+        <button onclick="addWorkHours()">Add</button>
+        <button onclick="editWorkHours()">Edit</button>
+        <button onclick="deleteWorkHours()">Delete</button>
       </div>
       <div class="separator"></div>
       <div class="grace-period">
-          <label for="grace-period">Grace Period (minutes):</label>
-          <div class="grace-period-input-container">
-              <select id="grace-period" name="grace-period">
-                  <option value="5">5 minutes</option>
-                  <option value="10">10 minutes</option>
-                  <option value="15">15 minutes</option>
-              </select>
-              <button class="save-button" onclick="saveWorkHours()">Save</button>
-          </div>
+        <label for="grace-period">Grace Period (minutes):</label>
+        <div class="grace-period-input-container">
+          <select id="grace-period" name="grace-period">
+            <option value="5">5 minutes</option>
+            <option value="10">10 minutes</option>
+            <option value="15">15 minutes</option>
+          </select>
+          <button class="save-button" onclick="saveWorkHours()">Save</button>
+        </div>
       </div>
+    </div>
   </div>
-</div>
 
-<div id="setScheduleModal" class="modal" style="display: none;">
-  <div class="modal-content">
+  <!-- Leave Approval Screen (new) -->
+  <div id="leave-approval" class="screen" style="display: none;">
+    <h1>Leave Approval</h1>
+    <div id="leave-approval_rectangle"></div>
+  </div>
+
+  <!-- About Screen (new) -->
+  <div id="about" class="screen" style="display: none;">
+    <h1>About</h1>
+    <div class="about-container">
+      <!-- Logos -->
+      <div class="about-logo-container">
+        <img src="{% static 'images/mapualogo.png' %}" alt="Mapúa Logo" class="about-logo mapua-logo">
+        <img src="{% static 'images/ccis.png' %}" alt="CCIS Logo" class="about-logo ccis-logo">
+      </div>
+      <p>
+        This system was developed for SFGC's timekeeping and attendance tracking. It is designed to streamline employee check-ins, monitor work hours, 
+        and generate attendance reports efficiently. This project was designed and implemented by CCIS intern students from Mapúa Malayan Colleges Mindanao 
+        during their internship at Agridom Solutions Corp.
+      </p>
+    </div>
+  </div>
+
+  <!-- Schedule Modal (from original design) -->
+  <div id="setScheduleModal" class="modal" style="display: none;">
+    <div class="modal-content">
       <span class="close" onclick="closeModal()">&times;</span>
       <h2>Set Schedule</h2>
-
-      <!-- Preset Selection -->
+      <!-- Preset Options -->
       <div class="preset-options">
-          <button id="regularPresetBtn">Regular Preset</button>
-          <button id="customPresetBtn">Custom Preset</button>
+        <button id="regularPresetBtn">Regular Preset</button>
+        <button id="customPresetBtn">Custom Preset</button>
       </div>
-
       <!-- Preset Name -->
       <input type="text" id="presetName" placeholder="Preset Name">
-
       <!-- Schedule Table -->
       <table>
-          <tr>
-              <th>Day</th>
-              <th>Start Time</th>
-              <th>End Time</th>
-          </tr>
-          <tr>
-              <td><input type="checkbox" id="mondayCheck"> Monday</td>
-              <td><input type="time" id="mondayStart"></td>
-              <td><input type="time" id="mondayEnd"></td>
-          </tr>
-          <tr>
-              <td><input type="checkbox" id="tuesdayCheck"> Tuesday</td>
-              <td><input type="time" id="tuesdayStart"></td>
-              <td><input type="time" id="tuesdayEnd"></td>
-          </tr>
-          <tr>
-              <td><input type="checkbox" id="wednesdayCheck"> Wednesday</td>
-              <td><input type="time" id="wednesdayStart"></td>
-              <td><input type="time" id="wednesdayEnd"></td>
-          </tr>
-          <tr>
-              <td><input type="checkbox" id="thursdayCheck"> Thursday</td>
-              <td><input type="time" id="thursdayStart"></td>
-              <td><input type="time" id="thursdayEnd"></td>
-          </tr>
-          <tr>
-              <td><input type="checkbox" id="fridayCheck"> Friday</td>
-              <td><input type="time" id="fridayStart"></td>
-              <td><input type="time" id="fridayEnd"></td>
-          </tr>
-          <tr>
-              <td><input type="checkbox" id="saturdayCheck"> Saturday</td>
-              <td><input type="time" id="saturdayStart"></td>
-              <td><input type="time" id="saturdayEnd"></td>
-          </tr>
-          <tr>
-              <td><input type="checkbox" id="sundayCheck"> Sunday</td>
-              <td><input type="time" id="sundayStart"></td>
-              <td><input type="time" id="sundayEnd"></td>
-          </tr>
+        <tr>
+          <th>Day</th>
+          <th>Start Time</th>
+          <th>End Time</th>
+        </tr>
+        <tr>
+          <td><input type="checkbox" id="mondayCheck"> Monday</td>
+          <td><input type="time" id="mondayStart"></td>
+          <td><input type="time" id="mondayEnd"></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" id="tuesdayCheck"> Tuesday</td>
+          <td><input type="time" id="tuesdayStart"></td>
+          <td><input type="time" id="tuesdayEnd"></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" id="wednesdayCheck"> Wednesday</td>
+          <td><input type="time" id="wednesdayStart"></td>
+          <td><input type="time" id="wednesdayEnd"></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" id="thursdayCheck"> Thursday</td>
+          <td><input type="time" id="thursdayStart"></td>
+          <td><input type="time" id="thursdayEnd"></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" id="fridayCheck"> Friday</td>
+          <td><input type="time" id="fridayStart"></td>
+          <td><input type="time" id="fridayEnd"></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" id="saturdayCheck"> Saturday</td>
+          <td><input type="time" id="saturdayStart"></td>
+          <td><input type="time" id="saturdayEnd"></td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" id="sundayCheck"> Sunday</td>
+          <td><input type="time" id="sundayStart"></td>
+          <td><input type="time" id="sundayEnd"></td>
+        </tr>
       </table>
-
-      <!-- Buttons -->
+      <!-- Modal Buttons -->
       <button id="saveScheduleBtn">Save</button>
       <button id="closeScheduleBtn" onclick="closeModal()">Close</button>
+    </div>
   </div>
-</div>
 
+  <!-- Hidden Logout Form (used by redirectToSignOut()) -->
+  <form id="logoutForm" action="{% url 'logout' %}" method="POST" style="display: none;">
+    {% csrf_token %}
+  </form>
 
-<!-- Sign Out Button -->
-<form action="{% url 'logout' %}" method="POST">
-  {% csrf_token %}
-  <button type="submit" class="sign-out-btn">
-  <i class="fas fa-sign-out-alt"></i> Sign Out
-  </button>
-</form>
+  <!-- Updated Functions JS -->
+  <script src="{% static 'js/custom_admin_page.js' %}"></script>
 </body>
 </html>
