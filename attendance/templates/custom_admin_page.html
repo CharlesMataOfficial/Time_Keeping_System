@@ -48,9 +48,12 @@
         <img src="{% static 'images/credits_icon.png' %}" alt="About"> About
       </li>
       <!-- New: Sign Out (triggers hidden logout form) -->
-      <li class="menu-item sign-out" onclick="redirectToSignOut()">
-        <img src="{% static 'images/signout_icon.png' %}" alt="Sign Out Icon">Sign out
+      <li class="menu-item sign-out" onclick="document.getElementById('logout-form').submit();">
+        <img src="{% static 'images/signout_icon.png' %}" alt="Sign Out Icon"> Sign out
       </li>
+      <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display: none;">
+        {% csrf_token %}
+      </form>
     </ul>
   </div>
 
