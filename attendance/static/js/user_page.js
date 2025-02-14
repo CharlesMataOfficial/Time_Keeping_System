@@ -98,30 +98,23 @@ function addAttendanceItem(data) {
 
   // Extract values safely
   const employeeId = data.employee_id || "N/A";
-  const firstName = data.first_name || "N/A";
-  const surname = data.surname || "N/A";
-  const company = data.company || "N/A";
-  const timeIn = data.time_in || "N/A";
-  const timeOut = data.time_out ? data.time_out : "N/A"; // Handle null time_out
+  const firstName  = data.first_name || "N/A";
+  const surname    = data.surname || "N/A";
+  const company    = data.company || "N/A";
+  const timeIn     = data.time_in || "N/A";
+  const timeOut    = data.time_out ? data.time_out : "N/A"; // If no clock-out, "N/A"
 
-  // Find all existing records for this employee
-  const existingItems = document.querySelectorAll(
-    `li[data-employee-id="${employeeId}"]`
-  );
+  // Remove any existing entries for this employee
+  const existingItems = list.querySelectorAll(`li[data-employee-id="${employeeId}"]`);
+  existingItems.forEach(item => item.remove());
 
-  if (existingItems.length > 0 && timeOut !== "N/A") {
-    // ✅ Update the most recent clock-in with time_out
-    const lastEntry = existingItems[0]; // Latest entry (since prepend() adds newest first)
-    lastEntry.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
-  } else {
-    // ✅ Add a new record for clock-in
-    const listItem = document.createElement("li");
-    listItem.setAttribute("data-employee-id", employeeId);
-    listItem.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
-  
+  // Create a new list item with updated info
+  const listItem = document.createElement("li");
+  listItem.setAttribute("data-employee-id", employeeId);
+  listItem.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
+
   // Prepend the new item so it appears at the top
-    list.prepend(listItem);
-  }
+  list.prepend(listItem);
 }
 
 // Helper to get CSRF token from cookies (if you need it for AJAX)
@@ -201,6 +194,7 @@ clockInForm.addEventListener("submit", (e) => {
         addAttendanceItem(data);
         alert("Clock In successful!");
         updatePartnerLogo(data.new_logo); // Update logo on clock in
+        window.location.reload();
       } else {
         alert("Error: " + data.error);
       }
@@ -234,6 +228,8 @@ clockOutForm.addEventListener("submit", (e) => {
       if (data.success) {
         alert("Clock Out successful!");
         updatePartnerLogo(data.new_logo); // Update logo on clock out
+        addAttendanceItem(data);
+        window.location.reload();
       } else {
         alert("Error: " + data.error);
       }

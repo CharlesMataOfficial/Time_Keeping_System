@@ -75,7 +75,7 @@ def user_page(request):
     # Filter entries for today based on the naive datetimes
     todays_entries = TimeEntry.objects.filter(
         time_in__gte=today_start, time_in__lt=today_end
-    ).order_by("-time_in")
+    ).order_by("-last_modified")
 
     return render(
         request,
@@ -97,8 +97,12 @@ def logout_view(request):
 def clock_in_view(request):
     company_logo_mapping = {
         "sfgc": "SFgroup.png",
-        "asc": "DJas.png",
-        "djas": "agrilogo2.png",
+        "asc": "agrilogo2.png",
+        "sfgci": "SFgroup.png",
+        "smi": "sunfood.png",
+        "gti": "Geniustech.png",
+        "fac": "farmtech.png",
+        "djas": "DJas.png",
         "default": "default_logo.png",
     }
     data = json.loads(request.body)
@@ -145,10 +149,14 @@ def clock_in_view(request):
 @require_POST
 def clock_out_view(request):
     company_logo_mapping = {
-        "sfgc": "SFgroup.png",  # Example of mapping
-        "asc": "DJas.png",  # Your custom mapping (you can use partial matching if needed)
-        "djas": "agrilogo2.png",  # Your custom mapping (you can use partial matching if needed)
-        "default": "default_logo.png",  # Fallback logo for unspecified companies
+        "sfgc": "SFgroup.png",
+        "asc": "agrilogo2.png",
+        "sfgci": "SFgroup.png",
+        "smi": "sunfood.png",
+        "gti": "Geniustech.png",
+        "fac": "farmtech.png",
+        "djas": "DJas.png",
+        "default": "default_logo.png",
     }
 
     data = json.loads(request.body)
