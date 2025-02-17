@@ -167,6 +167,17 @@ window.addEventListener("click", (e) => {
   if (e.target === clockOutModal) {
     clockOutModal.style.display = "none";
   }
+  if (e.target === newPinModal) {
+    newPinModal.style.display = "none";
+  }
+});
+
+// Add new modal reference
+const newPinModal = document.getElementById("newPinModal");
+const closeNewPin = document.getElementById("closeNewPin");
+
+closeNewPin.addEventListener("click", () => {
+  newPinModal.style.display = "none";
 });
 
 // --- Handling Clock In form submission ---
@@ -175,38 +186,90 @@ clockInForm.addEventListener("submit", (e) => {
 
   const employee_id = document.getElementById("employeeIdIn").value;
   const pin = document.getElementById("pinIn").value;
-  const imageData = captureImage();
 
-  uploadImage(imageData, employee_id)
-    .then((filePath) => {
-      return fetch("/clock_in/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": csrftoken,
-        },
-        body: JSON.stringify({ employee_id, pin, image_path: filePath }),
-      });
-    })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.success) {
-        addAttendanceItem(data);
-        alert("Clock In successful!");
-        updatePartnerLogo(data.new_logo); // Update logo on clock in
-        window.location.reload();
-      } else {
-        alert("Error: " + data.error);
-      }
+  // First check for first login without capturing image
+  fetch("/clock_in/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": csrftoken,
+    },
+    body: JSON.stringify({
+      employee_id,
+      pin,
+      first_login_check: true
+    }),
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.error === "first_login") {
       clockInModal.style.display = "none";
-      clockInForm.reset();
-    })
-    .catch((error) => {
-      console.error("Error during Clock In:", error);
-      alert("There was an error. Please try again.");
-    });
-});
+      newPinModal.style.display = "block";
 
+      const newPinForm = document.getElementById("newPinForm");
+      newPinForm.onsubmit = (e) => {
+        e.preventDefault();
+        const newPin = document.getElementById("newPin").value;
+
+        if (newPin && newPin.length === 4 && !isNaN(newPin)) {
+          fetch("/clock_in/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrftoken,
+            },
+            body: JSON.stringify({
+              employee_id,
+              pin,
+              new_pin: newPin
+            }),
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert("PIN successfully changed! Please proceed with clock in using your new PIN.");
+              newPinModal.style.display = "none";
+              newPinForm.reset();
+              clockInForm.reset();
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert("Error: " + error.message);
+          });
+        }
+      };
+    } else {
+      // Regular clock in with image
+      const imageData = captureImage();
+      uploadImage(imageData, employee_id)
+        .then((filePath) => {
+          return fetch("/clock_in/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrftoken,
+            },
+            body: JSON.stringify({
+              employee_id,
+              pin,
+              image_path: filePath
+            }),
+          });
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            addAttendanceItem(data);
+            alert("Clock In successful!");
+            updatePartnerLogo(data.new_logo);
+            clockInModal.style.display = "none";
+            clockInForm.reset();
+          }
+        });
+    }
+  });
+});
 
 // --- Handling Clock Out form submission ---
 clockOutForm.addEventListener("submit", (e) => {
@@ -239,6 +302,8 @@ clockOutForm.addEventListener("submit", (e) => {
     .catch((error) => {
       console.error("Error during Clock Out:", error);
       alert("There was an error. Please try again.");
+      clockOutModal.style.display = "none";
+      clockOutForm.reset();
     });
 });
 

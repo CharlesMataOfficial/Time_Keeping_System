@@ -354,3 +354,27 @@ header {
   font-weight: bold;
   cursor: pointer;
 }
+
+#newPinForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#newPinForm input {
+  padding: 8px;
+  font-size: 16px;
+}
+
+#newPinForm button {
+  padding: 8px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#newPinForm button:hover {
+  background-color: #45a049;
+}

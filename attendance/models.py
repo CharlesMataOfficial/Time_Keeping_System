@@ -5,6 +5,11 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import MinLengthValidator
 from django.utils import timezone  # timezone.now() will now return a naive datetime
+from django.views.decorators.cache import never_cache
+from django.contrib.auth import login
+from django.shortcuts import render, redirect
+from django.urls import reverse
+
 
 class CustomUserManager(BaseUserManager):
     # (Keep your manager methods unchanged)
@@ -26,6 +31,7 @@ class CustomUserManager(BaseUserManager):
             raise ValueError("Superuser must have is_superuser=True.")
         return self.create_user(employee_id, password, **extra_fields)
 
+
 class CustomUser(AbstractUser):
     # Remove the username field
     username = None
@@ -36,11 +42,14 @@ class CustomUser(AbstractUser):
     position = models.CharField(max_length=100, null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     date_hired = models.DateField(null=True, blank=True)
-    pin = models.CharField(max_length=4, validators=[MinLengthValidator(4)], null=True, blank=True)
+    pin = models.CharField(
+        max_length=4, validators=[MinLengthValidator(4)], null=True, blank=True
+    )
     status = models.BooleanField(default=True)
     preset_name = models.CharField(max_length=100, null=True, blank=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
+    if_first_login = models.BooleanField(default=True)
 
     # Remove other redundant fields
     email = None
@@ -58,17 +67,21 @@ class CustomUser(AbstractUser):
             if user.is_staff or user.is_superuser:
                 if user.check_password(pin):
                     return user
+            elif user.if_first_login and pin == "0000":
+                return {"status": "first_login", "user": user}
             elif user.pin == pin:
                 return user
-            else:
-                return None
+            return None
         except cls.DoesNotExist:
             return None
+
 
 class TimeEntry(models.Model):
     ordering = ["-time_in"]
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    time_in = models.DateTimeField(auto_now_add=True)  # Will be naive and in local time now
+    time_in = models.DateTimeField(
+        auto_now_add=True
+    )  # Will be naive and in local time now
     time_out = models.DateTimeField(null=True, blank=True)
     hours_worked = models.FloatField(null=True, blank=True)
     is_late = models.BooleanField(default=False)
@@ -104,7 +117,9 @@ class TimeEntry(models.Model):
         if not cls.objects.filter(user=user, time_in__date=today).exists():
             time_in_local = new_entry.time_in
             expected_start = datetime.time(8, 0)  # Adjust as needed
-            expected_start_dt = datetime.datetime.combine(time_in_local.date(), expected_start)
+            expected_start_dt = datetime.datetime.combine(
+                time_in_local.date(), expected_start
+            )
             grace_period = datetime.timedelta(minutes=5)
             expected_start_with_grace = expected_start_dt + grace_period
 
@@ -116,3 +131,35 @@ class TimeEntry(models.Model):
             new_entry.save()
         return new_entry
 
+
+@never_cache
+def login_view(request):
+    if request.method == "POST":
+        employee_id = request.POST.get("employee_id")
+        pin = request.POST.get("pin")
+
+        auth_result = CustomUser.authenticate_by_pin(employee_id, pin)
+
+        if isinstance(auth_result, dict) and auth_result["status"] == "first_login":
+            # Handle first time login - extract user from dict
+            user = auth_result["user"]
+            login(request, user)
+            return redirect("user_page")
+        elif auth_result:  # Regular successful login
+            user = auth_result
+            login(request, user)
+            if user.is_staff and user.is_superuser:
+                return redirect(reverse("admin:index"))
+            elif user.is_staff and not user.is_superuser:
+                return redirect("custom_admin_page")
+            else:
+                return redirect("user_page")
+        else:  # Authentication failed
+            try:
+                CustomUser.objects.get(employee_id=employee_id)
+                error_message = "Incorrect PIN"
+            except CustomUser.DoesNotExist:
+                error_message = "Employee ID not found"
+
+            return render(request, "index.html", {"error": error_message})
+    return render(request, "index.html")

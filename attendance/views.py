@@ -95,55 +95,94 @@ def logout_view(request):
 
 @require_POST
 def clock_in_view(request):
-    company_logo_mapping = {
-        "sfgc": "SFgroup.png",
-        "asc": "agrilogo2.png",
-        "sfgci": "SFgroup.png",
-        "smi": "sunfood.png",
-        "gti": "Geniustech.png",
-        "fac": "farmtech.png",
-        "djas": "DJas.png",
-        "default": "default_logo.png",
-    }
     data = json.loads(request.body)
     employee_id = data.get("employee_id")
     pin = data.get("pin")
+    new_pin = data.get("new_pin")
     image_path = data.get("image_path")
+    first_login_check = data.get("first_login_check", False)
 
-    user = CustomUser.authenticate_by_pin(employee_id, pin)
+    auth_result = CustomUser.authenticate_by_pin(employee_id, pin)
 
-    if user:
-        entry = TimeEntry.clock_in(user)
-        if image_path:
-            entry.image_path = image_path
-            entry.save()
-        time_in_formatted = entry.time_in.strftime("%I:%M %p, %B %d, %Y")
+    # Handle first login cases
+    if isinstance(auth_result, dict) and auth_result["status"] == "first_login":
+        if new_pin:
+            # Update PIN for first time login
+            user = auth_result["user"]
+            user.pin = new_pin
+            user.if_first_login = False
+            user.save()
+            return JsonResponse({
+                "success": True,
+                "message": "PIN updated successfully"
+            })
+        else:
+            # Prompt for new PIN
+            return JsonResponse({
+                "success": False,
+                "error": "first_login",
+                "message": "Please set your new PIN"
+            })
 
-        # Use the authenticated user's company instead of request.user
-        user_company = user.company.strip().lower()  # Changed from request.user to user
+    # For first login check only
+    if first_login_check:
+        if isinstance(auth_result, dict) and auth_result["status"] == "first_login":
+            return JsonResponse({
+                "success": False,
+                "error": "first_login",
+                "message": "Please set your new PIN"
+            })
+        return JsonResponse({"success": True})
+
+    # Regular clock in
+    if not isinstance(auth_result, dict) and auth_result:
+        user = auth_result
+        # Rest of your clock in logic...
+
+        if not user:
+            try:
+                CustomUser.objects.get(employee_id=employee_id)
+                error_message = "Incorrect PIN"
+            except CustomUser.DoesNotExist:
+                error_message = "Employee ID not found"
+            return JsonResponse({"success": False, "error": error_message})
+
+        # Handle company logo
+        user_company = user.company or ""  # Handle None case
+        user_company = user_company.strip().lower()
+
+        company_logo_mapping = {
+            "sfgc": "SFgroup.png",
+            "asc": "agrilogo2.png",
+            "sfgci": "SFgroup.png",
+            "smi": "sunfood.png",
+            "gti": "Geniustech.png",
+            "fac": "farmtech.png",
+            "djas": "DJas.png",
+            "default": "default_logo.png",
+        }
 
         company_logo = company_logo_mapping.get(
             user_company, company_logo_mapping["default"]
         )
+
+        # Create time entry
+        entry = TimeEntry.clock_in(user)
+        if image_path:
+            entry.image_path = image_path
+            entry.save()
 
         return JsonResponse({
             "success": True,
             "employee_id": user.employee_id,
             "first_name": user.first_name,
             "surname": user.surname,
-            "company": user.company,
-            "time_in": time_in_formatted,
+            "company": user.company or "",  # Handle None case
+            "time_in": entry.time_in.strftime("%I:%M %p, %B %d, %Y"),
             "time_out": None,
             "image_path": entry.image_path,
-            "new_logo": company_logo,  # This will now correctly reflect the clocked-in user's company logo
+            "new_logo": company_logo,
         })
-    else:
-        try:
-            CustomUser.objects.get(employee_id=employee_id)
-            error_message = "Incorrect PIN"
-        except CustomUser.DoesNotExist:
-            error_message = "Employee ID not found"
-        return JsonResponse({"success": False, "error": error_message})
 
 
 @require_POST
@@ -167,7 +206,7 @@ def clock_out_view(request):
 
     if user:
         try:
-            now = timezone.now()  # Naive datetime in local time
+            now = timezone.now()
             today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
             today_end = today_start + timedelta(days=1)
 
@@ -183,41 +222,45 @@ def clock_out_view(request):
             time_in_formatted = open_entry.time_in.strftime("%I:%M %p, %B %d, %Y")
             time_out_formatted = open_entry.time_out.strftime("%I:%M %p, %B %d, %Y")
 
-            user_company = user.company.strip().lower()
+            # Handle None company value
+            user_company = user.company or ""
+            user_company = user_company.strip().lower()
 
             # Get the company logo based on the user's company
             company_logo = company_logo_mapping.get(
                 user_company, company_logo_mapping["default"]
             )
 
-            new_logo_path = (
-                company_logo  # Replace with your logic to get the new logo path
-            )
-
-            return JsonResponse(
-                {
-                    "success": True,
-                    "employee_id": user.employee_id,
-                    "first_name": user.first_name,
-                    "surname": user.surname,
-                    "company": user.company,
-                    "time_in": time_in_formatted,
-                    "time_out": time_out_formatted,
-                    "new_logo": new_logo_path,
-                }
-            )
+            return JsonResponse({
+                "success": True,
+                "employee_id": user.employee_id,
+                "first_name": user.first_name or "",
+                "surname": user.surname or "",
+                "company": user.company or "",
+                "time_in": time_in_formatted,
+                "time_out": time_out_formatted,
+                "new_logo": company_logo,
+            })
         except TimeEntry.DoesNotExist:
-            error_message = "No active clock in found."
+            return JsonResponse({
+                "success": False,
+                "error": "No active clock in found."
+            })
         except Exception as e:
-            error_message = f"An error occurred: {str(e)}"
-        return JsonResponse({"success": False, "error": error_message})
+            return JsonResponse({
+                "success": False,
+                "error": f"An error occurred: {str(e)}"
+            })
     else:
         try:
             CustomUser.objects.get(employee_id=employee_id)
             error_message = "Incorrect PIN"
         except CustomUser.DoesNotExist:
             error_message = "Employee ID not found"
-        return JsonResponse({"success": False, "error": error_message})
+        return JsonResponse({
+            "success": False,
+            "error": error_message
+        })
 
 
 @require_GET
