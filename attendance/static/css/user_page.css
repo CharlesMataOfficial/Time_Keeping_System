@@ -6,24 +6,33 @@
 }
 
 body {
-  background: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), url("/static/images/white1 bg.jpg");
+  background: linear-gradient(
+      rgba(255, 255, 255, 0.6),
+      rgba(255, 255, 255, 0.6)
+    ),
+    url("/static/images/logos/grass_bg.jpg");
   background-size: cover; /* Ensures the image fully covers the container */
   background-position: center;
   background-repeat: no-repeat;
 }
 
-html, body {
+html,
+body {
   width: 100%;
-  height: 100%;
+  height: 100vh;
   overflow: hidden; /* Prevent any scrolling on the body */
 }
 
-h1, h2, h3, .clock p {
+h1,
+h2,
+h3,
+.clock p {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .container {
-  width: 100%;
+  margin-right: 15%;
+  width: 86%;
   height: 100vh; /* Make the container fit the screen height */
   display: flex;
   flex-direction: column;
@@ -48,7 +57,8 @@ header {
   align-items: center;
 }
 
-.logo img { /* SF GROUP LOGO */
+.logo img {
+  /* SF GROUP LOGO */
   width: 475px; /* Change this to your desired size */
   height: auto; /* Maintains aspect ratio */
   margin-top: 125px;
@@ -60,7 +70,8 @@ header {
   align-items: center;
 }
 
-.partner-logo img { /* Company Logos */
+.partner-logo img {
+  /* Company Logos */
   background-color: white;
   padding: 10px; /* Adds space around the logo */
   border-radius: 10px; /* Optional rounded corners */
@@ -83,14 +94,15 @@ header {
   margin-top: 20px;
   margin-left: 40px;
   flex-grow: 1;
-  justify-content: flex-start;  /* Aligns items (including the camera) to the left */
+  justify-content: flex-start; /* Aligns items (including the camera) to the left */
 }
 
 .clock-content {
   flex: 1; /* Allow clock-content to take available space */
 }
 
-.clock h1 { /* Real clock time styling */
+.clock h1 {
+  /* Real clock time styling */
   font-size: 130px;
   color: #621c1c;
   margin-top: 80px;
@@ -108,9 +120,16 @@ header {
   margin-right: 185px; /* Adjust spacing between date and day */
 }
 
+.clock,
+.attendance-list,
+.camera {
+  transition: transform 0.2s ease-in-out;
+}
+
 .camera {
   position: absolute; /* Absolute positioning */
-  width: 420px;
+  width: 20%; /* Adjust width for smaller screens */
+  flex: 0 0 auto;
   height: 350px;
   border: 2px solid #621c1c;
   border-radius: 12px;
@@ -126,7 +145,8 @@ header {
   object-fit: cover;
 }
 
-.btn { /* TIME IN TIME OUT BUTTON */
+.btn {
+  /* TIME IN TIME OUT BUTTON */
   padding: 10px 32px;
   font-size: 25px;
   background: #621c1c;
@@ -152,15 +172,17 @@ header {
 }
 
 .attendance-list {
-  width: 1220px;
-  margin: 20px 40px;
+  width: 90%; /* Adjust width for smaller screens */
+  flex: 0 0 auto;
+  margin: 20px auto;
   background: #621c1c;
   border-radius: 10px;
-  padding: 5px;
-  position: relative;
+  padding: 30px;
   top: -30px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+  position: relative;
+  height: calc(93vh - 450px); /* Adjust dynamically based on viewport height */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  max-height: calc(100vh - 400px); /* Adjust this value to fit your layout */
 }
 
 .attendance-list h2 {
@@ -233,7 +255,12 @@ header {
   margin-top: 20px;
 }
 
-.panel { /*CONTENTS INSIDE THE SIDE PANEL*/
+.panel {
+  /*CONTENTS INSIDE THE SIDE PANEL*/
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
   font-size: 12px; /* Adjust font-size as needed */
   background: #621c1c;
@@ -242,10 +269,10 @@ header {
   margin-bottom: 15px; /* Adjust space between panels */
   border-radius: 10px;
   width: 100%;
-  height: 292px;
+  height: auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
   background-color: #621c1c; /* Fallback for older browsers */
-  padding: 25px;
+  padding: 15px;
 }
 
 .panel:hover {
@@ -261,34 +288,43 @@ header {
   margin-top: -10px; /* Move Birthdays and Milestones header slightly up */
 }
 
-
 /* Note styles for Birthdays and Milestones */
 .birthdays .note,
 .milestones .note {
+  flex: auto;
   background: #e2e2e2;
-  width: 180px; /* Set a fixed width */
-  height: 131px; /* Set height for individual notes */
-  margin-top: 15px;
-  border-radius: 5px;
+  width: 110%;
+  height: 20vh;
+  max-width: 500px;
+  bottom: -13px;
+  max-height: 500px;
+  margin: 5px;
   position: relative;
-  top: -9px;
-  left: -20px;
+  border-radius: 5px;
+}
+
+.announcements {
+  flex-grow: 1; /* Allows it to expand and fill remaining space */
+  display: flex;
+  flex-direction: column;
 }
 
 /* Note styles for Announcements (Longer Note) */
 .announcements .note {
   background: #e2e2e2;
-  width: 180px; /* Increase width for Announcement */
-  height: 248px; /* Increase height for Announcement */
-  margin-top: 15px;
-  border-radius: 5px;
+  width: 110%;
+  height: 30vh;
+  max-width: 500px;
+  bottom: -13px;
+  max-height: 500px;
+  margin: 5px;
+  justify-content: center;
   position: relative;
-  top: -9px;
-  left: -20px;
+  border-radius: 5px;
 }
 
 .sidebar {
-  position: absolute;
+  position: fixed;
   right: 0;
   top: 0;
   width: 15%;
@@ -298,13 +334,19 @@ header {
   background-repeat: no-repeat;
   height: 100%;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
 }
 
 /* Birthdays container */
 .birthdays,
-.milestones {
-  margin-bottom: 10px; /* Space between Birthdays and Milestones */
-
+.milestones,
+.announcements {
+  flex: 1; /* Makes them shrink evenly */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .birthdays .panel,
@@ -323,7 +365,6 @@ header {
   margin-top: auto; /* Push button to the bottom */
   margin-left: 60px;
 }
-
 
 .sign-out-btn:hover {
   color: red; /* Darker red for hover effect */
@@ -394,7 +435,7 @@ header {
 
 #newPinForm button {
   padding: 8px;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   border-radius: 4px;
