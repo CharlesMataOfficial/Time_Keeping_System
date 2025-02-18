@@ -345,3 +345,31 @@ document.addEventListener("DOMContentLoaded", function () {
       clockOutModal.style.display = "block";
   });
 });
+
+// CONVERT TO CSS 
+
+// // Function to adjust notes
+// function adjustNotes() {
+//   document.querySelectorAll('.note').forEach(note => {
+//     let parent = note.closest('.panel');
+
+//     if (!parent.classList.contains('announcements')) {
+//       note.style.width = `${parent.clientWidth * 0.9}px`;
+//       note.style.height = `${parent.clientHeight * 0.8}px`;
+//     }
+//   });
+// }
+
+// // Adjust notes on window resize
+// window.addEventListener('resize', adjustNotes);
+// adjustNotes();
+
+// // Function to adjust layout
+// function adjustLayout() {
+//   let scale = Math.min(window.innerWidth / 1920, 1); // Keep scaling balanced
+//   document.querySelector('.container').style.transform = `scale(${scale})`;
+// }
+
+// // Adjust layout on window resize
+// window.addEventListener('resize', adjustLayout);
+// adjustLayout();
