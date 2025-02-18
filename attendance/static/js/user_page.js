@@ -113,8 +113,20 @@ function addAttendanceItem(data) {
   listItem.setAttribute("data-employee-id", employeeId);
   listItem.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
 
-  // Prepend the new item so it appears at the top
-  list.prepend(listItem);
+  // Append the new item so it appears at the top
+  list.append(listItem);
+}
+
+function updateAttendanceList(attendanceList) {
+  const list = document.getElementById("attendance-items");
+  list.innerHTML = ""; // Clear the existing list
+
+  attendanceList.forEach(data => {
+    const listItem = document.createElement("li");
+    listItem.setAttribute("data-employee-id", data.employee_id);
+    listItem.textContent = `${data.employee_id} - ${data.first_name} ${data.surname} (${data.company}) | Time In: ${data.time_in} | Time Out: ${data.time_out || "N/A"}`;
+    list.append(listItem); // Append the new item so it appears at the top
+  });
 }
 
 // Helper to get CSRF token from cookies (if you need it for AJAX)
@@ -256,6 +268,7 @@ clockInForm.addEventListener("submit", (e) => {
             updatePartnerLogo(data.new_logo);
             clockInModal.style.display = "none";
             clockInForm.reset();
+            updateAttendanceList(data.attendance_list); // Update the attendance list
           }
         });
     }
@@ -282,13 +295,12 @@ clockOutForm.addEventListener("submit", (e) => {
       if (data.success) {
         alert("Clock Out successful!");
         updatePartnerLogo(data.new_logo); // Update logo on clock out
-        addAttendanceItem(data);
-        window.location.reload();
+        clockOutModal.style.display = "none";
+        clockOutForm.reset();
+        updateAttendanceList(data.attendance_list); // Update the attendance list
       } else {
         alert("Error: " + data.error);
       }
-      clockOutModal.style.display = "none";
-      clockOutForm.reset();
     })
     .catch((error) => {
       console.error("Error during Clock Out:", error);
@@ -309,7 +321,23 @@ document.addEventListener("DOMContentLoaded", function () {
   fetch("/get_todays_entries/") // You'll need to create this endpoint
     .then((response) => response.json())
     .then((data) => {
-      data.entries.reverse().forEach((entry) => addAttendanceItem(entry));
+      data.entries.forEach((entry) => addAttendanceItem(entry));
     })
     .catch((error) => console.error("Error loading entries:", error));
+
+  // Get button and modal elements
+  const timeInBtn = document.getElementById("timeInBtn");
+  const timeOutBtn = document.getElementById("timeOutBtn");
+  const clockInModal = document.getElementById("clockInModal");
+  const clockOutModal = document.getElementById("clockOutModal");
+
+  // Time In button click handler
+  timeInBtn.addEventListener("click", function() {
+      clockInModal.style.display = "block";
+  });
+
+  // Time Out button click handler
+  timeOutBtn.addEventListener("click", function() {
+      clockOutModal.style.display = "block";
+  });
 });
