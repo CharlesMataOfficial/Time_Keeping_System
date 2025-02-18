@@ -39,9 +39,14 @@ class CustomUserAdmin(UserAdmin):
         ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser")}),
     )
 
-    list_display = ('employee_id', 'first_name', 'surname', 'company', 'position','is_active')
+    list_display = ('employee_id', 'first_name', 'surname', 'company', 'position', 'is_active')
     search_fields = ('employee_id', 'first_name', 'surname', 'company')
     ordering = ('employee_id',)
+
+    def save_model(self, request, obj, form, change):
+        if not change and not obj.employee_id:
+            obj.employee_id = CustomUser.objects.get_next_employee_id()
+        super().save_model(request, obj, form, change)
 
 # Register the models
 admin.site.register(CustomUser, CustomUserAdmin)

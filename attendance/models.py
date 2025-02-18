@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinLengthValidator
+from django.forms import ValidationError
 from django.utils import timezone  # timezone.now() will now return a naive datetime
 from django.views.decorators.cache import never_cache
 from django.contrib.auth import login
@@ -12,23 +13,40 @@ from django.urls import reverse
 
 
 class CustomUserManager(BaseUserManager):
-    # (Keep your manager methods unchanged)
-    def create_user(self, employee_id, password=None, **extra_fields):
+    def get_next_employee_id(self):
+        highest_user = self.model.objects.order_by('-employee_id').first()
+        if highest_user:
+            try:
+                next_id = str(int(highest_user.employee_id) + 1).zfill(6)
+            except ValueError:
+                next_id = '000001'
+        else:
+            next_id = '000001'
+        return next_id
+
+    def create_user(self, employee_id=None, password=None, **extra_fields): 
         if not employee_id:
-            raise ValueError("The Employee ID must be set")
+            employee_id = self.get_next_employee_id()
+
+        # Validate employee_id is numeric and 6 digits
+        if not employee_id.isdigit() or len(employee_id) != 6:
+            raise ValidationError("Employee ID must be a 6-digit number")
+
         user = self.model(employee_id=employee_id, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, employee_id, password=None, **extra_fields):
+    def create_superuser(self, employee_id=None, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
+
         if extra_fields.get("is_staff") is not True:
             raise ValueError("Superuser must have is_staff=True.")
         if extra_fields.get("is_superuser") is not True:
             raise ValueError("Superuser must have is_superuser=True.")
+
         return self.create_user(employee_id, password, **extra_fields)
 
 
