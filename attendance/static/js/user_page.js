@@ -94,38 +94,42 @@ function dataURItoBlob(dataURI) {
 }
 
 function addAttendanceItem(data) {
-  const list = document.getElementById("attendance-items");
+  const tbody = document.getElementById("attendance-items");
 
-  // Extract values safely
-  const employeeId = data.employee_id || "N/A";
-  const firstName  = data.first_name || "N/A";
-  const surname    = data.surname || "N/A";
-  const company    = data.company || "N/A";
-  const timeIn     = data.time_in || "N/A";
-  const timeOut    = data.time_out ? data.time_out : "N/A"; // If no clock-out, "N/A"
+  // Create new row
+  const row = document.createElement("tr");
+  row.setAttribute("data-employee-id", data.employee_id);
 
-  // Remove any existing entries for this employee
-  const existingItems = list.querySelectorAll(`li[data-employee-id="${employeeId}"]`);
-  existingItems.forEach(item => item.remove());
+  row.innerHTML = `
+    <td>${data.employee_id || ""}</td>
+    <td>${data.first_name || ""}</td>
+    <td>${data.surname || ""}</td>
+    <td>${data.company || ""}</td>
+    <td>${data.time_in || ""}</td>
+    <td>${data.time_out || ""}</td>
+  `;
 
-  // Create a new list item with updated info
-  const listItem = document.createElement("li");
-  listItem.setAttribute("data-employee-id", employeeId);
-  listItem.textContent = `${employeeId} - ${firstName} ${surname} (${company}) | Time In: ${timeIn} | Time Out: ${timeOut}`;
-
-  // Append the new item so it appears at the top
-  list.append(listItem);
+  tbody.append(row); // Add new row at the top
 }
 
 function updateAttendanceList(attendanceList) {
-  const list = document.getElementById("attendance-items");
-  list.innerHTML = ""; // Clear the existing list
+  const tbody = document.getElementById("attendance-items");
+  tbody.innerHTML = ""; // Clear existing rows
 
   attendanceList.forEach(data => {
-    const listItem = document.createElement("li");
-    listItem.setAttribute("data-employee-id", data.employee_id);
-    listItem.textContent = `${data.employee_id} - ${data.first_name} ${data.surname} (${data.company}) | Time In: ${data.time_in} | Time Out: ${data.time_out || "N/A"}`;
-    list.append(listItem); // Append the new item so it appears at the top
+    const row = document.createElement("tr");
+    row.setAttribute("data-employee-id", data.employee_id);
+
+    row.innerHTML = `
+      <td>${data.employee_id || ""}</td>
+      <td>${data.first_name || ""}</td>
+      <td>${data.surname || ""}</td>
+      <td>${data.company || ""}</td>
+      <td>${data.time_in || ""}</td>
+      <td>${data.time_out || ""}</td>
+    `;
+
+    tbody.append(row);
   });
 }
 

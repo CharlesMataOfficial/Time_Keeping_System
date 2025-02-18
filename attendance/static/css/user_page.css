@@ -15,7 +15,7 @@ body {
 html, body {
   width: 100%;
   height: 100%;
-  overflow-x: hidden;
+  overflow: hidden; /* Prevent any scrolling on the body */
 }
 
 h1, h2, h3, .clock p {
@@ -28,6 +28,7 @@ h1, h2, h3, .clock p {
   display: flex;
   flex-direction: column;
   justify-content: space-between; /* Adjust the spacing between items */
+  overflow: hidden;
 }
 
 header {
@@ -152,49 +153,22 @@ header {
 
 .attendance-list {
   width: 1220px;
-  flex: 0 0 auto;
   margin: 20px 40px;
   background: #621c1c;
   border-radius: 10px;
-  padding: 30px;
-  top: -30px;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+  padding: 5px;
   position: relative;
-  height: 230px;
+  top: -30px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  max-height: calc(100vh - 400px); /* Adjust this value to fit your layout */
 }
 
 .attendance-list h2 {
   font-size: 20px;
   color: #ffffff;
   margin-bottom: 15px;
-  font-size: 20px;
-  color: #ffffff;
-  margin-bottom: 15px;
   text-align: center;
-  margin-top: -25px; /* Move Attendance List slightly up */
-}
-
-/* Adjust the attendance list items to appear over the note */
-.attendance-list ul {
-  position: relative;
-  z-index: 2; /* Ensure items are above the note */
-  padding-top: 20px; /* Give space above items to not be flush with the note */
-}
-
-.attendance-list .note {
-  background: #e2e2e2;
-  width: 1210px;
-  height: 185px;
-  margin-top: 20px;
-  border-radius: 10px;
-  position: absolute;
-  top: 20px;
-  left: 5px;
-  padding: 20px;
-  box-sizing: border-box;
-  z-index: 1;
-  overflow-y: auto;
+  margin-top: -25px;
 }
 
 #attendance-items {
@@ -202,11 +176,56 @@ header {
   padding: 0;
 }
 
-#attendance-items li {
-  padding: 10px 15px;
+#attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+#attendance-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #621c1c;
+}
+
+#attendance-table thead th {
+  background-color: #621c1c;
+  color: #fff;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 14px;
+  padding: 12px 15px;
+  text-align: left;
+}
+
+#attendance-table tbody {
+  display: block;
+  overflow-y: auto;
+  height: calc(100vh - 550px); /* Adjust this value to fit perfectly */
+}
+
+#attendance-table thead tr,
+#attendance-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+#attendance-table tbody td {
+  padding: 12px 15px;
+  text-align: left;
   border-bottom: 1px solid #ddd;
-  font-size: 18px;
-  color: #be6364;
+  color: #333;
+  font-size: 14px;
+}
+
+#attendance-table tbody tr:nth-child(even) {
+  background-color: #f8f8f8;
+}
+
+#attendance-table tbody tr:hover {
+  background-color: #f5f5f5;
 }
 
 .content {
