@@ -137,26 +137,25 @@ const csrftoken = getCookie("csrftoken");
 
 // --- Modal handling code ---
 
+// Add new modal references
 const clockInModal = document.getElementById("clockInModal");
 const clockOutModal = document.getElementById("clockOutModal");
-const timeInBtn = document.getElementById("timeInBtn");
-const timeOutBtn = document.getElementById("timeOutBtn");
+const newPinModal = document.getElementById("newPinModal");
+
 const closeClockIn = document.getElementById("closeClockIn");
 const closeClockOut = document.getElementById("closeClockOut");
-
-timeInBtn.addEventListener("click", () => {
-  clockInModal.style.display = "block";
-});
-
-timeOutBtn.addEventListener("click", () => {
-  clockOutModal.style.display = "block";
-});
+const closeNewPin = document.getElementById("closeNewPin");
 
 closeClockIn.addEventListener("click", () => {
   clockInModal.style.display = "none";
 });
+
 closeClockOut.addEventListener("click", () => {
   clockOutModal.style.display = "none";
+});
+
+closeNewPin.addEventListener("click", () => {
+  newPinModal.style.display = "none";
 });
 
 // Close modal if user clicks outside of modal content
@@ -170,14 +169,6 @@ window.addEventListener("click", (e) => {
   if (e.target === newPinModal) {
     newPinModal.style.display = "none";
   }
-});
-
-// Add new modal reference
-const newPinModal = document.getElementById("newPinModal");
-const closeNewPin = document.getElementById("closeNewPin");
-
-closeNewPin.addEventListener("click", () => {
-  newPinModal.style.display = "none";
 });
 
 // --- Handling Clock In form submission ---
