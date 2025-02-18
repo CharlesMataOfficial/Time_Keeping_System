@@ -25,7 +25,8 @@ class Command(BaseCommand):
                 pin=legacy_user.pin,
                 preset_name=legacy_user.preset_name,
                 password=hashed_password,  # Hashed password
-                is_active=legacy_user.status  # Ensure users are active
+                is_active=legacy_user.status,  # Ensure users are active
+                if_first_login=False,
             )
 
         self.stdout.write(self.style.SUCCESS('Successfully migrated users'))
