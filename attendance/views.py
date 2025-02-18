@@ -162,8 +162,8 @@ def clock_in_view(request):
                 "first_name": entry.user.first_name,
                 "surname": entry.user.surname,
                 "company": entry.user.company or "",
-                "time_in": entry.time_in.strftime("%I:%M %p, %B %d, %Y"),
-                "time_out": entry.time_out.strftime("%I:%M %p, %B %d, %Y") if entry.time_out else None,
+                "time_in": entry.time_in.strftime("%I:%M %p"),
+                "time_out": entry.time_out.strftime("%I:%M %p") if entry.time_out else None,
                 "image_path": entry.image_path,
             }
             for entry in todays_entries
@@ -175,7 +175,7 @@ def clock_in_view(request):
             "first_name": user.first_name,
             "surname": user.surname,
             "company": user.company or "",
-            "time_in": entry.time_in.strftime("%I:%M %p, %B %d, %Y"),
+            "time_in": entry.time_in.strftime("%I:%M %p"),
             "time_out": None,
             "image_path": entry.image_path,
             "new_logo": company_logo,
@@ -206,8 +206,8 @@ def clock_out_view(request):
 
             open_entry.clock_out()
 
-            time_in_formatted = open_entry.time_in.strftime("%I:%M %p, %B %d, %Y")
-            time_out_formatted = open_entry.time_out.strftime("%I:%M %p, %B %d, %Y")
+            time_in_formatted = open_entry.time_in.strftime("%I:%M %p")
+            time_out_formatted = open_entry.time_out.strftime("%I:%M %p")
 
             # Handle None company value
             user_company = user.company or ""
@@ -240,8 +240,8 @@ def clock_out_view(request):
                     "first_name": entry.user.first_name,
                     "surname": entry.user.surname,
                     "company": entry.user.company or "",
-                    "time_in": entry.time_in.strftime("%I:%M %p, %B %d, %Y"),
-                    "time_out": entry.time_out.strftime("%I:%M %p, %B %d, %Y") if entry.time_out else None,
+                    "time_in": entry.time_in.strftime("%I:%M %p"),
+                    "time_out": entry.time_out.strftime("%I:%M %p") if entry.time_out else None,
                     "image_path": entry.image_path,
                 }
                 for entry in todays_entries
@@ -300,8 +300,8 @@ def get_todays_entries(request):
             "first_name": entry.user.first_name,
             "surname": entry.user.surname,
             "company": entry.user.company,
-            "time_in": entry.time_in.strftime("%I:%M %p, %B %d, %Y"),
-            "time_out": entry.time_out.strftime("%I:%M %p, %B %d, %Y") if entry.time_out else None,
+            "time_in": entry.time_in.strftime("%I:%M %p"),
+            "time_out": entry.time_out.strftime("%I:%M %p") if entry.time_out else None,
         })
 
     return JsonResponse({"entries": entries_data})
