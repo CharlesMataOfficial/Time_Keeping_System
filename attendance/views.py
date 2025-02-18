@@ -28,7 +28,7 @@ def login_view(request):
             user = auth_result if isinstance(auth_result, CustomUser) else auth_result["user"]
             login(request, user)
             if user.is_staff and user.is_superuser:
-                return redirect(reverse("admin:index"))
+                return redirect(reverse("admin:login_page"))
             elif user.is_staff and not user.is_superuser:
                 return redirect("custom_admin_page")
             else:
