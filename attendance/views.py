@@ -40,8 +40,8 @@ def login_view(request):
             except CustomUser.DoesNotExist:
                 error_message = "Employee ID not found"
 
-            return render(request, "index.html", {"error": error_message})
-    return render(request, "index.html")
+            return render(request, "login_page.html", {"error": error_message})
+    return render(request, "login_page.html")
 
 
 @login_required
