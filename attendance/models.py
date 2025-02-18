@@ -116,3 +116,10 @@ class TimeEntry(models.Model):
             new_entry.save()
         return new_entry
 
+class Announcement(models.Model):
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_posted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Announcement {self.id}"

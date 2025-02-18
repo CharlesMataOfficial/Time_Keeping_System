@@ -47,6 +47,9 @@ function navigateTo(screenId) {
   if (dashboardShortcut) {
     dashboardShortcut.style.display = 'block';
   }
+  if (screenId === 'announcement') {
+    fetchAnnouncements();
+  }
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -239,80 +242,197 @@ function saveWorkHours() {
   }
 }
 
-// Function to save announcement
-function saveAnnouncement() {
-  const announcementText = document.getElementById("announcement-text").value;
-
-  if (announcementText.trim() === "") {
-      alert("Please enter an announcement.");
-      return;
+// Utility: Get CSRF token (if needed)
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
   }
-
-  document.getElementById("saved-announcements").value += announcementText + "\n\n";
-  document.getElementById("announcement-text").value = ""; // Clear input field
-  alert("Announcement saved successfully.");
+  return cookieValue;
 }
 
-// Store the latest posted announcement
+// On page load, fetch announcements from the server
+document.addEventListener('DOMContentLoaded', fetchAnnouncements);
+
+// Function to fetch announcements from the database and display them
+function fetchAnnouncements() {
+  fetch('/announcements/')
+    .then(response => response.json())
+    .then(data => {
+      const announcementList = document.getElementById("announcement-list");
+      announcementList.innerHTML = ""; // Clear current list
+      data.forEach(announcement => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <input type="checkbox" class="announcement-checkbox" data-id="${announcement.id}">
+          <span>${announcement.content}</span>
+        `;
+        announcementList.appendChild(li);
+      });
+    })
+    .catch(error => console.error("Error fetching announcements:", error));
+}
+
+// Function to save announcement (saves to the database)
+function saveAnnouncement() {
+  const announcementText = document.getElementById("announcement-text").value.trim();
+  if (announcementText === "") {
+    alert("Please enter an announcement.");
+    return;
+  }
+
+  fetch('/announcements/', {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCookie("csrftoken")
+    },
+    body: JSON.stringify({ content: announcementText })
+  })
+  .then(response => response.json())
+  .then(data => {
+    alert("Announcement saved successfully.");
+    document.getElementById("announcement-text").value = "";
+    fetchAnnouncements(); // Refresh the list from the database
+  })
+  .catch(error => {
+    console.error("Error saving announcement:", error);
+    alert("Error saving announcement.");
+  });
+}
+
+// Function to delete selected announcements (from the database)
+function deleteAnnouncement() {
+  const checkboxes = document.querySelectorAll(".announcement-checkbox:checked");
+  if (checkboxes.length === 0) {
+    alert("Please select an announcement to delete.");
+    return;
+  }
+
+  if (!confirm("Are you sure you want to delete the selected announcement(s)?")) {
+    return;
+  }
+
+  // Delete each selected announcement by calling the DELETE endpoint
+  const deletePromises = [];
+  checkboxes.forEach(checkbox => {
+    const announcementId = checkbox.getAttribute("data-id");
+    const promise = fetch(`/announcements/${announcementId}/delete/`, {
+      method: "DELETE",
+      headers: {
+        "X-CSRFToken": getCookie("csrftoken")
+      }
+    });
+    deletePromises.push(promise);
+  });
+
+  Promise.all(deletePromises)
+    .then(() => {
+      alert("Selected announcement(s) deleted.");
+      fetchAnnouncements();
+    })
+    .catch(error => {
+      console.error("Error deleting announcements:", error);
+      alert("Error deleting announcements.");
+    });
+}
+
+// Global variable to store posted announcements text (if needed)
 let latestPostedAnnouncement = "";
 
-// Function to post announcement
+// Function to post selected announcements (for demonstration, just marks them as posted locally)
 function postAnnouncement() {
-    const selectedOption = document.getElementById("post-options").value;
-    const savedAnnouncements = document.getElementById("saved-announcements").value.trim().split("\n\n");
+  const postOption = document.getElementById("post-options").value;
+  const listItems = document.querySelectorAll("#announcement-list li");
+  
+  if (listItems.length === 0) {
+    alert("No saved announcements available.");
+    return;
+  }
 
-    if (!savedAnnouncements.length || savedAnnouncements[0] === "") {
-        alert("No saved announcements available.");
-        return;
-    }
-
-    if (selectedOption === "recent") {
-        // Store only the most recent announcement
-        latestPostedAnnouncement = savedAnnouncements[savedAnnouncements.length - 1];
-
-    } else if (selectedOption === "selected") {
-        // Store only the selected text
-        const selectedText = window.getSelection().toString().trim();
-        if (!selectedText) {
-            alert("Please select an announcement to post.");
-            return;
-        }
-        latestPostedAnnouncement = selectedText;
-
-    } else if (selectedOption === "all") {
-        // Store all announcements
-        latestPostedAnnouncement = savedAnnouncements.join("\n\n");
-    }
-
-    // Keep the prompt the same
-    alert(`Posting announcements: ${selectedOption}`);
-}
-
-function deleteAnnouncement() {
-  const savedAnnouncements = document.getElementById("saved-announcements");
-  const selectedText = window.getSelection().toString(); // Get selected text
-
-  if (!selectedText) {
-      alert("Please select an announcement to delete.");
+  let selectedAnnouncements = [];
+  
+  if (postOption === "recent") {
+    // Post the most recent announcement (last list item)
+    const recentItem = listItems[listItems.length - 1];
+    selectedAnnouncements.push(recentItem.querySelector("span").textContent);
+    recentItem.classList.add("posted");
+  } else if (postOption === "selected") {
+    // Post only checked announcements
+    const checkedItems = document.querySelectorAll(".announcement-checkbox:checked");
+    if (checkedItems.length === 0) {
+      alert("Please select an announcement to post.");
       return;
+    }
+    checkedItems.forEach(checkbox => {
+      const li = checkbox.parentElement;
+      selectedAnnouncements.push(li.querySelector("span").textContent);
+      li.classList.add("posted");
+    });
+  } else if (postOption === "all") {
+    // Post all announcements
+    listItems.forEach(li => {
+      selectedAnnouncements.push(li.querySelector("span").textContent);
+      li.classList.add("posted");
+    });
   }
-
-  if (confirm("Are you sure you want to delete the selected announcement?")) {
-      // Replace only the selected text with an empty string
-      savedAnnouncements.value = savedAnnouncements.value.replace(selectedText, "").trim();
-      alert("Selected announcement deleted.");
-  }
+  
+  latestPostedAnnouncement = selectedAnnouncements.join("\n\n");
+  alert("Selected announcement(s) posted.");
 }
 
-// Function to view announcements (only shows the latest posted one)
+// Function to view (filter) announcements in the panel based on the dropdown selection
 function viewAnnouncements() {
-  if (!latestPostedAnnouncement) {
-      alert("No saved announcements to view.");
-      return;
+  const viewOption = document.getElementById("post-options").value;
+  const listItems = document.querySelectorAll("#announcement-list li");
+
+  // If no announcements exist, exit
+  if (listItems.length === 0) {
+    console.log("No saved announcements available.");
+    return;
   }
 
-  alert(`Saved Announcements:\n\n${latestPostedAnnouncement}`);
+  // Hide all items first
+  listItems.forEach(li => {
+    li.style.display = "none";
+  });
+
+  if (viewOption === "recent") {
+    // Show only the most recent (last item in the list)
+    const lastItem = listItems[listItems.length - 1];
+    if (lastItem) {
+      lastItem.style.display = "flex";
+    }
+  } else if (viewOption === "selected") {
+    // Show only checked announcements
+    let atLeastOne = false;
+    listItems.forEach(li => {
+      const checkbox = li.querySelector(".announcement-checkbox");
+      if (checkbox && checkbox.checked) {
+        li.style.display = "flex";
+        atLeastOne = true;
+      }
+    });
+    if (!atLeastOne) {
+      console.log("No announcements were selected.");
+    }
+  } else if (viewOption === "all") {
+    // Show all announcements
+    listItems.forEach(li => {
+      li.style.display = "flex";
+    });
+  }
 }
+
+
+
 
 
 // Store the header text without displaying it in the HTML

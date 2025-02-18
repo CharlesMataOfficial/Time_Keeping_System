@@ -699,6 +699,7 @@ button:hover {
   align-content: center;
   flex-direction: column;
   padding-bottom: 20px;
+  align-items: flex-start;
 }
 
 /* Textarea Styling */
@@ -719,6 +720,55 @@ button:hover {
   gap: 8px;
   margin-top: 8px;
 }
+/* Container for the list */
+.announcement-list-container {
+  overflow-y: auto;            /* Vertical scroll when content overflows */
+  border: 1px solid #ccc;      /* Optional: add a border */
+  padding: 5px;                /* Optional: add some padding */
+  background-color: #ffffff;
+  text-align: left;
+  margin-top: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  height: 200px;
+  width: 440px;
+}
+
+/* Remove bullet points and spacing from the list */
+#announcement-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Each list item: flex container with vertical alignment centered */
+#announcement-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.4;      /* Adjust as needed (1.2, 1.4, 1.5, etc.) */
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+/* Checkbox styling */
+#announcement-list li input[type="checkbox"] {
+  flex: 0 0 auto;
+  vertical-align: middle; /* Align with text */
+  margin-bottom: 10px; /* Adjust the value as needed */
+  /* Optionally fix size for consistency:
+  width: 16px;
+  height: 16px;
+  */
+}
+
+/* Text styling */
+#announcement-list li span {
+  flex: 1 1 auto;
+  display: inline-block;
+  vertical-align: middle; 
+  word-wrap: break-word; /* Allows text wrapping if it's very long */
+}
+
 
 /* Dropdown Styling */
 #post-options {
@@ -728,7 +778,7 @@ button:hover {
   border-radius: 5px;
   font-size: 14px;
   background: white;
-  cursor: pointer;
+  cursor: pointer;  
 }
 
 /* Post Button */
