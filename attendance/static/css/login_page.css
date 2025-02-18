@@ -94,7 +94,7 @@ header {
     display: flex;
     align-items: center;
     border-radius: 10px;
-    overflow-x: hidden; /* Enable horizontal scrolling */
+    overflow-x: auto; /* Enable horizontal scrolling */
     white-space: nowrap; /* Prevent logos from wrapping to the next line */
     height: 80%;
     padding: 0 10px; /* Add some padding for spacing */
@@ -113,7 +113,6 @@ header {
     transform: scale(1.1); /* Slightly enlarge logo on hover */
     cursor: pointer;
 }
-
 
 .partner-logo img { /* Company Logos */
     background-color: white;
@@ -183,7 +182,6 @@ header {
     cursor: pointer;
     transition: transform 0.2s ease, background-color 0.3s ease;
     text-align: center;
-    border-radius: 50px;
 }
 
 .login-button:hover {
