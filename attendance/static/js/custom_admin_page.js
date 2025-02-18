@@ -1,10 +1,10 @@
 // Toggle Menu
 function toggleMenu() {
-  const menu = document.getElementById('menu');
-  if (menu.style.left === '0px') {
-    menu.style.left = '-300px';
+  const menu = document.getElementById("menu");
+  if (menu.style.left === "0px") {
+    menu.style.left = "-300px";
   } else {
-    menu.style.left = '0px';
+    menu.style.left = "0px";
   }
 }
 // Define the ordered menu navigation (matches sidebar order)
@@ -16,7 +16,7 @@ const menuOrder = [
   "announcement",
   "export-excel",
   "leave-approval",
-  "about"
+  "about",
 ];
 
 // Store the currently active screen
@@ -25,29 +25,29 @@ let currentScreen = "dashboard"; // Default to dashboard
 // Function to navigate to a screen
 function navigateTo(screenId) {
   // Hide all screens
-  document.querySelectorAll('.screen').forEach(screen => {
-    screen.style.display = 'none';
+  document.querySelectorAll(".screen").forEach((screen) => {
+    screen.style.display = "none";
   });
 
   // Show the selected screen
   const activeScreen = document.getElementById(screenId);
   if (activeScreen) {
-    activeScreen.style.display = 'flex';
+    activeScreen.style.display = "flex";
     currentScreen = screenId; // Update the current screen
   }
 
   // Hide menu when a screen is selected
-  const menu = document.getElementById('menu');
+  const menu = document.getElementById("menu");
   if (menu) {
-    menu.style.left = '-300px';
+    menu.style.left = "-300px";
   }
 
   // Always show the dashboard shortcut (if the element exists)
-  const dashboardShortcut = document.getElementById('dashboard-shortcut');
+  const dashboardShortcut = document.getElementById("dashboard-shortcut");
   if (dashboardShortcut) {
-    dashboardShortcut.style.display = 'block';
+    dashboardShortcut.style.display = "block";
   }
-  if (screenId === 'announcement') {
+  if (screenId === "announcement") {
     fetchAnnouncements();
   }
 }
@@ -57,9 +57,9 @@ document.addEventListener("DOMContentLoaded", function () {
   navigateTo("dashboard");
 
   // Setup event listener for left arrow
-  const leftArrow = document.getElementById('left-arrow');
+  const leftArrow = document.getElementById("left-arrow");
   if (leftArrow) {
-    leftArrow.addEventListener('click', function () {
+    leftArrow.addEventListener("click", function () {
       let currentIndex = menuOrder.indexOf(currentScreen);
       if (currentIndex > 0) {
         let previousScreen = menuOrder[currentIndex - 1]; // Get the previous screen in the list
@@ -69,9 +69,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Setup event listener for right arrow
-  const rightArrow = document.getElementById('right-arrow');
+  const rightArrow = document.getElementById("right-arrow");
   if (rightArrow) {
-    rightArrow.addEventListener('click', function () {
+    rightArrow.addEventListener("click", function () {
       let currentIndex = menuOrder.indexOf(currentScreen);
       if (currentIndex < menuOrder.length - 1) {
         let nextScreen = menuOrder[currentIndex + 1]; // Get the next screen in the list
@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Dropdown color change listener
   const dropdowns = document.querySelectorAll("select");
-  dropdowns.forEach(select => {
+  dropdowns.forEach((select) => {
     select.addEventListener("change", function () {
       let options = this.options;
       for (let i = 0; i < options.length; i++) {
@@ -96,8 +96,12 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 // Update the attendance header when dropdown selections change
-document.getElementById("attendance-type").addEventListener("change", updateAttendanceHeader);
-document.getElementById("attendance-company").addEventListener("change", updateAttendanceHeader);
+document
+  .getElementById("attendance-type")
+  .addEventListener("change", updateAttendanceHeader);
+document
+  .getElementById("attendance-company")
+  .addEventListener("change", updateAttendanceHeader);
 
 // Function to update attendance header text
 function updateAttendanceHeader() {
@@ -127,36 +131,36 @@ function filterAttendance() {
   const type = document.getElementById("attendance-type").value; // Correctly get the type
   const company = document.getElementById("attendance-company").value; // Get the company value
   const department = document.getElementById("attendance-department").value; // Get the department value
-  
+
   // Define the options for each dropdown
   const typeOptions = {
     "time-log": "Time Log",
     "users-active": "Users Active",
-    "users-inactive": "Users Inactive"
+    "users-inactive": "Users Inactive",
   };
-  
+
   const companyOptions = {
-    "agridom": "Agridom Solutions Corp.",
-    "farmtech": "Farmtech Agriland Corporation",
-    "subang": "Subang Farm",
-    "djas": "DJAS Servitrade Corporation",
+    agridom: "Agridom Solutions Corp.",
+    farmtech: "Farmtech Agriland Corporation",
+    subang: "Subang Farm",
+    djas: "DJAS Servitrade Corporation",
     "agri-online": "AGRI Online",
-    "sunfood": "Sunfood Marketing Inc.",
-    "all": "All companies"
+    sunfood: "Sunfood Marketing Inc.",
+    all: "All companies",
   };
 
   const departmentOptions = {
-    "all": "All departments",
-    "hr": "Human Resources",
-    "it": "IT Department",
-    "finance": "Finance"
+    all: "All departments",
+    hr: "Human Resources",
+    it: "IT Department",
+    finance: "Finance",
   };
 
   // Get the selected text for each dropdown option
   const selectedType = typeOptions[type] || "Time Log";
   const selectedCompany = companyOptions[company] || "All companies";
   const selectedDepartment = departmentOptions[department] || "All departments";
-  
+
   // Generate the filter text
   const filterText = `Filtering attendance for:\n${selectedType} > ${selectedCompany} > ${selectedDepartment}`;
 
@@ -199,9 +203,9 @@ function addWorkHours() {
     fridayStart: fridayStart,
     fridayEnd: fridayEnd,
     saturdayStart: saturdayStart, // fixed
-    saturdayEnd: saturdayEnd,     // fixed
+    saturdayEnd: saturdayEnd, // fixed
     sundayStart: sundayStart,
-    sundayEnd: sundayEnd
+    sundayEnd: sundayEnd,
   };
 
   // You can now send WorkHoursData via AJAX or further process it
@@ -234,7 +238,7 @@ function deleteWorkHours() {
 }
 
 function saveWorkHours() {
-  const gracePeriod = document.getElementById('grace-period').value;
+  const gracePeriod = document.getElementById("grace-period").value;
   if (gracePeriod) {
     alert(`Grace Period of ${gracePeriod} minutes saved.`);
   } else {
@@ -245,11 +249,11 @@ function saveWorkHours() {
 // Utility: Get CSRF token (if needed)
 function getCookie(name) {
   let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
     for (let i = 0; i < cookies.length; i++) {
       const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+      if (cookie.substring(0, name.length + 1) === name + "=") {
         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
         break;
       }
@@ -259,16 +263,16 @@ function getCookie(name) {
 }
 
 // On page load, fetch announcements from the server
-document.addEventListener('DOMContentLoaded', fetchAnnouncements);
+document.addEventListener("DOMContentLoaded", fetchAnnouncements);
 
 // Function to fetch announcements from the database and display them
 function fetchAnnouncements() {
-  fetch('/announcements/')
-    .then(response => response.json())
-    .then(data => {
+  fetch("/announcements/")
+    .then((response) => response.json())
+    .then((data) => {
       const announcementList = document.getElementById("announcement-list");
       announcementList.innerHTML = ""; // Clear current list
-      data.forEach(announcement => {
+      data.forEach((announcement) => {
         const li = document.createElement("li");
         li.innerHTML = `
           <input type="checkbox" class="announcement-checkbox" data-id="${announcement.id}">
@@ -277,58 +281,64 @@ function fetchAnnouncements() {
         announcementList.appendChild(li);
       });
     })
-    .catch(error => console.error("Error fetching announcements:", error));
+    .catch((error) => console.error("Error fetching announcements:", error));
 }
 
 // Function to save announcement (saves to the database)
 function saveAnnouncement() {
-  const announcementText = document.getElementById("announcement-text").value.trim();
+  const announcementText = document
+    .getElementById("announcement-text")
+    .value.trim();
   if (announcementText === "") {
     alert("Please enter an announcement.");
     return;
   }
 
-  fetch('/announcements/', {
+  fetch("/announcements/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRFToken": getCookie("csrftoken")
+      "X-CSRFToken": getCookie("csrftoken"),
     },
-    body: JSON.stringify({ content: announcementText })
+    body: JSON.stringify({ content: announcementText }),
   })
-  .then(response => response.json())
-  .then(data => {
-    alert("Announcement saved successfully.");
-    document.getElementById("announcement-text").value = "";
-    fetchAnnouncements(); // Refresh the list from the database
-  })
-  .catch(error => {
-    console.error("Error saving announcement:", error);
-    alert("Error saving announcement.");
-  });
+    .then((response) => response.json())
+    .then((data) => {
+      alert("Announcement saved successfully.");
+      document.getElementById("announcement-text").value = "";
+      fetchAnnouncements(); // Refresh the list from the database
+    })
+    .catch((error) => {
+      console.error("Error saving announcement:", error);
+      alert("Error saving announcement.");
+    });
 }
 
 // Function to delete selected announcements (from the database)
 function deleteAnnouncement() {
-  const checkboxes = document.querySelectorAll(".announcement-checkbox:checked");
+  const checkboxes = document.querySelectorAll(
+    ".announcement-checkbox:checked"
+  );
   if (checkboxes.length === 0) {
     alert("Please select an announcement to delete.");
     return;
   }
 
-  if (!confirm("Are you sure you want to delete the selected announcement(s)?")) {
+  if (
+    !confirm("Are you sure you want to delete the selected announcement(s)?")
+  ) {
     return;
   }
 
   // Delete each selected announcement by calling the DELETE endpoint
   const deletePromises = [];
-  checkboxes.forEach(checkbox => {
+  checkboxes.forEach((checkbox) => {
     const announcementId = checkbox.getAttribute("data-id");
     const promise = fetch(`/announcements/${announcementId}/delete/`, {
       method: "DELETE",
       headers: {
-        "X-CSRFToken": getCookie("csrftoken")
-      }
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
     });
     deletePromises.push(promise);
   });
@@ -338,7 +348,7 @@ function deleteAnnouncement() {
       alert("Selected announcement(s) deleted.");
       fetchAnnouncements();
     })
-    .catch(error => {
+    .catch((error) => {
       console.error("Error deleting announcements:", error);
       alert("Error deleting announcements.");
     });
@@ -351,14 +361,14 @@ let latestPostedAnnouncement = "";
 function postAnnouncement() {
   const postOption = document.getElementById("post-options").value;
   const listItems = document.querySelectorAll("#announcement-list li");
-  
+
   if (listItems.length === 0) {
     alert("No saved announcements available.");
     return;
   }
 
   let selectedAnnouncements = [];
-  
+
   if (postOption === "recent") {
     // Post the most recent announcement (last list item)
     const recentItem = listItems[listItems.length - 1];
@@ -366,24 +376,26 @@ function postAnnouncement() {
     recentItem.classList.add("posted");
   } else if (postOption === "selected") {
     // Post only checked announcements
-    const checkedItems = document.querySelectorAll(".announcement-checkbox:checked");
+    const checkedItems = document.querySelectorAll(
+      ".announcement-checkbox:checked"
+    );
     if (checkedItems.length === 0) {
       alert("Please select an announcement to post.");
       return;
     }
-    checkedItems.forEach(checkbox => {
+    checkedItems.forEach((checkbox) => {
       const li = checkbox.parentElement;
       selectedAnnouncements.push(li.querySelector("span").textContent);
       li.classList.add("posted");
     });
   } else if (postOption === "all") {
     // Post all announcements
-    listItems.forEach(li => {
+    listItems.forEach((li) => {
       selectedAnnouncements.push(li.querySelector("span").textContent);
       li.classList.add("posted");
     });
   }
-  
+
   latestPostedAnnouncement = selectedAnnouncements.join("\n\n");
   alert("Selected announcement(s) posted.");
 }
@@ -400,7 +412,7 @@ function viewAnnouncements() {
   }
 
   // Hide all items first
-  listItems.forEach(li => {
+  listItems.forEach((li) => {
     li.style.display = "none";
   });
 
@@ -413,7 +425,7 @@ function viewAnnouncements() {
   } else if (viewOption === "selected") {
     // Show only checked announcements
     let atLeastOne = false;
-    listItems.forEach(li => {
+    listItems.forEach((li) => {
       const checkbox = li.querySelector(".announcement-checkbox");
       if (checkbox && checkbox.checked) {
         li.style.display = "flex";
@@ -425,15 +437,11 @@ function viewAnnouncements() {
     }
   } else if (viewOption === "all") {
     // Show all announcements
-    listItems.forEach(li => {
+    listItems.forEach((li) => {
       li.style.display = "flex";
     });
   }
 }
-
-
-
-
 
 // Store the header text without displaying it in the HTML
 let attendanceHeaderText = "Time Log > By Company";
@@ -451,13 +459,13 @@ function updateAttendanceHeader() {
 
   // Use the same company options as in filterAttendance for consistency.
   const companyOptions = {
-    "agridom": "Agridom Solutions Corp.",
-    "farmtech": "Farmtech Agriland Corporation",
-    "subang": "Subang Farm",
-    "djas": "DJAS Servitrade Corporation",
-    "agri-online": "AGRI Online",
-    "sunfood": "Sunfood Marketing Inc.",
-    "all": "All companies"
+    agridom: "Agridom Solutions Corp.",
+    farmtech: "Farmtech Agriland Corporation",
+    subang: "Subang Farm",
+    djas: "DJAS Servitrade Corporation",
+    agri_online: "AGRI Online",
+    sunfood: "Sunfood Marketing Inc.",
+    all: "All companies",
   };
   let companyText = companyOptions[company] || "By Company";
 
@@ -465,47 +473,85 @@ function updateAttendanceHeader() {
 }
 
 // Ensure dropdown selections update the stored header text
-document.getElementById("attendance-type").addEventListener("change", updateAttendanceHeader);
-document.getElementById("attendance-company").addEventListener("change", updateAttendanceHeader);
+document
+  .getElementById("attendance-type")
+  .addEventListener("change", updateAttendanceHeader);
+document
+  .getElementById("attendance-company")
+  .addEventListener("change", updateAttendanceHeader);
 
 // Update the filter function to show the selected options in a prompt with the correct format
 function filterAttendance() {
   const type = document.getElementById("attendance-type").value; // Correctly get the type
   const company = document.getElementById("attendance-company").value; // Get the company value
   const department = document.getElementById("attendance-department").value; // Get the department value
-  
+
   // Define the options for each dropdown
   const typeOptions = {
     "time-log": "Time Log",
     "users-active": "Users Active",
-    "users-inactive": "Users Inactive"
+    "users-inactive": "Users Inactive",
   };
-  
+
   const companyOptions = {
-    "agridom": "Agridom Solutions Corp.",
-    "farmtech": "Farmtech Agriland Corporation",
-    "subang": "Subang Farm",
-    "djas": "DJAS Servitrade Corporation",
+    agridom: "Agridom Solutions Corp.",
+    farmtech: "Farmtech Agriland Corporation",
+    subang: "Subang Farm",
+    djas: "DJAS Servitrade Corporation",
     "agri-online": "AGRI Online",
-    "sunfood": "Sunfood Marketing Inc.",
-    "all": "All companies"
+    sunfood: "Sunfood Marketing Inc.",
+    all: "All companies",
   };
 
   const departmentOptions = {
-    "all": "All departments",
-    "hr": "Human Resources",
-    "it": "IT Department",
-    "finance": "Finance"
+    all: "All departments",
+    hr: "Human Resources",
+    it: "IT Department",
+    finance: "Finance",
   };
 
   // Get the selected text for each dropdown option
   const selectedType = typeOptions[type] || "Time Log";
   const selectedCompany = companyOptions[company] || "All companies";
   const selectedDepartment = departmentOptions[department] || "All departments";
-  
+
   // Generate the filter text
   const filterText = `Filtering attendance for:\n${selectedType} > ${selectedCompany} > ${selectedDepartment}`;
 
   // Show the filter information in a prompt
   alert(filterText);
 }
+
+
+// CONVERT TO CSS
+
+// // Apply the gray styling for unselected options
+// document.addEventListener("DOMContentLoaded", function () {
+//   const dropdowns = document.querySelectorAll("select");
+
+//   dropdowns.forEach((select) => {
+//     select.addEventListener("change", function () {
+//       let options = this.options;
+//       for (let i = 0; i < options.length; i++) {
+//         if (options[i].selected) {
+//           options[i].style.color = "black"; // Selected option turns black
+//         } else {
+//           options[i].style.color = "gray"; // Unselected options remain gray
+//         }
+//       }
+//     });
+//   });
+
+//   // Apply initial gray color to options when the page loads
+//   dropdowns.forEach((select) => {
+//     let options = select.options;
+//     for (let i = 0; i < options.length; i++) {
+//       options[i].style.color = "gray"; // Make all options gray initially
+//     }
+//     // Set the selected option color to black
+//     const selectedOption = select.querySelector("option:checked");
+//     if (selectedOption) {
+//       selectedOption.style.color = "black";
+//     }
+//   });
+// });
