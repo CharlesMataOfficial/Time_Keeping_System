@@ -24,7 +24,7 @@ class CustomUserManager(BaseUserManager):
             next_id = '000001'
         return next_id
 
-    def create_user(self, employee_id=None, password=None, **extra_fields): 
+    def create_user(self, employee_id=None, password=None, **extra_fields):
         if not employee_id:
             employee_id = self.get_next_employee_id()
 
@@ -149,35 +149,10 @@ class TimeEntry(models.Model):
             new_entry.save()
         return new_entry
 
+class Announcement(models.Model):
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_posted = models.BooleanField(default=False)
 
-@never_cache
-def login_view(request):
-    if request.method == "POST":
-        employee_id = request.POST.get("employee_id")
-        pin = request.POST.get("pin")
-
-        auth_result = CustomUser.authenticate_by_pin(employee_id, pin)
-
-        if isinstance(auth_result, dict) and auth_result["status"] == "first_login":
-            # Handle first time login - extract user from dict
-            user = auth_result["user"]
-            login(request, user)
-            return redirect("user_page")
-        elif auth_result:  # Regular successful login
-            user = auth_result
-            login(request, user)
-            if user.is_staff and user.is_superuser:
-                return redirect(reverse("admin:index"))
-            elif user.is_staff and not user.is_superuser:
-                return redirect("custom_admin_page")
-            else:
-                return redirect("user_page")
-        else:  # Authentication failed
-            try:
-                CustomUser.objects.get(employee_id=employee_id)
-                error_message = "Incorrect PIN"
-            except CustomUser.DoesNotExist:
-                error_message = "Employee ID not found"
-
-            return render(request, "index.html", {"error": error_message})
-    return render(request, "index.html")
+    def __str__(self):
+        return f"Announcement {self.id}"

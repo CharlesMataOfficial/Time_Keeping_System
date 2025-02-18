@@ -1,17 +1,19 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.urls import reverse
-from .models import CustomUser, TimeEntry
+from .models import CustomUser, TimeEntry, Announcement
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
 import json
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_POST, require_GET
 from django.utils import timezone
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 import os
 from datetime import datetime, timedelta
+from django.views.decorators.csrf import csrf_exempt
+
 
 
 @never_cache
@@ -349,3 +351,81 @@ def upload_image(request):
         file_path = default_storage.save(file_path, ContentFile(image_data.read()))
         return JsonResponse({"success": True, "file_path": file_path})
     return JsonResponse({"success": False, "error": "No image uploaded"})
+
+@csrf_exempt
+def announcements_list_create(request):
+    """
+    GET  -> Return a list of all announcements (JSON)
+    POST -> Create a new announcement (expects JSON body { content: "..."} )
+    """
+    if request.method == 'GET':
+        announcements = Announcement.objects.all().order_by('-created_at')
+        data = [
+            {
+                'id': ann.id,
+                'content': ann.content,
+                'created_at': ann.created_at.isoformat(),
+                'is_posted': ann.is_posted
+            }
+            for ann in announcements
+        ]
+        return JsonResponse(data, safe=False)
+
+    elif request.method == 'POST':
+        try:
+            body = json.loads(request.body)
+            content = body.get('content', '')
+            announcement = Announcement.objects.create(content=content)
+            return JsonResponse({
+                'message': 'Announcement created',
+                'id': announcement.id
+            })
+        except:
+            return HttpResponseBadRequest('Invalid data')
+
+    return HttpResponseBadRequest('Unsupported method')
+
+
+@csrf_exempt
+def announcement_detail(request, pk):
+    """
+    GET -> Return details of a single announcement by ID.
+    """
+    announcement = get_object_or_404(Announcement, pk=pk)
+
+    if request.method == 'GET':
+        data = {
+            'id': announcement.id,
+            'content': announcement.content,
+            'created_at': announcement.created_at.isoformat(),
+            'is_posted': announcement.is_posted
+        }
+        return JsonResponse(data)
+
+    return HttpResponseBadRequest('Unsupported method')
+
+
+@csrf_exempt
+def announcement_delete(request, pk):
+    """
+    DELETE -> Delete an announcement by ID.
+    """
+    if request.method == 'DELETE':
+        announcement = get_object_or_404(Announcement, pk=pk)
+        announcement.delete()
+        return JsonResponse({'message': 'Announcement deleted'})
+    return HttpResponseBadRequest('Unsupported method')
+
+
+@csrf_exempt
+def announcement_post(request, pk):
+    """
+    POST -> Mark an announcement as posted (is_posted = True).
+    """
+    if request.method == 'POST':
+        announcement = get_object_or_404(Announcement, pk=pk)
+        announcement.is_posted = True
+        announcement.save()
+        return JsonResponse({'message': 'Announcement posted'})
+    return HttpResponseBadRequest('Unsupported method')
+

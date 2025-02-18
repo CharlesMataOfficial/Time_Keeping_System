@@ -7,45 +7,161 @@ function toggleMenu() {
     menu.style.left = '0px';
   }
 }
+// Define the ordered menu navigation (matches sidebar order)
+const menuOrder = [
+  "dashboard",
+  "log",
+  "attendance-list",
+  "work-hours",
+  "announcement",
+  "export-excel",
+  "leave-approval",
+  "about"
+];
 
-// Navigation history stack for back navigation
-let navigationHistory = [];
+// Store the currently active screen
+let currentScreen = "dashboard"; // Default to dashboard
 
-/**
- * Unified navigateTo function:
- * - Pushes the current screen (if any) into the navigation history (if different)
- * - Hides all screens, then shows the selected one
- * - Closes the menu and updates the back button's visibility
- */
+// Function to navigate to a screen
 function navigateTo(screenId) {
-  const currentScreen = document.querySelector('.screen[style*="display: flex"]');
-  if (currentScreen && currentScreen.id !== screenId) {
-    navigationHistory.push(currentScreen.id);
-  }
-
   // Hide all screens
   document.querySelectorAll('.screen').forEach(screen => {
     screen.style.display = 'none';
   });
 
-  // Show the target screen
-  const newScreen = document.getElementById(screenId);
-  if (newScreen) {
-    newScreen.style.display = 'flex';
+  // Show the selected screen
+  const activeScreen = document.getElementById(screenId);
+  if (activeScreen) {
+    activeScreen.style.display = 'flex';
+    currentScreen = screenId; // Update the current screen
   }
 
-  // Hide menu if open
+  // Hide menu when a screen is selected
   const menu = document.getElementById('menu');
   if (menu) {
     menu.style.left = '-300px';
   }
 
-  // Update the back button (dashboard shortcut) visibility:
-  // If there is history, show the back button; otherwise hide it.
+  // Always show the dashboard shortcut (if the element exists)
   const dashboardShortcut = document.getElementById('dashboard-shortcut');
   if (dashboardShortcut) {
-    dashboardShortcut.style.display = navigationHistory.length > 0 ? 'block' : 'none';
+    dashboardShortcut.style.display = 'block';
   }
+  if (screenId === 'announcement') {
+    fetchAnnouncements();
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Show Dashboard on page load
+  navigateTo("dashboard");
+
+  // Setup event listener for left arrow
+  const leftArrow = document.getElementById('left-arrow');
+  if (leftArrow) {
+    leftArrow.addEventListener('click', function () {
+      let currentIndex = menuOrder.indexOf(currentScreen);
+      if (currentIndex > 0) {
+        let previousScreen = menuOrder[currentIndex - 1]; // Get the previous screen in the list
+        navigateTo(previousScreen);
+      }
+    });
+  }
+
+  // Setup event listener for right arrow
+  const rightArrow = document.getElementById('right-arrow');
+  if (rightArrow) {
+    rightArrow.addEventListener('click', function () {
+      let currentIndex = menuOrder.indexOf(currentScreen);
+      if (currentIndex < menuOrder.length - 1) {
+        let nextScreen = menuOrder[currentIndex + 1]; // Get the next screen in the list
+        navigateTo(nextScreen);
+      }
+    });
+  }
+
+  // Dropdown color change listener
+  const dropdowns = document.querySelectorAll("select");
+  dropdowns.forEach(select => {
+    select.addEventListener("change", function () {
+      let options = this.options;
+      for (let i = 0; i < options.length; i++) {
+        if (options[i].selected) {
+          options[i].style.color = "black"; // Selected option turns black
+        } else {
+          options[i].style.color = "gray"; // Unselected options remain gray
+        }
+      }
+    });
+  });
+});
+// Update the attendance header when dropdown selections change
+document.getElementById("attendance-type").addEventListener("change", updateAttendanceHeader);
+document.getElementById("attendance-company").addEventListener("change", updateAttendanceHeader);
+
+// Function to update attendance header text
+function updateAttendanceHeader() {
+  const type = document.getElementById("attendance-type").value;
+  const company = document.getElementById("attendance-company").value;
+
+  let typeText = "Time Log";
+  if (type === "users-active") {
+    typeText = "Users Active";
+  } else if (type === "users-inactive") {
+    typeText = "Users Inactive";
+  }
+
+  let companyText = "By Company";
+  if (company === "lorem-ipsum-1") {
+    companyText = "Lorem Ipsum 1";
+  } else if (company === "lorem-ipsum-2") {
+    companyText = "Lorem Ipsum 2";
+  }
+
+  // Store the text instead of updating an HTML element
+  attendanceHeaderText = `${typeText} > ${companyText}`;
+}
+
+// Filter attendance based on dropdown selections
+function filterAttendance() {
+  const type = document.getElementById("attendance-type").value; // Correctly get the type
+  const company = document.getElementById("attendance-company").value; // Get the company value
+  const department = document.getElementById("attendance-department").value; // Get the department value
+  
+  // Define the options for each dropdown
+  const typeOptions = {
+    "time-log": "Time Log",
+    "users-active": "Users Active",
+    "users-inactive": "Users Inactive"
+  };
+  
+  const companyOptions = {
+    "agridom": "Agridom Solutions Corp.",
+    "farmtech": "Farmtech Agriland Corporation",
+    "subang": "Subang Farm",
+    "djas": "DJAS Servitrade Corporation",
+    "agri-online": "AGRI Online",
+    "sunfood": "Sunfood Marketing Inc.",
+    "all": "All companies"
+  };
+
+  const departmentOptions = {
+    "all": "All departments",
+    "hr": "Human Resources",
+    "it": "IT Department",
+    "finance": "Finance"
+  };
+
+  // Get the selected text for each dropdown option
+  const selectedType = typeOptions[type] || "Time Log";
+  const selectedCompany = companyOptions[company] || "All companies";
+  const selectedDepartment = departmentOptions[department] || "All departments";
+  
+  // Generate the filter text
+  const filterText = `Filtering attendance for:\n${selectedType} > ${selectedCompany} > ${selectedDepartment}`;
+
+  // Show the filter information in a prompt
+  alert(filterText);
 }
 
 // Work Hours Functions
@@ -126,69 +242,200 @@ function saveWorkHours() {
   }
 }
 
-// Announcement functions
+// Utility: Get CSRF token (if needed)
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+// On page load, fetch announcements from the server
+document.addEventListener('DOMContentLoaded', fetchAnnouncements);
+
+// Function to fetch announcements from the database and display them
+function fetchAnnouncements() {
+  fetch('/announcements/')
+    .then(response => response.json())
+    .then(data => {
+      const announcementList = document.getElementById("announcement-list");
+      announcementList.innerHTML = ""; // Clear current list
+      data.forEach(announcement => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <input type="checkbox" class="announcement-checkbox" data-id="${announcement.id}">
+          <span>${announcement.content}</span>
+        `;
+        announcementList.appendChild(li);
+      });
+    })
+    .catch(error => console.error("Error fetching announcements:", error));
+}
+
+// Function to save announcement (saves to the database)
 function saveAnnouncement() {
-  const announcementText = document.getElementById("announcement-text").value;
-  if (announcementText.trim() === "") {
+  const announcementText = document.getElementById("announcement-text").value.trim();
+  if (announcementText === "") {
     alert("Please enter an announcement.");
     return;
   }
-  document.getElementById("saved-announcements").value += announcementText + "\n\n";
-  document.getElementById("announcement-text").value = ""; // Clear input field
-  alert("Announcement saved successfully.");
+
+  fetch('/announcements/', {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCookie("csrftoken")
+    },
+    body: JSON.stringify({ content: announcementText })
+  })
+  .then(response => response.json())
+  .then(data => {
+    alert("Announcement saved successfully.");
+    document.getElementById("announcement-text").value = "";
+    fetchAnnouncements(); // Refresh the list from the database
+  })
+  .catch(error => {
+    console.error("Error saving announcement:", error);
+    alert("Error saving announcement.");
+  });
 }
 
-// Store the latest posted announcement
-let latestPostedAnnouncement = "";
-
-function postAnnouncement() {
-  const selectedOption = document.getElementById("post-options").value;
-  const savedAnnouncements = document.getElementById("saved-announcements").value.trim().split("\n\n");
-
-  if (!savedAnnouncements.length || savedAnnouncements[0] === "") {
-    alert("No saved announcements available.");
-    return;
-  }
-
-  if (selectedOption === "recent") {
-    latestPostedAnnouncement = savedAnnouncements[savedAnnouncements.length - 1];
-  } else if (selectedOption === "selected") {
-    const selectedText = window.getSelection().toString().trim();
-    if (!selectedText) {
-      alert("Please select an announcement to post.");
-      return;
-    }
-    latestPostedAnnouncement = selectedText;
-  } else if (selectedOption === "all") {
-    latestPostedAnnouncement = savedAnnouncements.join("\n\n");
-  }
-  alert(`Posting announcements: ${selectedOption}`);
-}
-
+// Function to delete selected announcements (from the database)
 function deleteAnnouncement() {
-  const savedAnnouncements = document.getElementById("saved-announcements");
-  const selectedText = window.getSelection().toString(); // Get selected text
-
-  if (!selectedText) {
+  const checkboxes = document.querySelectorAll(".announcement-checkbox:checked");
+  if (checkboxes.length === 0) {
     alert("Please select an announcement to delete.");
     return;
   }
 
-  if (confirm("Are you sure you want to delete the selected announcement?")) {
-    savedAnnouncements.value = savedAnnouncements.value.replace(selectedText, "").trim();
-    alert("Selected announcement deleted.");
-  }
-}
-
-function viewAnnouncements() {
-  if (!latestPostedAnnouncement) {
-    alert("No saved announcements to view.");
+  if (!confirm("Are you sure you want to delete the selected announcement(s)?")) {
     return;
   }
-  alert(`Saved Announcements:\n\n${latestPostedAnnouncement}`);
+
+  // Delete each selected announcement by calling the DELETE endpoint
+  const deletePromises = [];
+  checkboxes.forEach(checkbox => {
+    const announcementId = checkbox.getAttribute("data-id");
+    const promise = fetch(`/announcements/${announcementId}/delete/`, {
+      method: "DELETE",
+      headers: {
+        "X-CSRFToken": getCookie("csrftoken")
+      }
+    });
+    deletePromises.push(promise);
+  });
+
+  Promise.all(deletePromises)
+    .then(() => {
+      alert("Selected announcement(s) deleted.");
+      fetchAnnouncements();
+    })
+    .catch(error => {
+      console.error("Error deleting announcements:", error);
+      alert("Error deleting announcements.");
+    });
 }
 
-// Attendance header and filter functions
+// Global variable to store posted announcements text (if needed)
+let latestPostedAnnouncement = "";
+
+// Function to post selected announcements (for demonstration, just marks them as posted locally)
+function postAnnouncement() {
+  const postOption = document.getElementById("post-options").value;
+  const listItems = document.querySelectorAll("#announcement-list li");
+  
+  if (listItems.length === 0) {
+    alert("No saved announcements available.");
+    return;
+  }
+
+  let selectedAnnouncements = [];
+  
+  if (postOption === "recent") {
+    // Post the most recent announcement (last list item)
+    const recentItem = listItems[listItems.length - 1];
+    selectedAnnouncements.push(recentItem.querySelector("span").textContent);
+    recentItem.classList.add("posted");
+  } else if (postOption === "selected") {
+    // Post only checked announcements
+    const checkedItems = document.querySelectorAll(".announcement-checkbox:checked");
+    if (checkedItems.length === 0) {
+      alert("Please select an announcement to post.");
+      return;
+    }
+    checkedItems.forEach(checkbox => {
+      const li = checkbox.parentElement;
+      selectedAnnouncements.push(li.querySelector("span").textContent);
+      li.classList.add("posted");
+    });
+  } else if (postOption === "all") {
+    // Post all announcements
+    listItems.forEach(li => {
+      selectedAnnouncements.push(li.querySelector("span").textContent);
+      li.classList.add("posted");
+    });
+  }
+  
+  latestPostedAnnouncement = selectedAnnouncements.join("\n\n");
+  alert("Selected announcement(s) posted.");
+}
+
+// Function to view (filter) announcements in the panel based on the dropdown selection
+function viewAnnouncements() {
+  const viewOption = document.getElementById("post-options").value;
+  const listItems = document.querySelectorAll("#announcement-list li");
+
+  // If no announcements exist, exit
+  if (listItems.length === 0) {
+    console.log("No saved announcements available.");
+    return;
+  }
+
+  // Hide all items first
+  listItems.forEach(li => {
+    li.style.display = "none";
+  });
+
+  if (viewOption === "recent") {
+    // Show only the most recent (last item in the list)
+    const lastItem = listItems[listItems.length - 1];
+    if (lastItem) {
+      lastItem.style.display = "flex";
+    }
+  } else if (viewOption === "selected") {
+    // Show only checked announcements
+    let atLeastOne = false;
+    listItems.forEach(li => {
+      const checkbox = li.querySelector(".announcement-checkbox");
+      if (checkbox && checkbox.checked) {
+        li.style.display = "flex";
+        atLeastOne = true;
+      }
+    });
+    if (!atLeastOne) {
+      console.log("No announcements were selected.");
+    }
+  } else if (viewOption === "all") {
+    // Show all announcements
+    listItems.forEach(li => {
+      li.style.display = "flex";
+    });
+  }
+}
+
+
+
+
+
+// Store the header text without displaying it in the HTML
 let attendanceHeaderText = "Time Log > By Company";
 
 function updateAttendanceHeader() {
@@ -217,17 +464,23 @@ function updateAttendanceHeader() {
   attendanceHeaderText = `${typeText} > ${companyText}`;
 }
 
-function filterAttendance() {
-  const type = document.getElementById("attendance-type").value;
-  const company = document.getElementById("attendance-company").value;
-  const department = document.getElementById("attendance-department").value;
+// Ensure dropdown selections update the stored header text
+document.getElementById("attendance-type").addEventListener("change", updateAttendanceHeader);
+document.getElementById("attendance-company").addEventListener("change", updateAttendanceHeader);
 
+// Update the filter function to show the selected options in a prompt with the correct format
+function filterAttendance() {
+  const type = document.getElementById("attendance-type").value; // Correctly get the type
+  const company = document.getElementById("attendance-company").value; // Get the company value
+  const department = document.getElementById("attendance-department").value; // Get the department value
+  
+  // Define the options for each dropdown
   const typeOptions = {
     "time-log": "Time Log",
     "users-active": "Users Active",
     "users-inactive": "Users Inactive"
   };
-
+  
   const companyOptions = {
     "agridom": "Agridom Solutions Corp.",
     "farmtech": "Farmtech Agriland Corporation",
@@ -245,75 +498,14 @@ function filterAttendance() {
     "finance": "Finance"
   };
 
+  // Get the selected text for each dropdown option
   const selectedType = typeOptions[type] || "Time Log";
   const selectedCompany = companyOptions[company] || "All companies";
   const selectedDepartment = departmentOptions[department] || "All departments";
-
+  
+  // Generate the filter text
   const filterText = `Filtering attendance for:\n${selectedType} > ${selectedCompany} > ${selectedDepartment}`;
+
+  // Show the filter information in a prompt
   alert(filterText);
 }
-
-// Single DOMContentLoaded listener to attach event handlers
-document.addEventListener("DOMContentLoaded", function () {
-  // --- Dropdown Styling ---
-  const dropdowns = document.querySelectorAll("select");
-  dropdowns.forEach(select => {
-    // Set initial color for all options (gray)
-    for (let i = 0; i < select.options.length; i++) {
-      select.options[i].style.color = "gray";
-    }
-    // Set the selected option to black
-    const selectedOption = select.querySelector("option:checked");
-    if (selectedOption) {
-      selectedOption.style.color = "black";
-    }
-    // Change colors on change event
-    select.addEventListener("change", function () {
-      for (let i = 0; i < this.options.length; i++) {
-        this.options[i].style.color = this.options[i].selected ? "black" : "gray";
-      }
-    });
-  });
-
-  // --- Modal Event Handlers ---
-  const addBtn = document.getElementById("addWorkHours");
-  if (addBtn) {
-    addBtn.addEventListener("click", openScheduleModal);
-  } else {
-    console.error("Add button not found");
-  }
-
-  const closeBtn = document.getElementById("closeScheduleBtn");
-  if (closeBtn) {
-    closeBtn.addEventListener("click", closeModal);
-  }
-
-  // Close modal if clicking outside of it
-  window.onclick = function (event) {
-    const modal = document.getElementById("setScheduleModal");
-    if (event.target === modal) {
-      closeModal();
-    }
-  };
-
-  // --- Back Button (Dashboard Shortcut) ---
-  const dashboardShortcut = document.getElementById('dashboard-shortcut');
-  if (dashboardShortcut) {
-    dashboardShortcut.addEventListener('click', function () {
-      if (navigationHistory.length > 0) {
-        const lastPage = navigationHistory.pop();
-        navigateTo(lastPage);
-      }
-    });
-  }
-
-  // --- Attendance Dropdowns ---
-  const attendanceType = document.getElementById("attendance-type");
-  if (attendanceType) {
-    attendanceType.addEventListener("change", updateAttendanceHeader);
-  }
-  const attendanceCompany = document.getElementById("attendance-company");
-  if (attendanceCompany) {
-    attendanceCompany.addEventListener("change", updateAttendanceHeader);
-  }
-});

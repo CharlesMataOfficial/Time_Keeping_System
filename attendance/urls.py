@@ -12,5 +12,9 @@ urlpatterns = [
     path('get_todays_entries/', views.get_todays_entries, name='get_todays_entries'),
     path('custom_admin_page/', views.custom_admin_page, name='custom_admin_page'),
     path('upload_image/', views.upload_image, name='upload_image'),
+    path('announcements/', views.announcements_list_create, name='announcements_list_create'),
+    path('announcements/<int:pk>/', views.announcement_detail, name='announcement_detail'),
+    path('announcements/<int:pk>/delete/', views.announcement_delete, name='announcement_delete'),
+    path('announcements/<int:pk>/post/', views.announcement_post, name='announcement_post'),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
