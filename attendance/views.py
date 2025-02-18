@@ -20,26 +20,23 @@ def login_view(request):
         employee_id = request.POST.get("employee_id")
         pin = request.POST.get("pin")
 
-        user = CustomUser.authenticate_by_pin(employee_id, pin)
+        auth_result = CustomUser.authenticate_by_pin(employee_id, pin)
 
-        if user:
+        if auth_result:  # Successful login
+            user = auth_result if isinstance(auth_result, CustomUser) else auth_result["user"]
             login(request, user)
             if user.is_staff and user.is_superuser:
                 return redirect(reverse("admin:index"))
             elif user.is_staff and not user.is_superuser:
-                return redirect(
-                    "custom_admin_page"
-                )  # Redirect to custom admin page (you need to set this URL)
+                return redirect("custom_admin_page")
             else:
                 return redirect("user_page")
         else:  # Authentication failed
             try:
                 CustomUser.objects.get(employee_id=employee_id)
-                error_message = "Incorrect PIN"  # Generic message if user exists
+                error_message = "Incorrect PIN"
             except CustomUser.DoesNotExist:
-                error_message = (
-                    "Employee ID not found"  # Specific message if user not found
-                )
+                error_message = "Employee ID not found"
 
             return render(request, "index.html", {"error": error_message})
     return render(request, "index.html")
@@ -47,27 +44,6 @@ def login_view(request):
 
 @login_required
 def user_page(request):
-    # Get company with fallback to empty string if None
-    user_company = request.user.company or ""
-    user_company = user_company.strip().lower()
-
-    # Company logo mapping from fetched data to image path
-    company_logo_mapping = {
-        "sfgc": "SFgroup.png",
-        "asc": "agrilogo2.png",
-        "sfgci": "SFgroup.png",
-        "smi": "sunfood.png",
-        "gti": "Geniustech.png",
-        "fac": "farmtech.png",
-        "djas": "DJas.png",
-        "default": "default_logo.png",
-    }
-
-    # Get the company logo based on the user's company
-    company_logo = company_logo_mapping.get(
-        user_company, company_logo_mapping["default"]
-    )
-
     now = timezone.now()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     today_end = today_start + timedelta(days=1)
@@ -82,8 +58,8 @@ def user_page(request):
         "user_page.html",
         {
             "all_entries": todays_entries,
-            "partner_logo": company_logo,
-            "user_company": user_company,
+            "partner_logo": "default_logo.png",  # Set default/empty logo
+            "user_company": "",  # Empty company string
         },
     )
 
