@@ -344,4 +344,68 @@ document.addEventListener("DOMContentLoaded", function () {
   timeOutBtn.addEventListener("click", function() {
       clockOutModal.style.display = "block";
   });
+})
+document.addEventListener('DOMContentLoaded', () => {
+  fetch('/announcements/posted/')
+    .then(response => response.json())
+    .then(data => {
+      const container = document.getElementById('posted-announcements');
+      container.innerHTML = '';
+
+      if (data.length === 0) {
+        container.innerHTML = '<p>No posted announcements at this time.</p>';
+        return;
+      }
+
+      // Create a UL element for the bullet list
+      const ul = document.createElement('ul');
+
+      data.forEach(ann => {
+        const fullText = ann.content;
+        const truncatedText = fullText.length > 30 
+          ? fullText.substring(0, 30) + '...'
+          : fullText;
+
+        // Create an LI element for each announcement
+        const li = document.createElement('li');
+
+        // Create a span for the announcement text
+        const span = document.createElement('span');
+        span.textContent = truncatedText;
+        li.appendChild(span);
+
+        // Only create the "See more/See less" link if the text exceeds 30 characters
+        if (fullText.length > 30) {
+          const seeMore = document.createElement('a');
+          seeMore.href = '#';
+          seeMore.style.marginLeft = '5px';
+          seeMore.style.color = 'red';         // red link text
+          seeMore.style.textDecoration = 'none';   // Remove underline if desired
+          seeMore.style.cursor = 'pointer';
+          seeMore.textContent = '[See more]';
+
+          // Toggle between truncated and full text on click
+          seeMore.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (seeMore.textContent === '[See more]') {
+              span.textContent = fullText;
+              seeMore.textContent = '[See less]';
+            } else {
+              span.textContent = truncatedText;
+              seeMore.textContent = '[See more]';
+            }
+            li.appendChild(seeMore); // Ensure the link stays in the LI
+          });
+
+          li.appendChild(seeMore);
+        }
+
+        ul.appendChild(li);
+      });
+
+      container.appendChild(ul);
+    })
+    .catch(error => {
+      console.error('Error fetching posted announcements:', error);
+    });
 });

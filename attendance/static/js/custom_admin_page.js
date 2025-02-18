@@ -349,44 +349,31 @@ let latestPostedAnnouncement = "";
 
 // Function to post selected announcements (for demonstration, just marks them as posted locally)
 function postAnnouncement() {
-  const postOption = document.getElementById("post-options").value;
-  const listItems = document.querySelectorAll("#announcement-list li");
-  
-  if (listItems.length === 0) {
-    alert("No saved announcements available.");
+  const checkedItems = document.querySelectorAll(".announcement-checkbox:checked");
+  if (checkedItems.length === 0) {
+    alert("Please select an announcement to post.");
     return;
   }
 
-  let selectedAnnouncements = [];
-  
-  if (postOption === "recent") {
-    // Post the most recent announcement (last list item)
-    const recentItem = listItems[listItems.length - 1];
-    selectedAnnouncements.push(recentItem.querySelector("span").textContent);
-    recentItem.classList.add("posted");
-  } else if (postOption === "selected") {
-    // Post only checked announcements
-    const checkedItems = document.querySelectorAll(".announcement-checkbox:checked");
-    if (checkedItems.length === 0) {
-      alert("Please select an announcement to post.");
-      return;
-    }
-    checkedItems.forEach(checkbox => {
-      const li = checkbox.parentElement;
-      selectedAnnouncements.push(li.querySelector("span").textContent);
-      li.classList.add("posted");
-    });
-  } else if (postOption === "all") {
-    // Post all announcements
-    listItems.forEach(li => {
-      selectedAnnouncements.push(li.querySelector("span").textContent);
-      li.classList.add("posted");
-    });
-  }
-  
-  latestPostedAnnouncement = selectedAnnouncements.join("\n\n");
-  alert("Selected announcement(s) posted.");
+  const postPromises = [];
+  checkedItems.forEach(checkbox => {
+    const announcementId = checkbox.getAttribute("data-id");
+    const promise = fetch(`/announcements/${announcementId}/post/`, {
+      method: "POST",
+      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    }).then(res => res.json());
+    postPromises.push(promise);
+  });
+
+  Promise.all(postPromises)
+    .then(() => {
+      alert("Selected announcement(s) posted.");
+      // Optionally redirect or refresh
+      // window.location.href = "/some-other-page/";
+    })
+    .catch(error => console.error("Error posting announcements:", error));
 }
+
 
 // Function to view (filter) announcements in the panel based on the dropdown selection
 function viewAnnouncements() {

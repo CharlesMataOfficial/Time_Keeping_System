@@ -429,3 +429,23 @@ def announcement_post(request, pk):
         return JsonResponse({'message': 'Announcement posted'})
     return HttpResponseBadRequest('Unsupported method')
 
+@csrf_exempt
+def posted_announcements_list(request):
+    """
+    GET -> Return a list of posted announcements (is_posted=True).
+    """
+    if request.method == 'GET':
+        # Filter to only posted announcements
+        announcements = Announcement.objects.filter(is_posted=True).order_by('-created_at')
+        data = [
+            {
+                'id': ann.id,
+                'content': ann.content,
+                'created_at': ann.created_at.isoformat(),
+                'is_posted': ann.is_posted
+            }
+            for ann in announcements
+        ]
+        return JsonResponse(data, safe=False)
+    
+    return HttpResponseBadRequest("Unsupported method")

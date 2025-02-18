@@ -274,7 +274,6 @@ header {
   top: -9px;
   left: -20px;
 }
-
 /* Note styles for Announcements (Longer Note) */
 .announcements .note {
   background: #e2e2e2;
@@ -285,7 +284,38 @@ header {
   position: relative;
   top: -9px;
   left: -20px;
+  overflow-y: auto;
+  overflow-x: hidden; /* Hide horizontal scroll */
+  padding: 10px; /* Optional padding */
 }
+
+/* Style the unordered list for bullet points */
+#posted-announcements ul {
+  list-style-type: disc;  /* Use disc bullets */
+  margin: 0;
+  padding-left: 20px;     /* Indent bullets */
+}
+
+/* Style each list item */
+#posted-announcements li {
+  font-size: 15px;
+  font-weight: bold;
+  font-family: "Arial", sans-serif;
+  color: black;
+  text-align: center;       /* You can change to 'left' if you prefer */
+  margin: 0 0 10px 0;       /* Space between items */
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+/* Style for the See more / See less link */
+#posted-announcements li a {
+  color: black;           /* Black link text */
+  text-decoration: none;  /* Remove underline */
+  cursor: pointer;
+  margin-left: 5px;
+}
+
 
 .sidebar {
   position: absolute;
