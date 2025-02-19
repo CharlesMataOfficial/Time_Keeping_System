@@ -16,5 +16,6 @@ urlpatterns = [
     path('announcements/<int:pk>/', views.announcement_detail, name='announcement_detail'),
     path('announcements/<int:pk>/delete/', views.announcement_delete, name='announcement_delete'),
     path('announcements/<int:pk>/post/', views.announcement_post, name='announcement_post'),
+    path('announcements/posted/', views.posted_announcements_list, name='posted_announcements_list'),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
