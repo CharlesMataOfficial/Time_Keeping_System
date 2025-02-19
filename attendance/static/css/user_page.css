@@ -320,12 +320,8 @@ header {
   justify-content: center;
   position: relative;
   border-radius: 5px;
-  position: relative;
-  top: -9px;
-  left: -20px;
   overflow-y: auto;
   overflow-x: hidden; /* Hide horizontal scroll */
-  padding: 10px; /* Optional padding */
 }
 
 /* Style the unordered list for bullet points */
@@ -353,8 +349,6 @@ header {
   text-decoration: none;  /* Remove underline */
   cursor: pointer;
   margin-left: 5px;
-}
-
 }
 
 .sidebar {

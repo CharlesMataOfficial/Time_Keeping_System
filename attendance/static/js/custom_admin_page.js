@@ -94,6 +94,11 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   });
+
+  const attendanceCompany = document.getElementById("attendance-company");
+  if (attendanceCompany) {
+    attendanceCompany.addEventListener("change", updateAttendanceHeader);
+  }
 });
 // Update the attendance header when dropdown selections change
 document
