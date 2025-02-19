@@ -9,7 +9,7 @@ form {
 body {
     margin: 0;
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.5)), url('/static/images/office.jpg') no-repeat center center fixed;
+    background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.5)), url('/static/images/bg/office_bg.jpg') no-repeat center center fixed;
     background-size: cover;
     display: flex;
     align-items: center;

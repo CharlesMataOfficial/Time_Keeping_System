@@ -317,7 +317,7 @@ clockOutForm.addEventListener("submit", (e) => {
 // Function to update the partner logo
 function updatePartnerLogo(newLogo) {
   const partnerLogo = document.getElementById("partnerLogo");
-  partnerLogo.src = `/static/images/${newLogo}`;
+  partnerLogo.src = `/static/images/logos/${newLogo}`;
 }
 
 // Fetch today's entries when the page loads
@@ -346,7 +346,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-// CONVERT TO CSS 
+// CONVERT TO CSS
 
 // // Function to adjust notes
 // function adjustNotes() {

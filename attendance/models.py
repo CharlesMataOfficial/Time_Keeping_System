@@ -82,8 +82,11 @@ class CustomUser(AbstractUser):
     def authenticate_by_pin(cls, employee_id, pin):
         try:
             user = cls.objects.get(employee_id=employee_id)
-            if user.is_staff or user.is_superuser:
+            if user.is_superuser:
                 if user.check_password(pin):
+                    return user
+            elif user.is_staff:
+                if user.pin == pin:
                     return user
             elif user.if_first_login and pin == "0000":
                 return {"status": "first_login", "user": user}

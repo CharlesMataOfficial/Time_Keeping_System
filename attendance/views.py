@@ -15,7 +15,6 @@ from datetime import datetime, timedelta
 from django.views.decorators.csrf import csrf_exempt
 
 
-
 @never_cache
 def login_view(request):
     if request.method == "POST":
@@ -25,10 +24,14 @@ def login_view(request):
         auth_result = CustomUser.authenticate_by_pin(employee_id, pin)
 
         if auth_result:  # Successful login
-            user = auth_result if isinstance(auth_result, CustomUser) else auth_result["user"]
+            user = (
+                auth_result
+                if isinstance(auth_result, CustomUser)
+                else auth_result["user"]
+            )
             login(request, user)
             if user.is_staff and user.is_superuser:
-                return redirect(reverse("admin:login_page"))
+                return redirect(reverse("admin:login"))
             elif user.is_staff and not user.is_superuser:
                 return redirect("custom_admin_page")
             else:
@@ -90,26 +93,29 @@ def clock_in_view(request):
             user.pin = new_pin
             user.if_first_login = False
             user.save()
-            return JsonResponse({
-                "success": True,
-                "message": "PIN updated successfully"
-            })
+            return JsonResponse(
+                {"success": True, "message": "PIN updated successfully"}
+            )
         else:
             # Prompt for new PIN
-            return JsonResponse({
-                "success": False,
-                "error": "first_login",
-                "message": "Please set your new PIN"
-            })
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "first_login",
+                    "message": "Please set your new PIN",
+                }
+            )
 
     # For first login check only
     if first_login_check:
         if isinstance(auth_result, dict) and auth_result["status"] == "first_login":
-            return JsonResponse({
-                "success": False,
-                "error": "first_login",
-                "message": "Please set your new PIN"
-            })
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "first_login",
+                    "message": "Please set your new PIN",
+                }
+            )
         return JsonResponse({"success": True})
 
     # Regular clock in
@@ -130,13 +136,13 @@ def clock_in_view(request):
         user_company = user_company.strip().lower()
 
         company_logo_mapping = {
-            "sfgc": "SFgroup.png",
-            "asc": "agrilogo2.png",
-            "sfgci": "SFgroup.png",
+            "sfgc": "sfgroup.png",
+            "asc": "agridom4.png",
+            "sfgci": "sfgroup.png",
             "smi": "sunfood.png",
-            "gti": "Geniustech.png",
+            "gti": "geniustech.png",
             "fac": "farmtech.png",
-            "djas": "DJas.png",
+            "djas": "djas.png",
             "default": "default_logo.png",
         }
 
@@ -165,24 +171,28 @@ def clock_in_view(request):
                 "surname": entry.user.surname,
                 "company": entry.user.company or "",
                 "time_in": entry.time_in.strftime("%I:%M %p"),
-                "time_out": entry.time_out.strftime("%I:%M %p") if entry.time_out else None,
+                "time_out": (
+                    entry.time_out.strftime("%I:%M %p") if entry.time_out else None
+                ),
                 "image_path": entry.image_path,
             }
             for entry in todays_entries
         ]
 
-        return JsonResponse({
-            "success": True,
-            "employee_id": user.employee_id,
-            "first_name": user.first_name,
-            "surname": user.surname,
-            "company": user.company or "",
-            "time_in": entry.time_in.strftime("%I:%M %p"),
-            "time_out": None,
-            "image_path": entry.image_path,
-            "new_logo": company_logo,
-            "attendance_list": attendance_list,
-        })
+        return JsonResponse(
+            {
+                "success": True,
+                "employee_id": user.employee_id,
+                "first_name": user.first_name,
+                "surname": user.surname,
+                "company": user.company or "",
+                "time_in": entry.time_in.strftime("%I:%M %p"),
+                "time_out": None,
+                "image_path": entry.image_path,
+                "new_logo": company_logo,
+                "attendance_list": attendance_list,
+            }
+        )
 
 
 @require_POST
@@ -217,13 +227,13 @@ def clock_out_view(request):
 
             # Get the company logo based on the user's company
             company_logo_mapping = {
-                "sfgc": "SFgroup.png",
-                "asc": "agrilogo2.png",
-                "sfgci": "SFgroup.png",
+                "sfgc": "sfgroup.png",
+                "asc": "agridom4.png",
+                "sfgci": "sfgroup.png",
                 "smi": "sunfood.png",
-                "gti": "Geniustech.png",
+                "gti": "geniustech.png",
                 "fac": "farmtech.png",
-                "djas": "DJas.png",
+                "djas": "djas.png",
                 "default": "default_logo.png",
             }
 
@@ -243,43 +253,42 @@ def clock_out_view(request):
                     "surname": entry.user.surname,
                     "company": entry.user.company or "",
                     "time_in": entry.time_in.strftime("%I:%M %p"),
-                    "time_out": entry.time_out.strftime("%I:%M %p") if entry.time_out else None,
+                    "time_out": (
+                        entry.time_out.strftime("%I:%M %p") if entry.time_out else None
+                    ),
                     "image_path": entry.image_path,
                 }
                 for entry in todays_entries
             ]
 
-            return JsonResponse({
-                "success": True,
-                "employee_id": user.employee_id,
-                "first_name": user.first_name or "",
-                "surname": user.surname or "",
-                "company": user.company or "",
-                "time_in": time_in_formatted,
-                "time_out": time_out_formatted,
-                "new_logo": company_logo,
-                "attendance_list": attendance_list,
-            })
+            return JsonResponse(
+                {
+                    "success": True,
+                    "employee_id": user.employee_id,
+                    "first_name": user.first_name or "",
+                    "surname": user.surname or "",
+                    "company": user.company or "",
+                    "time_in": time_in_formatted,
+                    "time_out": time_out_formatted,
+                    "new_logo": company_logo,
+                    "attendance_list": attendance_list,
+                }
+            )
         except TimeEntry.DoesNotExist:
-            return JsonResponse({
-                "success": False,
-                "error": "No active clock in found."
-            })
+            return JsonResponse(
+                {"success": False, "error": "No active clock in found."}
+            )
         except Exception as e:
-            return JsonResponse({
-                "success": False,
-                "error": f"An error occurred: {str(e)}"
-            })
+            return JsonResponse(
+                {"success": False, "error": f"An error occurred: {str(e)}"}
+            )
     else:
         try:
             CustomUser.objects.get(employee_id=employee_id)
             error_message = "Incorrect PIN"
         except CustomUser.DoesNotExist:
             error_message = "Employee ID not found"
-        return JsonResponse({
-            "success": False,
-            "error": error_message
-        })
+        return JsonResponse({"success": False, "error": error_message})
 
 
 @require_GET
@@ -291,20 +300,25 @@ def get_todays_entries(request):
 
     # Make sure entries are ordered by last_modified in descending order
     entries = TimeEntry.objects.filter(
-        time_in__gte=today_start,
-        time_in__lt=today_end
-    ).order_by('-last_modified')  # This is correct
+        time_in__gte=today_start, time_in__lt=today_end
+    ).order_by(
+        "-last_modified"
+    )  # This is correct
 
     entries_data = []
     for entry in entries:
-        entries_data.append({
-            "employee_id": entry.user.employee_id,
-            "first_name": entry.user.first_name,
-            "surname": entry.user.surname,
-            "company": entry.user.company,
-            "time_in": entry.time_in.strftime("%I:%M %p"),
-            "time_out": entry.time_out.strftime("%I:%M %p") if entry.time_out else None,
-        })
+        entries_data.append(
+            {
+                "employee_id": entry.user.employee_id,
+                "first_name": entry.user.first_name,
+                "surname": entry.user.surname,
+                "company": entry.user.company,
+                "time_in": entry.time_in.strftime("%I:%M %p"),
+                "time_out": (
+                    entry.time_out.strftime("%I:%M %p") if entry.time_out else None
+                ),
+            }
+        )
 
     return JsonResponse({"entries": entries_data})
 
@@ -352,38 +366,38 @@ def upload_image(request):
         return JsonResponse({"success": True, "file_path": file_path})
     return JsonResponse({"success": False, "error": "No image uploaded"})
 
+
 @csrf_exempt
 def announcements_list_create(request):
     """
     GET  -> Return a list of all announcements (JSON)
     POST -> Create a new announcement (expects JSON body { content: "..."} )
     """
-    if request.method == 'GET':
-        announcements = Announcement.objects.all().order_by('-created_at')
+    if request.method == "GET":
+        announcements = Announcement.objects.all().order_by("-created_at")
         data = [
             {
-                'id': ann.id,
-                'content': ann.content,
-                'created_at': ann.created_at.isoformat(),
-                'is_posted': ann.is_posted
+                "id": ann.id,
+                "content": ann.content,
+                "created_at": ann.created_at.isoformat(),
+                "is_posted": ann.is_posted,
             }
             for ann in announcements
         ]
         return JsonResponse(data, safe=False)
 
-    elif request.method == 'POST':
+    elif request.method == "POST":
         try:
             body = json.loads(request.body)
-            content = body.get('content', '')
+            content = body.get("content", "")
             announcement = Announcement.objects.create(content=content)
-            return JsonResponse({
-                'message': 'Announcement created',
-                'id': announcement.id
-            })
+            return JsonResponse(
+                {"message": "Announcement created", "id": announcement.id}
+            )
         except:
-            return HttpResponseBadRequest('Invalid data')
+            return HttpResponseBadRequest("Invalid data")
 
-    return HttpResponseBadRequest('Unsupported method')
+    return HttpResponseBadRequest("Unsupported method")
 
 
 @csrf_exempt
@@ -393,16 +407,16 @@ def announcement_detail(request, pk):
     """
     announcement = get_object_or_404(Announcement, pk=pk)
 
-    if request.method == 'GET':
+    if request.method == "GET":
         data = {
-            'id': announcement.id,
-            'content': announcement.content,
-            'created_at': announcement.created_at.isoformat(),
-            'is_posted': announcement.is_posted
+            "id": announcement.id,
+            "content": announcement.content,
+            "created_at": announcement.created_at.isoformat(),
+            "is_posted": announcement.is_posted,
         }
         return JsonResponse(data)
 
-    return HttpResponseBadRequest('Unsupported method')
+    return HttpResponseBadRequest("Unsupported method")
 
 
 @csrf_exempt
@@ -410,11 +424,11 @@ def announcement_delete(request, pk):
     """
     DELETE -> Delete an announcement by ID.
     """
-    if request.method == 'DELETE':
+    if request.method == "DELETE":
         announcement = get_object_or_404(Announcement, pk=pk)
         announcement.delete()
-        return JsonResponse({'message': 'Announcement deleted'})
-    return HttpResponseBadRequest('Unsupported method')
+        return JsonResponse({"message": "Announcement deleted"})
+    return HttpResponseBadRequest("Unsupported method")
 
 
 @csrf_exempt
@@ -422,10 +436,9 @@ def announcement_post(request, pk):
     """
     POST -> Mark an announcement as posted (is_posted = True).
     """
-    if request.method == 'POST':
+    if request.method == "POST":
         announcement = get_object_or_404(Announcement, pk=pk)
         announcement.is_posted = True
         announcement.save()
-        return JsonResponse({'message': 'Announcement posted'})
-    return HttpResponseBadRequest('Unsupported method')
-
+        return JsonResponse({"message": "Announcement posted"})
+    return HttpResponseBadRequest("Unsupported method")

@@ -10,7 +10,7 @@ body {
       rgba(255, 255, 255, 0.6),
       rgba(255, 255, 255, 0.6)
     ),
-    url("/static/images/logos/grass_bg.jpg");
+    url("/static/images/bg/grass_bg.jpg");
   background-size: cover; /* Ensures the image fully covers the container */
   background-position: center;
   background-repeat: no-repeat;
@@ -65,25 +65,22 @@ header {
   margin-right: 10px;
 }
 
-.partner-logo {
-  display: flex;
-  align-items: center;
-}
-
-.partner-logo img {
+#partnerLogo {
   /* Company Logos */
   background-color: white;
   padding: 10px; /* Adds space around the logo */
   border-radius: 10px; /* Optional rounded corners */
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-  width: 250px; /* Change this to your desired size */
-  height: auto; /* Maintains aspect ratio */
-  margin-top: 100px;
-  margin-right: 425px;
+  width: 300px;
+  height: auto;
+  max-width: 250px; /* Change this to your desired size */
+  max-height: 250px; /* Maintains aspect ratio */
+  margin-top: 6%;
+  margin-right: 8%;
 }
 
 .logo img:hover,
-.partner-logo img:hover {
+#partnerLogo :hover {
   transform: scale(1.05); /* Slight zoom on hover */
   transition: transform 0.3s ease-in-out;
 }
@@ -128,7 +125,7 @@ header {
 
 .camera {
   position: absolute; /* Absolute positioning */
-  width: 20%; /* Adjust width for smaller screens */
+  width: 25%; /* Adjust width for smaller screens */
   flex: 0 0 auto;
   height: 350px;
   border: 2px solid #621c1c;
@@ -202,6 +199,7 @@ header {
   width: 100%;
   border-collapse: collapse;
   background: #fff;
+  height: 100%;
 }
 
 #attendance-table thead {
@@ -224,7 +222,8 @@ header {
 #attendance-table tbody {
   display: block;
   overflow-y: auto;
-  height: calc(100vh - 550px); /* Adjust this value to fit perfectly */
+  /* height: calc(100vh - 550px); Adjust this value to fit perfectly */
+  height: 100%;
 }
 
 #attendance-table thead tr,
