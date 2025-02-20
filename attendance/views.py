@@ -21,29 +21,30 @@ def login_view(request):
         employee_id = request.POST.get("employee_id")
         pin = request.POST.get("pin")
 
-        auth_result = CustomUser.authenticate_by_pin(employee_id, pin)
+        try:
+            # First check if user exists and is active
+            user = CustomUser.objects.get(employee_id=employee_id)
+            if not user.is_active:
+                return render(request, "login_page.html", {"error": "Employee ID not found"})
 
-        if auth_result:  # Successful login
-            user = (
-                auth_result
-                if isinstance(auth_result, CustomUser)
-                else auth_result["user"]
-            )
-            login(request, user)
-            if user.is_staff and user.is_superuser:
-                return redirect(reverse("admin:login"))
-            elif user.is_staff and not user.is_superuser:
-                return redirect("custom_admin_page")
-            else:
-                return redirect("user_page")
-        else:  # Authentication failed
-            try:
-                CustomUser.objects.get(employee_id=employee_id)
-                error_message = "Incorrect PIN"
-            except CustomUser.DoesNotExist:
-                error_message = "Employee ID not found"
+            # Now try to authenticate
+            auth_result = CustomUser.authenticate_by_pin(employee_id, pin)
 
-            return render(request, "login_page.html", {"error": error_message})
+            if auth_result:  # Successful login
+                user = auth_result if isinstance(auth_result, CustomUser) else auth_result["user"]
+                login(request, user)
+                if user.is_staff and user.is_superuser:
+                    return redirect(reverse("admin:login"))
+                elif user.is_staff and not user.is_superuser:
+                    return redirect("custom_admin_page")
+                else:
+                    return redirect("user_page")
+            else:  # Pin is incorrect
+                return render(request, "login_page.html", {"error": "Incorrect PIN"})
+
+        except CustomUser.DoesNotExist:
+            return render(request, "login_page.html", {"error": "Employee ID not found"})
+
     return render(request, "login_page.html")
 
 
