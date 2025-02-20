@@ -41,7 +41,7 @@ function navigateTo(screenId) {
 }
 
 
-// ✅ Mouse Click - Left Arrow (`<`) Button
+// Mouse Click - Left Arrow (`<`) Button
 document.getElementById("left-arrow")?.addEventListener("click", function () {
   let currentIndex = menuOrder.indexOf(currentScreen);
   if (currentIndex > 0) {
@@ -49,7 +49,7 @@ document.getElementById("left-arrow")?.addEventListener("click", function () {
   }
 });
 
-// ✅ Mouse Click - Right Arrow (`>`) Button
+// Mouse Click - Right Arrow (`>`) Button
 document.getElementById("right-arrow")?.addEventListener("click", function () {
   let currentIndex = menuOrder.indexOf(currentScreen);
   if (currentIndex < menuOrder.length - 1) {
@@ -57,7 +57,7 @@ document.getElementById("right-arrow")?.addEventListener("click", function () {
   }
 });
 
-// ✅ Keyboard Shortcut: Left Arrow (`←`) and Right Arrow (`→`) to navigate
+// Keyboard Shortcut: Left Arrow (`←`) and Right Arrow (`→`) to navigate
 document.addEventListener("keydown", function (event) {
   let currentIndex = menuOrder.indexOf(currentScreen);
 
