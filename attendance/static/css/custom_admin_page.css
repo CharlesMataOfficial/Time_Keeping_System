@@ -1000,12 +1000,12 @@ button:hover {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   text-align: justify;
   width: 1250px;
-  height: auto; /* Adjust height dynamically based on content */
+  height: auto; /* Adjust height dynamically */
   border-radius: 15px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 10px; /* Adds space between elements */
+  gap: 7px; /* Adds space between elements */
 }
 
 #about h1 {
@@ -1017,11 +1017,11 @@ button:hover {
 /* Align logos side by side */
 .about-logo-container {
   display: flex;
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Align vertically */
-  gap: 20px; /* Space between logos */
-  margin-bottom: 20px; /* Space below logos */
-  position: relative; /* Needed for individual positioning */
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin: 0; /* No margin */
+  padding: 0; /* No padding */
 }
 
 /* Set uniform size for both logos */
@@ -1045,7 +1045,6 @@ button:hover {
 
 .agri-logo {
   position: relative;
-  bottom: 11px; /* Move down (increase value) or move up (use negative value) */
 }
 
 /* Apply same text style as Dashboard Stats */
@@ -1177,7 +1176,7 @@ button:hover {
   display: flex;
   align-items: center; /* Align photos and text vertically */
   gap: 20px; /* Space between intern cards */
-  margin-left: 67px; /* Keep everything on the left (120px)*/
+  margin-left: 120px; /* Keep everything on the left (120px)*/
 }
 
 /* Each Intern's Card */
@@ -1190,7 +1189,7 @@ button:hover {
 
 /* Intern Photo - Centered */
 .intern-photo {
-  width: 90px;
+  width: 83px;
   height: auto;
   border-radius: 10px;
 }
@@ -1205,6 +1204,58 @@ button:hover {
 
 .intern-role {
   font-size: 11px !important; /* Smaller font */
-  color: gray;
+  color: gray !important;
   margin-top: -1px; /* Reduce space between name and role */
+}
+
+.about-description-container {
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 80%;
+  max-width: 900px;
+  margin: 7px auto;
+}
+
+.red-container {
+  background-color: #621c1c; /* Dark Red */
+  padding: 20px;
+  border-radius: 10px;
+  height: auto;
+  line-height: 1.2;
+}
+
+.red-container, 
+.red-container p, 
+.red-container span {
+  color: white !important;
+  text-align: justify !important;
+  margin-top:7px;
+  margin-bottom: 1px;
+}
+
+/* Collaboration Section - Adjusted */
+.collaboration-section {
+  text-align: center;
+  margin: 0; /* Remove any margins */
+  padding: 0; /* Remove any padding */
+}
+
+/* Move COLLABORATION text above the logos */
+.collaboration-section h2 {
+  font-size: 10px !important;
+  color: #621c1c;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin: 0; /* No margin to remove any space */
+  padding: 0; /* Remove padding */
+}
+
+/* Broken Line Styling */
+.broken-line {
+  border: none;
+  border-top: 3px dashed #621c1c;
+  width: 100%;
+  margin: 0; /* Remove any margin to eliminate space */
+  padding: 0; /* No padding */
 }
