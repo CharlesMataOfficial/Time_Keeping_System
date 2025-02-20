@@ -919,13 +919,16 @@ button:hover {
 
 /* Ensure the arrows stay in place when navigating */
 #dashboard-shortcut {
-  display: flex; /* Align both arrows */
+  display: flex !important; /* Force it to be shown */
   justify-content: center;
+  align-items: center;
   position: fixed;
   top: 20px;
   right: 40px;
-  z-index: 1000; /* Ensure the icons are above the content */
+  z-index: 1000; /* Ensure it's above all elements */
 }
+
+
 
 /* Default option (By company, By department) should always be black */
 #attendance-company option.default-option,
@@ -1251,3 +1254,21 @@ button:hover {
   padding: 0; /* Remove padding */
 }
 
+.broken-line {
+  border: none;
+  border-top: 3px dashed #621c1c;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+
+select option {
+  color: gray;
+}
+
+
+select:focus option:checked, 
+select option:checked {
+  color: black !important; 
+}
