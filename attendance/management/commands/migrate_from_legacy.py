@@ -1,10 +1,10 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from attendance.models import (
-    User, Company, Position, TimeEntry,
+    CustomUser, Company, Position, TimeEntry,
     Announcement, GracePeriod, Preset
 )
-from attendance.users_legacy import (
+from attendance.database_legacy import (
     UsersLegacy, EntriesLegacy, CurrentAnnouncementLegacy,
     GracePeriodLegacy, PresetsLegacy
 )
@@ -33,7 +33,7 @@ class Command(BaseCommand):
         # Create users with proper foreign key relationships
         user_mapping = {}  # To store legacy_user_id -> new_user mapping
         for legacy_user in legacy_users:
-            new_user = User.objects.create(
+            new_user = CustomUser.objects.create(
                 employee_id=legacy_user.employee_id,
                 first_name=legacy_user.first_name,
                 surname=legacy_user.surname,
