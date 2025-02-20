@@ -20,12 +20,19 @@
     <div class="menu" id="menu">
       <ul>
         <!-- New: Manage Users (for superadmin) -->
-        <li class="menu-item superadmin" onclick="redirectToSuperAdmin()">
-          <img
-            src="{% static 'images/icons/superadmin_icon.png' %}"
-            alt="Superadmin"
-          />Manage Users
+        {% if user.is_superuser %}
+        <a href="{% url 'superadmin_redirect' %}">
+          <li class="menu-item superadmin">
+            <img src="{% static 'images/icons/superadmin_icon.png' %}" alt="Superadmin" />
+            Manage Users
+          </li>
+        </a>
+      {% else %}
+        <li class="menu-item superadmin" onclick="alert('You do not have permission to access the super admin page.');">
+          <img src="{% static 'images/icons/superadmin_icon.png' %}" alt="Superadmin" />
+          Manage Users
         </li>
+      {% endif %}
         <li class="menu-item" onclick="navigateTo('dashboard')">
           <img
             src="{% static 'images/icons/dashboard_icon.png' %}"

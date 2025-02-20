@@ -1208,3 +1208,17 @@ button:hover {
   color: gray;
   margin-top: -1px; /* Reduce space between name and role */
 }
+
+
+ /* Remove default anchor styles in the menu */
+ .menu a {
+  text-decoration: none;
+  color: inherit;
+  border: none;
+  outline: none;
+}
+
+/* Optional: Make the anchor a block-level element so the entire area is clickable */
+.menu a {
+  display: block;
+}

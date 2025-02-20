@@ -13,6 +13,7 @@ from django.core.files.storage import default_storage
 import os
 from datetime import datetime, timedelta
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
 
 
 @never_cache
@@ -30,12 +31,13 @@ def login_view(request):
                 else auth_result["user"]
             )
             login(request, user)
-            if user.is_staff and user.is_superuser:
-                return redirect(reverse("admin:login"))
-            elif user.is_staff and not user.is_superuser:
+            # if user.is_staff and user.is_superuser:
+            #     return redirect(reverse("admin:login"))
+            if user.is_staff or user.is_superuser:
                 return redirect("custom_admin_page")
             else:
-                return redirect("user_page")
+                error_message = "You do not have permission to log in."
+                return render(request, "login_page.html", {"error": error_message})
         else:  # Authentication failed
             try:
                 CustomUser.objects.get(employee_id=employee_id)
@@ -322,16 +324,6 @@ def get_todays_entries(request):
 
     return JsonResponse({"entries": entries_data})
 
-
-def custom_admin_page(request):
-    # Check if the user is staff but not a superuser (admin page access logic)
-    if not request.user.is_staff or request.user.is_superuser:
-        return redirect("user_page")  # Redirect non-admin users elsewhere
-
-    # If the user is staff and not a superuser, show the custom admin page
-    return render(request, "custom_admin_page.html")
-
-
 @require_POST
 def upload_image(request):
     image_data = request.FILES.get("image")
@@ -463,3 +455,20 @@ def posted_announcements_list(request):
         return JsonResponse(data, safe=False)
 
     return HttpResponseBadRequest("Unsupported method")
+
+def custom_admin_page(request):
+     # Only allow users that are staff or superusers to access this page.
+    if not (request.user.is_staff or request.user.is_superuser):
+        # Redirect non-admin users to the regular user page (or another page)
+        return redirect("user_page")
+    
+    # Otherwise, render the custom admin page
+    return render(request, "custom_admin_page.html")
+
+@login_required
+def superadmin_redirect(request):
+    if request.user.is_superuser:
+        return redirect(reverse("admin:index"))
+    else:
+        messages.error(request, "You do not have permission to access the super admin page.")
+        return redirect("custom_admin_page")
