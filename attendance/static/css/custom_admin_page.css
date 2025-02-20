@@ -1251,11 +1251,3 @@ button:hover {
   padding: 0; /* Remove padding */
 }
 
-/* Broken Line Styling */
-.broken-line {
-  border: none;
-  border-top: 3px dashed #621c1c;
-  width: 100%;
-  margin: 0; /* Remove any margin to eliminate space */
-  padding: 0; /* No padding */
-}

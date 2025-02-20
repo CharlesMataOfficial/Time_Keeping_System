@@ -515,33 +515,50 @@ function filterAttendance() {
 
 // CONVERT TO CSS
 
-// // Apply the gray styling for unselected options
-// document.addEventListener("DOMContentLoaded", function () {
-//   const dropdowns = document.querySelectorAll("select");
+// Apply the gray styling for unselected options
+document.addEventListener("DOMContentLoaded", function () {
+  const dropdowns = document.querySelectorAll("select");
 
-//   dropdowns.forEach((select) => {
-//     select.addEventListener("change", function () {
-//       let options = this.options;
-//       for (let i = 0; i < options.length; i++) {
-//         if (options[i].selected) {
-//           options[i].style.color = "black"; // Selected option turns black
-//         } else {
-//           options[i].style.color = "gray"; // Unselected options remain gray
-//         }
-//       }
-//     });
-//   });
+  dropdowns.forEach((select) => {
+    select.addEventListener("change", function () {
+      let options = this.options;
+      for (let i = 0; i < options.length; i++) {
+        if (options[i].selected) {
+          options[i].style.color = "black"; // Selected option turns black
+        } else {
+          options[i].style.color = "gray"; // Unselected options remain gray
+        }
+      }
+    });
+  });
 
-//   // Apply initial gray color to options when the page loads
-//   dropdowns.forEach((select) => {
-//     let options = select.options;
-//     for (let i = 0; i < options.length; i++) {
-//       options[i].style.color = "gray"; // Make all options gray initially
-//     }
-//     // Set the selected option color to black
-//     const selectedOption = select.querySelector("option:checked");
-//     if (selectedOption) {
-//       selectedOption.style.color = "black";
-//     }
-//   });
-// });
+  // Apply initial gray color to options when the page loads
+  dropdowns.forEach((select) => {
+    let options = select.options;
+    for (let i = 0; i < options.length; i++) {
+      options[i].style.color = "gray"; // Make all options gray initially
+    }
+    // Set the selected option color to black
+    const selectedOption = select.querySelector("option:checked");
+    if (selectedOption) {
+      selectedOption.style.color = "black";
+    }
+  });
+});
+
+// Listen for left and right arrow keys for keyboard navigation
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'ArrowLeft') {
+    let currentIndex = menuOrder.indexOf(currentScreen);
+    if (currentIndex > 0) {
+      let previousScreen = menuOrder[currentIndex - 1];
+      navigateTo(previousScreen); // Navigate to previous screen
+    }
+  } else if (event.key === 'ArrowRight') {
+    let currentIndex = menuOrder.indexOf(currentScreen);
+    if (currentIndex < menuOrder.length - 1) {
+      let nextScreen = menuOrder[currentIndex + 1];
+      navigateTo(nextScreen); // Navigate to next screen
+    }
+  }
+});
