@@ -14,14 +14,14 @@ from django.urls import reverse
 
 class CustomUserManager(BaseUserManager):
     def get_next_employee_id(self):
-        highest_user = self.model.objects.order_by('-employee_id').first()
+        highest_user = self.model.objects.order_by("-employee_id").first()
         if highest_user:
             try:
                 next_id = str(int(highest_user.employee_id) + 1).zfill(6)
             except ValueError:
-                next_id = '000001'
+                next_id = "000001"
         else:
-            next_id = '000001'
+            next_id = "000001"
         return next_id
 
     def create_user(self, employee_id=None, password=None, **extra_fields):
@@ -101,8 +101,8 @@ class TimeEntry(models.Model):
     ordering = ["-time_in"]
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     time_in = models.DateTimeField(
-        auto_now_add=True
-    )  # Will be naive and in local time now
+        default=timezone.now, editable=True
+    )
     time_out = models.DateTimeField(null=True, blank=True)
     hours_worked = models.FloatField(null=True, blank=True)
     is_late = models.BooleanField(default=False)
@@ -151,6 +151,9 @@ class TimeEntry(models.Model):
 
             new_entry.save()
         return new_entry
+
+    def __str__(self):
+        return f"{self.user.employee_id} - {self.user.first_name} {self.user.surname} - {self.time_in.strftime('%Y-%m-%d %H:%M:%S')}"
 
 class Announcement(models.Model):
     content = models.TextField()

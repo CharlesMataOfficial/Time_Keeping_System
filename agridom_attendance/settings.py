@@ -126,6 +126,10 @@ STATICFILES_DIRS = [
 ]  # Add this line
 STATIC_URL = "/static/"
 
+# Media files (Uploaded files)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR)
+
 APPEND_SLASH = False
 
 AUTH_USER_MODEL = "attendance.CustomUser"
