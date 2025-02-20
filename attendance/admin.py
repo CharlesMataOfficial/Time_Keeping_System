@@ -1,7 +1,8 @@
 # attendance/admin.py
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, TimeEntry
+from django.contrib.auth.models import Group
+from .models import CustomUser
 from .forms import CustomUserCreationForm
 
 class CustomUserAdmin(UserAdmin):
@@ -48,6 +49,8 @@ class CustomUserAdmin(UserAdmin):
             obj.employee_id = CustomUser.objects.get_next_employee_id()
         super().save_model(request, obj, form, change)
 
+# Unregister the group model
+admin.site.unregister(Group)
+
 # Register the models
 admin.site.register(CustomUser, CustomUserAdmin)
-admin.site.register(TimeEntry)
