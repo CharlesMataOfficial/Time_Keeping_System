@@ -60,20 +60,38 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(employee_id, password, **extra_fields)
 
 
+class Company(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Companies"
+        ordering = ['name']
+
+class Position(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']
+
 class CustomUser(AbstractUser):
     # Remove the username field
     username = None
     employee_id = models.CharField(unique=True, max_length=6)
     first_name = models.CharField(max_length=100, null=True, blank=True)
     surname = models.CharField(max_length=100, null=True, blank=True)
-    company = models.CharField(max_length=100, null=True, blank=True)
-    position = models.CharField(max_length=100, null=True, blank=True)
+    company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True)
+    position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     date_hired = models.DateField(null=True, blank=True)
     pin = models.CharField(
         max_length=4, validators=[MinLengthValidator(4)], null=True, blank=True
     )
-    status = models.BooleanField(default=True)
     preset_name = models.CharField(max_length=100, null=True, blank=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)

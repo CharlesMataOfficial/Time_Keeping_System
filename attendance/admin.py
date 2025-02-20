@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 from django.utils.html import format_html
 from django.conf import settings
-from .models import CustomUser, TimeEntry
+from .models import CustomUser, TimeEntry, Company, Position
 from .forms import CustomUserCreationForm, TimeEntryForm
 
 
@@ -67,7 +67,8 @@ class CustomUserAdmin(UserAdmin):
     ordering = ("-employee_id",)
     list_filter = ("is_active", "is_staff", "is_superuser")
 
-    # autocomplete_fields = ['company']
+    # Add autocomplete fields
+    autocomplete_fields = ['company', 'position']
 
     def save_model(self, request, obj, form, change):
         if not change and not obj.employee_id:
@@ -134,9 +135,21 @@ class TimeEntryAdmin(admin.ModelAdmin):
     view_image_path.short_description = 'View Image'
 
 
+class CompanyAdmin(admin.ModelAdmin):
+    search_fields = ['name']
+    list_display = ('name',)
+
+
+class PositionAdmin(admin.ModelAdmin):
+    search_fields = ['name']
+    list_display = ('name',)
+
+
 # Unregister the group model
 admin.site.unregister(Group)
 
 # Register the models
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(TimeEntry, TimeEntryAdmin)
+admin.site.register(Company, CompanyAdmin)
+admin.site.register(Position, PositionAdmin)
