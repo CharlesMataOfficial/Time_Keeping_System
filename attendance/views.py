@@ -271,7 +271,7 @@ def clock_out_view(request):
                     "employee_id": entry.user.employee_id,
                     "first_name": entry.user.first_name,
                     "surname": entry.user.surname,
-                    "company": entry.user.company.name or "",
+                    "company": entry.user.company.name if entry.user.company else "",
                     "time_in": entry.time_in.strftime("%I:%M %p"),
                     "time_out": (
                         entry.time_out.strftime("%I:%M %p") if entry.time_out else None
