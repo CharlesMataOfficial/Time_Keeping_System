@@ -22,14 +22,15 @@ def login_view(request):
         employee_id = request.POST.get("employee_id")
         pin = request.POST.get("pin")
 
-        try:
-            # First check if user exists and is active
-            user = CustomUser.objects.get(employee_id=employee_id)
-            if not user.is_active:
-                return render(request, "login_page.html", {"error": "Employee ID not found"})
+        # First check if user exists and is active
+        user = CustomUser.objects.get(employee_id=employee_id)
+        if not user.is_active:
+            return render(
+                request, "login_page.html", {"error": "Employee ID not found"}
+            )
 
-            # Now try to authenticate
-            auth_result = CustomUser.authenticate_by_pin(employee_id, pin)
+        # Now try to authenticate
+        auth_result = CustomUser.authenticate_by_pin(employee_id, pin)
 
         if auth_result:  # Successful login
             user = (
@@ -61,10 +62,17 @@ def login_view(request):
 def user_page(request):
     # Force a refresh from the DB so that the latest value of is_guard is loaded
     request.user.refresh_from_db()
-    print("USER_PAGE VIEW: request.user:", request.user, "is_guard:", request.user.is_guard)
+    print(
+        "USER_PAGE VIEW: request.user:",
+        request.user,
+        "is_guard:",
+        request.user.is_guard,
+    )
 
     if not request.user.is_guard:
-        messages.error(request, "Access denied. You do not have permission to access this page.")
+        messages.error(
+            request, "Access denied. You do not have permission to access this page."
+        )
         return redirect("custom_admin_page")
 
     now = timezone.now()
@@ -83,9 +91,6 @@ def user_page(request):
             "user_company": "",
         },
     )
-
-
-
 
 
 def logout_view(request):
@@ -341,6 +346,7 @@ def get_todays_entries(request):
 
     return JsonResponse({"entries": entries_data})
 
+
 @require_POST
 def upload_image(request):
     image_data = request.FILES.get("image")
@@ -449,23 +455,26 @@ def announcement_post(request, pk):
         announcement = get_object_or_404(Announcement, pk=pk)
         announcement.is_posted = True
         announcement.save()
-        return JsonResponse({'message': 'Announcement posted'})
-    return HttpResponseBadRequest('Unsupported method')
+        return JsonResponse({"message": "Announcement posted"})
+    return HttpResponseBadRequest("Unsupported method")
+
 
 @csrf_exempt
 def posted_announcements_list(request):
     """
     GET -> Return a list of posted announcements (is_posted=True).
     """
-    if request.method == 'GET':
+    if request.method == "GET":
         # Filter to only posted announcements
-        announcements = Announcement.objects.filter(is_posted=True).order_by('-created_at')
+        announcements = Announcement.objects.filter(is_posted=True).order_by(
+            "-created_at"
+        )
         data = [
             {
-                'id': ann.id,
-                'content': ann.content,
-                'created_at': ann.created_at.isoformat(),
-                'is_posted': ann.is_posted
+                "id": ann.id,
+                "content": ann.content,
+                "created_at": ann.created_at.isoformat(),
+                "is_posted": ann.is_posted,
             }
             for ann in announcements
         ]
@@ -473,8 +482,9 @@ def posted_announcements_list(request):
 
     return HttpResponseBadRequest("Unsupported method")
 
+
 def custom_admin_page(request):
-     # Only allow users that are staff or superusers to access this page.
+    # Only allow users that are staff or superusers to access this page.
     if not (request.user.is_staff or request.user.is_superuser):
         # Redirect non-admin users to the regular user page (or another page)
         return redirect("user_page")
@@ -482,10 +492,13 @@ def custom_admin_page(request):
     # Otherwise, render the custom admin page
     return render(request, "custom_admin_page.html")
 
+
 @login_required
 def superadmin_redirect(request):
     if request.user.is_superuser:
         return redirect(reverse("admin:index"))
     else:
-        messages.error(request, "You do not have permission to access the super admin page.")
+        messages.error(
+            request, "You do not have permission to access the super admin page."
+        )
         return redirect("custom_admin_page")
