@@ -63,7 +63,7 @@ class CustomUserAdmin(UserAdmin):
         "position",
         "is_active",
     )
-    search_fields = ("employee_id", "first_name", "surname", "company")
+    search_fields = ("employee_id", "first_name", "surname", "company__name", "position__name")
     ordering = ("-employee_id",)
     list_filter = ("is_active", "is_staff", "is_superuser")
 

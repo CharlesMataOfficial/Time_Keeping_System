@@ -69,6 +69,7 @@ class Company(models.Model):
     class Meta:
         verbose_name_plural = "Companies"
         ordering = ['name']
+        db_table = 'django_companies'  # Changed from 'companies'
 
 class Position(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -78,6 +79,7 @@ class Position(models.Model):
 
     class Meta:
         ordering = ['name']
+        db_table = 'django_positions'  # Changed from 'positions'
 
 class CustomUser(AbstractUser):
     # Remove the username field
@@ -125,6 +127,11 @@ class CustomUser(AbstractUser):
             return None
         except cls.DoesNotExist:
             return None
+
+    class Meta:
+        db_table = 'django_users'  # Changed from 'users'
+        verbose_name = "User"
+        verbose_name_plural = "Users"
 
 
 class TimeEntry(models.Model):
@@ -185,6 +192,10 @@ class TimeEntry(models.Model):
     def __str__(self):
         return f"{self.user.employee_id} - {self.user.first_name} {self.user.surname} - {self.time_in.strftime('%Y-%m-%d %H:%M:%S')}"
 
+    class Meta:
+        verbose_name_plural = "Time Entries"
+        db_table = 'django_time_entries'
+
 class Announcement(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -192,3 +203,6 @@ class Announcement(models.Model):
 
     def __str__(self):
         return f"Announcement {self.id}"
+
+    class Meta:
+        db_table = 'django_announcements'

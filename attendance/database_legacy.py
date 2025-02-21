@@ -1,6 +1,6 @@
 from django.db import models
 
-class UsersLegacy(models.Model):  # Class name MUST match the import
+class UsersLegacy(models.Model):
     employee_id = models.CharField(unique=True, max_length=6)
     first_name = models.CharField(max_length=100, blank=True, null=True)
     surname = models.CharField(max_length=100, blank=True, null=True)
@@ -13,43 +13,19 @@ class UsersLegacy(models.Model):  # Class name MUST match the import
     preset_name = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
-        managed = False  # Ensure this line exists
-        db_table = 'users'  # Maps to your legacy table
+        managed = False
+        db_table = 'users'
 
 class EntriesLegacy(models.Model):
-    user = models.ForeignKey(UsersLegacy, on_delete=models.CASCADE)
-    time_in = models.DateTimeField()
-    time_out = models.DateTimeField(blank=True, null=True)
-    hours_worked = models.FloatField(blank=True, null=True)
-    is_late = models.BooleanField(default=False)
-    last_modified = models.DateTimeField(auto_now=True)
-    image_path = models.CharField(max_length=255, blank=True, null=True)
+    employee_id = models.CharField(max_length=6, db_column='employee_id')
+    date = models.DateField()
+    time_in = models.TimeField(blank=True, null=True)
+    time_out = models.TimeField(blank=True, null=True)
+    hours_worked = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    is_late = models.CharField(max_length=10, blank=True, null=True)
+    edited = models.BooleanField(default=False)
+    edited_by_id = models.CharField(max_length=6, blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'entries'
-
-class CurrentAnnouncementLegacy(models.Model):
-    announcement = models.TextField()
-    posted_by = models.CharField(max_length=100)
-    date_posted = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        managed = False
-        db_table = 'current_announcement'
-
-class GracePeriodLegacy(models.Model):
-    minutes = models.IntegerField()
-
-    class Meta:
-        managed = False
-        db_table = 'grace_period'
-
-class PresetsLegacy(models.Model):
-    name = models.CharField(max_length=100)
-    time_in = models.TimeField()
-    time_out = models.TimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'presets'
