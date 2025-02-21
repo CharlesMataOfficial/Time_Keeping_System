@@ -152,7 +152,7 @@ def clock_in_view(request):
             return JsonResponse({"success": False, "error": error_message})
 
         # Handle company logo
-        user_company = user.company if user.company else ""  # Handle None case
+        user_company = user.company.name if user.company else ""  # Handle None case
         user_company = user_company.strip().lower()
 
         company_logo_mapping = {
