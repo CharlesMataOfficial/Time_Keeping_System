@@ -33,7 +33,9 @@ def login_view(request):
             login(request, user)
             # if user.is_staff and user.is_superuser:
             #     return redirect(reverse("admin:login"))
-            if user.is_staff or user.is_superuser:
+            if user.is_guard:
+                return redirect("user_page")
+            elif user.is_staff or user.is_superuser:
                 return redirect("custom_admin_page")
             else:
                 error_message = "You do not have permission to log in."
@@ -51,11 +53,17 @@ def login_view(request):
 
 @login_required
 def user_page(request):
+    # Force a refresh from the DB so that the latest value of is_guard is loaded
+    request.user.refresh_from_db()
+    print("USER_PAGE VIEW: request.user:", request.user, "is_guard:", request.user.is_guard)
+    
+    if not request.user.is_guard:
+        messages.error(request, "Access denied. You do not have permission to access this page.")
+        return redirect("custom_admin_page")
+      
     now = timezone.now()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     today_end = today_start + timedelta(days=1)
-
-    # Filter entries for today based on the naive datetimes
     todays_entries = TimeEntry.objects.filter(
         time_in__gte=today_start, time_in__lt=today_end
     ).order_by("-last_modified")
@@ -65,10 +73,13 @@ def user_page(request):
         "user_page.html",
         {
             "all_entries": todays_entries,
-            "partner_logo": "default_logo.png",  # Set default/empty logo
-            "user_company": "",  # Empty company string
+            "partner_logo": "default_logo.png",
+            "user_company": "",
         },
     )
+
+
+
 
 
 def logout_view(request):

@@ -36,7 +36,7 @@ class CustomUserAdmin(UserAdmin):
                 "preset_name",
             )
         }),
-        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser")}),
+        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser","is_guard")}),
     )
 
     list_display = ('employee_id', 'first_name', 'surname', 'company', 'position', 'is_active')

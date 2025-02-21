@@ -67,6 +67,7 @@ class CustomUser(AbstractUser):
     preset_name = models.CharField(max_length=100, null=True, blank=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
+    is_guard = models.BooleanField(default=False)
     if_first_login = models.BooleanField(default=True)
 
     # Remove other redundant fields
