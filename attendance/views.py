@@ -189,7 +189,7 @@ def clock_in_view(request):
                 "employee_id": entry.user.employee_id,
                 "first_name": entry.user.first_name,
                 "surname": entry.user.surname,
-                "company": entry.user.company.name or "",
+                "company": entry.user.company.name if entry.user.company else "",
                 "time_in": entry.time_in.strftime("%I:%M %p"),
                 "time_out": (
                     entry.time_out.strftime("%I:%M %p") if entry.time_out else None
@@ -205,7 +205,7 @@ def clock_in_view(request):
                 "employee_id": user.employee_id,
                 "first_name": user.first_name,
                 "surname": user.surname,
-                "company": user.company.name or "",
+                "company": user.company.name if user.company else "",
                 "time_in": entry.time_in.strftime("%I:%M %p"),
                 "time_out": None,
                 "image_path": entry.image_path,
@@ -287,7 +287,7 @@ def clock_out_view(request):
                     "employee_id": user.employee_id,
                     "first_name": user.first_name or "",
                     "surname": user.surname or "",
-                    "company": user.company.name or "",
+                    "company": user.company.name if user.company else "",
                     "time_in": time_in_formatted,
                     "time_out": time_out_formatted,
                     "new_logo": company_logo,
@@ -332,7 +332,7 @@ def get_todays_entries(request):
                 "employee_id": entry.user.employee_id,
                 "first_name": entry.user.first_name,
                 "surname": entry.user.surname,
-                "company": entry.user.company.name,
+                "company": entry.user.company.name if entry.user.company else "",
                 "time_in": entry.time_in.strftime("%I:%M %p"),
                 "time_out": (
                     entry.time_out.strftime("%I:%M %p") if entry.time_out else None
