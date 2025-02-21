@@ -22,36 +22,35 @@ def login_view(request):
         employee_id = request.POST.get("employee_id")
         pin = request.POST.get("pin")
 
-        # First check if user exists and is active
-        user = CustomUser.objects.get(employee_id=employee_id)
-        if not user.is_active:
-            return render(
-                request, "login_page.html", {"error": "Employee ID not found"}
-            )
+        try:
+            # First check if user exists and is active
+            user = CustomUser.objects.get(employee_id=employee_id)
 
-        # Now try to authenticate
-        auth_result = CustomUser.authenticate_by_pin(employee_id, pin)
+            if not user.is_active:
+                return render(request, "login_page.html",
+                            {"error": "This account is inactive"})
 
-        if auth_result:  # Successful login
-            user = (
-                auth_result
-                if isinstance(auth_result, CustomUser)
-                else auth_result["user"]
-            )
-            login(request, user)
-            if user.is_guard:
-                return redirect("user_page")
-            elif user.is_staff or user.is_superuser:
-                return redirect("custom_admin_page")
+            # Try to authenticate
+            auth_result = CustomUser.authenticate_by_pin(employee_id, pin)
+
+            if auth_result:  # Successful login
+                user = auth_result if isinstance(auth_result, CustomUser) else auth_result["user"]
+                login(request, user)
+
+                if user.is_guard:
+                    return redirect("user_page")
+                elif user.is_staff or user.is_superuser:
+                    return redirect("custom_admin_page")
+                else:
+                    return render(request, "login_page.html",
+                                {"error": "You do not have permission to log in"})
             else:
-                error_message = "You do not have permission to log in."
-                return render(request, "login_page.html", {"error": error_message})
-        else:  # Authentication failed
-            try:
-                CustomUser.objects.get(employee_id=employee_id)
-                error_message = "Incorrect PIN"
-            except CustomUser.DoesNotExist:
-                error_message = "Employee ID not found"
+                return render(request, "login_page.html",
+                            {"error": "Incorrect PIN"})
+
+        except CustomUser.DoesNotExist:
+            return render(request, "login_page.html",
+                        {"error": "Employee ID not found"})
 
     return render(request, "login_page.html")
 
