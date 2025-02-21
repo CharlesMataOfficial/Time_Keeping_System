@@ -52,7 +52,7 @@ class CustomUserAdmin(UserAdmin):
                 )
             },
         ),
-        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser","is_guard")}),
+        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser", "is_guard")}),
     )
 
     list_display = (
@@ -65,7 +65,7 @@ class CustomUserAdmin(UserAdmin):
     )
     search_fields = ("employee_id", "first_name", "surname", "company__name", "position__name")
     ordering = ("-employee_id",)
-    list_filter = ("is_active", "is_staff", "is_superuser")
+    list_filter = ("is_active", "is_staff", "is_superuser", "is_guard")
 
     # Add autocomplete fields
     autocomplete_fields = ['company', 'position']

@@ -39,8 +39,6 @@ def login_view(request):
                 else auth_result["user"]
             )
             login(request, user)
-            # if user.is_staff and user.is_superuser:
-            #     return redirect(reverse("admin:login"))
             if user.is_guard:
                 return redirect("user_page")
             elif user.is_staff or user.is_superuser:
@@ -142,10 +140,8 @@ def clock_in_view(request):
             )
         return JsonResponse({"success": True})
 
-    # Regular clock in
     if not isinstance(auth_result, dict) and auth_result:
         user = auth_result
-        # Rest of your clock in logic...
 
         if not user:
             try:
@@ -156,7 +152,7 @@ def clock_in_view(request):
             return JsonResponse({"success": False, "error": error_message})
 
         # Handle company logo
-        user_company = user.company or ""  # Handle None case
+        user_company = user.company if user.company else ""  # Handle None case
         user_company = user_company.strip().lower()
 
         company_logo_mapping = {
@@ -193,7 +189,7 @@ def clock_in_view(request):
                 "employee_id": entry.user.employee_id,
                 "first_name": entry.user.first_name,
                 "surname": entry.user.surname,
-                "company": entry.user.company or "",
+                "company": entry.user.company.name or "",
                 "time_in": entry.time_in.strftime("%I:%M %p"),
                 "time_out": (
                     entry.time_out.strftime("%I:%M %p") if entry.time_out else None
@@ -209,7 +205,7 @@ def clock_in_view(request):
                 "employee_id": user.employee_id,
                 "first_name": user.first_name,
                 "surname": user.surname,
-                "company": user.company or "",
+                "company": user.company.name or "",
                 "time_in": entry.time_in.strftime("%I:%M %p"),
                 "time_out": None,
                 "image_path": entry.image_path,
@@ -246,7 +242,7 @@ def clock_out_view(request):
             time_out_formatted = open_entry.time_out.strftime("%I:%M %p")
 
             # Handle None company value
-            user_company = user.company or ""
+            user_company = user.company.name if user.company else ""
             user_company = user_company.strip().lower()
 
             # Get the company logo based on the user's company
@@ -275,7 +271,7 @@ def clock_out_view(request):
                     "employee_id": entry.user.employee_id,
                     "first_name": entry.user.first_name,
                     "surname": entry.user.surname,
-                    "company": entry.user.company or "",
+                    "company": entry.user.company.name or "",
                     "time_in": entry.time_in.strftime("%I:%M %p"),
                     "time_out": (
                         entry.time_out.strftime("%I:%M %p") if entry.time_out else None
@@ -291,7 +287,7 @@ def clock_out_view(request):
                     "employee_id": user.employee_id,
                     "first_name": user.first_name or "",
                     "surname": user.surname or "",
-                    "company": user.company or "",
+                    "company": user.company.name or "",
                     "time_in": time_in_formatted,
                     "time_out": time_out_formatted,
                     "new_logo": company_logo,
@@ -336,7 +332,7 @@ def get_todays_entries(request):
                 "employee_id": entry.user.employee_id,
                 "first_name": entry.user.first_name,
                 "surname": entry.user.surname,
-                "company": entry.user.company,
+                "company": entry.user.company.name,
                 "time_in": entry.time_in.strftime("%I:%M %p"),
                 "time_out": (
                     entry.time_out.strftime("%I:%M %p") if entry.time_out else None
