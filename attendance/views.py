@@ -13,6 +13,7 @@ from django.core.files.storage import default_storage
 import os
 from datetime import datetime, timedelta
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
 
 
 @never_cache
@@ -30,31 +31,45 @@ def login_view(request):
             # Now try to authenticate
             auth_result = CustomUser.authenticate_by_pin(employee_id, pin)
 
-            if auth_result:  # Successful login
-                user = auth_result if isinstance(auth_result, CustomUser) else auth_result["user"]
-                login(request, user)
-                if user.is_staff and user.is_superuser:
-                    return redirect(reverse("admin:login"))
-                elif user.is_staff and not user.is_superuser:
-                    return redirect("custom_admin_page")
-                else:
-                    return redirect("user_page")
-            else:  # Pin is incorrect
-                return render(request, "login_page.html", {"error": "Incorrect PIN"})
-
-        except CustomUser.DoesNotExist:
-            return render(request, "login_page.html", {"error": "Employee ID not found"})
+        if auth_result:  # Successful login
+            user = (
+                auth_result
+                if isinstance(auth_result, CustomUser)
+                else auth_result["user"]
+            )
+            login(request, user)
+            # if user.is_staff and user.is_superuser:
+            #     return redirect(reverse("admin:login"))
+            if user.is_guard:
+                return redirect("user_page")
+            elif user.is_staff or user.is_superuser:
+                return redirect("custom_admin_page")
+            else:
+                error_message = "You do not have permission to log in."
+                return render(request, "login_page.html", {"error": error_message})
+        else:  # Authentication failed
+            try:
+                CustomUser.objects.get(employee_id=employee_id)
+                error_message = "Incorrect PIN"
+            except CustomUser.DoesNotExist:
+                error_message = "Employee ID not found"
 
     return render(request, "login_page.html")
 
 
 @login_required
 def user_page(request):
+    # Force a refresh from the DB so that the latest value of is_guard is loaded
+    request.user.refresh_from_db()
+    print("USER_PAGE VIEW: request.user:", request.user, "is_guard:", request.user.is_guard)
+
+    if not request.user.is_guard:
+        messages.error(request, "Access denied. You do not have permission to access this page.")
+        return redirect("custom_admin_page")
+
     now = timezone.now()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     today_end = today_start + timedelta(days=1)
-
-    # Filter entries for today based on the naive datetimes
     todays_entries = TimeEntry.objects.filter(
         time_in__gte=today_start, time_in__lt=today_end
     ).order_by("-last_modified")
@@ -64,10 +79,13 @@ def user_page(request):
         "user_page.html",
         {
             "all_entries": todays_entries,
-            "partner_logo": "default_logo.png",  # Set default/empty logo
-            "user_company": "",  # Empty company string
+            "partner_logo": "default_logo.png",
+            "user_company": "",
         },
     )
+
+
+
 
 
 def logout_view(request):
@@ -323,16 +341,6 @@ def get_todays_entries(request):
 
     return JsonResponse({"entries": entries_data})
 
-
-def custom_admin_page(request):
-    # Check if the user is staff but not a superuser (admin page access logic)
-    if not request.user.is_staff or request.user.is_superuser:
-        return redirect("user_page")  # Redirect non-admin users elsewhere
-
-    # If the user is staff and not a superuser, show the custom admin page
-    return render(request, "custom_admin_page.html")
-
-
 @require_POST
 def upload_image(request):
     image_data = request.FILES.get("image")
@@ -464,3 +472,20 @@ def posted_announcements_list(request):
         return JsonResponse(data, safe=False)
 
     return HttpResponseBadRequest("Unsupported method")
+
+def custom_admin_page(request):
+     # Only allow users that are staff or superusers to access this page.
+    if not (request.user.is_staff or request.user.is_superuser):
+        # Redirect non-admin users to the regular user page (or another page)
+        return redirect("user_page")
+
+    # Otherwise, render the custom admin page
+    return render(request, "custom_admin_page.html")
+
+@login_required
+def superadmin_redirect(request):
+    if request.user.is_superuser:
+        return redirect(reverse("admin:index"))
+    else:
+        messages.error(request, "You do not have permission to access the super admin page.")
+        return redirect("custom_admin_page")

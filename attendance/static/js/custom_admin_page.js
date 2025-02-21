@@ -545,3 +545,8 @@ function filterAttendance() {
 //     }
 //   });
 // });
+
+
+function superadmin_redirect() {
+  window.location.href = "{% url 'superadmin_redirect' %}";
+}
