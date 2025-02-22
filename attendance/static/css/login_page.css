@@ -94,10 +94,11 @@ header {
     display: flex;
     align-items: center;
     border-radius: 10px;
-    overflow-x: auto; /* Enable horizontal scrolling */
-    white-space: nowrap; /* Prevent logos from wrapping to the next line */
+    overflow: hidden; /* Changed from overflow-x: auto */
+    width: 100%; /* Add explicit width */
     height: 80%;
     padding: 0 10px; /* Add some padding for spacing */
+    position: relative; /* Add position relative */
     gap: 10px; /* Add space between logos */
     scrollbar-width: none; /* For modern browsers, make the scrollbar thinner */
     margin-right: 30px;
@@ -107,6 +108,7 @@ header {
     height: 40px; /* Ensure consistent height for all logos */
     width: auto; /* Maintain aspect ratio */
     transition: transform 0.2s ease; /* Add smooth scaling effect */
+    flex-shrink: 0; /* Prevent logo shrinking */
 }
 
 .partner-logos img:hover {
@@ -128,6 +130,8 @@ header {
 .partner-logos-inner {
     display: inline-flex;
     animation: scroll-logos 20s linear infinite; /* Adjust duration for speed */
+    display: flex;
+    gap: 20px; /* Space between logos */
 }
 
 .partner-logos-inner img {
@@ -143,11 +147,12 @@ header {
 }
 
 @keyframes scroll-logos {
-    from {
+    0% {
         transform: translateX(0);
     }
-    to {
-        transform: translateX(-50%);
+    100% {
+        /* Set this to the negative width of your total logos + gaps */
+        transform: translateX(-100%);
     }
 }
 
