@@ -5,13 +5,18 @@
   --accent: #f5dd5d !important;
   --primary-fg: #fff !important;
   --body-fg: #333 !important;
-  --body-bg: #f2f2f2 !important;
+  --body-bg: #f2f2f2  !important;
   --header-color: #fff !important;
   --link-fg: var(--primary) !important;
   --link-hover-color: var(--secondary) !important;
   --breadcrumbs-bg: var(--primary) !important;
+  --breadcrumbs-fg: var(--primary-fg) !important;
   --error-bg: var(--primary) !important;
   --button-hover-bg: var(--secondary) !important;
+  --delete-button-bg: var(--primary) !important;
+  --delete-button-fg: var(--primary-fg) !important;
+  --delete-button-hover-bg: var(--secondary) !important;
+  --delete-button-hover-fg: var(--primary-fg) !important;
 }
 
 /* Main background */
@@ -65,4 +70,12 @@ input[type="button"]:hover {
 
 button.theme-toggle {
   display: none;
+}
+
+#content-related .module h2 {
+  color: var(--primary-fg)
+}
+
+#changelist .this-page {
+  background-color: var(--accent);
 }
