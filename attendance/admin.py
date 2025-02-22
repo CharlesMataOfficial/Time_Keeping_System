@@ -14,9 +14,19 @@ class TimeEntryInline(admin.TabularInline):
     extra = 1  # Number of extra forms to display
 
 
+def deactivate_users(modeladmin, request, queryset):
+    queryset.update(is_active=False)
+deactivate_users.short_description = "Deactivate selected users"
+
+def activate_users(modeladmin, request, queryset):
+    queryset.update(is_active=True)
+activate_users.short_description = "Activate selected users"
+
+
 class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm
     add_form_template = "admin/custom_user_add_form.html"
+    actions = [activate_users, deactivate_users]  # Add the actions here
 
     # Remove password from required fields for adding new users
     add_fieldsets = (
@@ -74,6 +84,12 @@ class CustomUserAdmin(UserAdmin):
         if not change and not obj.employee_id:
             obj.employee_id = CustomUser.objects.get_next_employee_id()
         super().save_model(request, obj, form, change)
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
 
 
 class TimeEntryAdmin(admin.ModelAdmin):
