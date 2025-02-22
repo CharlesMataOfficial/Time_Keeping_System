@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
+
 from django.conf import settings
 from django.conf.urls.static import static
 import os
@@ -58,7 +59,10 @@ ROOT_URLCONF = "agridom_attendance.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "attendance/templates"],
+        "DIRS": [
+            BASE_DIR / "attendance/templates",
+            BASE_DIR / "attendance/templates/admin",
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -124,10 +128,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "attendance", "static"),
 ]  # Add this line
-STATIC_URL = "/static/"
+
+# Add this after your STATICFILES_DIRS setting
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Media files (Uploaded files)
-MEDIA_URL = '/media/'
+MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR)
 
 APPEND_SLASH = False
@@ -136,9 +142,9 @@ AUTH_USER_MODEL = "attendance.CustomUser"
 
 LOGOUT_REDIRECT_URL = "login"
 
-LOGOUT_REDIRECT_URL = 'login'
+LOGOUT_REDIRECT_URL = "login"
 
 # Ensure session is stored in the database
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_AGE = 86400  # 1 day
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Keep session active after closing browser
