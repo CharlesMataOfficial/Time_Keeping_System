@@ -498,3 +498,86 @@ def superadmin_redirect(request):
             request, "You do not have permission to access the super admin page."
         )
         return redirect("custom_admin_page")
+    
+# Mapping dictionaries for dropdown slugs to database values.
+COMPANY_CHOICES = {
+    'ASC': "Agridom Solutions Corp.",
+    'SFGCI': "SF Group of Companies",
+    'DJAS': "DJAS Servicetrade Corporation",
+    'FAC': "Farmtech Agriland Corporation",
+    'GTI': "Genius",
+    'SFGC': "SF Group of Companies",
+    'agriDom': "Agridom Solutions Corp.",
+    'SMI': "Sunfood Marketing Inc.",
+    'DSC': "DJAS Servicetrade Corporation",
+}
+
+DEPARTMENT_CHOICES = {
+    'hr': "Human Resources",
+    'it': "IT Department",
+    'finance': "Finance",
+}
+
+def attendance_list_json(request):
+    attendance_type = request.GET.get('attendance_type', 'time-log')
+    company_code = request.GET.get('attendance_company', 'all')
+    department_code = request.GET.get('attendance_department', 'all')
+
+    if attendance_type == 'time-log':
+        qs = TimeEntry.objects.select_related('user', 'user__company', 'user__position') \
+            .all().order_by('-time_in')
+
+        if company_code != 'all':
+            qs = qs.filter(user__company__name=company_code)
+
+        if department_code != 'all':
+            qs = qs.filter(user__position__name=department_code)
+
+        data = [
+            {
+                'employee_id': entry.user.employee_id,
+                'name': f"{entry.user.first_name} {entry.user.surname}",
+                'time_in': entry.time_in.strftime("%Y-%m-%d %H:%M:%S"),
+                'time_out': entry.time_out.strftime("%Y-%m-%d %H:%M:%S") if entry.time_out else '',
+                'hours_worked': entry.hours_worked,
+            }
+            for entry in qs
+        ]
+
+    elif attendance_type == 'users-active':
+        qs = CustomUser.objects.filter(timeentry__time_out__isnull=True).distinct()
+
+        if company_code != 'all':
+            qs = qs.filter(company__name=company_code)
+
+        if department_code != 'all':
+            qs = qs.filter(position__name=department_code)
+
+        data = [
+            {
+                'employee_id': user.employee_id,
+                'name': f"{user.first_name} {user.surname}",
+            }
+            for user in qs
+        ]
+
+    elif attendance_type == 'users-inactive':
+        qs = CustomUser.objects.exclude(timeentry__time_out__isnull=True).distinct()
+
+        if company_code != 'all':
+            qs = qs.filter(company__name=company_code)
+
+        if department_code != 'all':
+            qs = qs.filter(position__name=department_code)
+
+        data = [
+            {
+                'employee_id': user.employee_id,
+                'name': f"{user.first_name} {user.surname}",
+            }
+            for user in qs
+        ]
+    else:
+        data = []
+
+    return JsonResponse({'attendance_list': data, 'attendance_type': attendance_type})

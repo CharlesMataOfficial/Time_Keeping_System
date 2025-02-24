@@ -421,9 +421,10 @@ button:hover {
   margin: 100px auto;
   margin-top: 10px; /* Adjust the space above the white rectangle */
   margin-bottom: 50px;
-  overflow: hidden;
   box-sizing: border-box;
   position: relative;
+  max-height: 500px; /* Adjust this height as needed */
+  overflow-y: auto;  /* Enables vertical scrolling */
 }
 
 #attendance-list h1 {
