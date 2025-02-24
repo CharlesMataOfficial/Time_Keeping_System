@@ -502,14 +502,13 @@ function filterAttendance() {
     .catch(error => console.error('Error fetching attendance data:', error));
 }
 document.getElementById("attendance-company").addEventListener("change", function () {
-    let selectedOption = this.options[this.selectedIndex];
-    let alias = selectedOption.getAttribute("data-alias");
+  let selectedOption = this.options[this.selectedIndex];
+  let alias = selectedOption.getAttribute("data-alias");
 
-    if (alias) {
-        this.value = alias; // Assign alias value if available
-    }
+  if (alias) {
+      this.value = alias; // This sends the alias to the backend.
+  }
 });
-
 // CONVERT TO CSS
 
 // // Apply the gray styling for unselected options
