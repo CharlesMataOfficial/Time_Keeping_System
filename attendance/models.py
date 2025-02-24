@@ -6,6 +6,8 @@ from django.conf import settings
 from django.core.validators import MinLengthValidator
 from django.forms import ValidationError
 from django.utils import timezone
+from django.utils.timezone import make_aware
+from datetime import datetime
 
 class CustomUserManager(BaseUserManager):
     def get_next_employee_id(self):
@@ -207,3 +209,67 @@ class Announcement(models.Model):
 
     class Meta:
         db_table = 'django_announcements'
+
+#Export by Date
+def export_by_date(request):
+    file_name = request.GET.get("fileName", "timeEntry_by_date")
+    start_date = request.GET.get("start")
+    end_date = request.GET.get("end")
+
+    if not start_date or not end_date:
+        return HttpResponse("Invalid date range", status=400)
+
+    # Convert string dates to aware datetime objects
+    start_date = make_aware(datetime.strptime(start_date, "%Y-%m-%d"))
+    end_date = make_aware(datetime.strptime(end_date, "%Y-%m-%d"))
+
+    # Query database using Django ORM
+    time_entries = TimeEntry.objects.filter(time_in__date__range=[start_date.date(), end_date.date()])
+
+    # Convert queryset to DataFrame
+    df = pd.DataFrame(list(time_entries.values('user__id', 'user__first_name', 'user__surname', 'time_in', 'time_out', 'hours_worked', 'is_late')))
+
+    # Define file path
+    excel_path = f"media/{file_name}.xlsx"
+    
+    # Save to Excel
+    df.to_excel(excel_path, index=False)
+
+    # Send file as response
+    with open(excel_path, 'rb') as excel_file:
+        response = HttpResponse(excel_file.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response["Content-Disposition"] = f'attachment; filename="{file_name}.xlsx"'
+        return response
+
+
+# Export by Employee ID
+def export_by_employee(request):
+    file_name = request.GET.get("fileName", "timeEntry_by_employee")
+    emp_id = request.GET.get("empID")
+    start_date = request.GET.get("start")
+    end_date = request.GET.get("end")
+
+    if not emp_id or not start_date or not end_date:
+        return HttpResponse("Missing required parameters", status=400)
+
+    # Convert string dates to aware datetime objects
+    start_date = make_aware(datetime.strptime(start_date, "%Y-%m-%d"))
+    end_date = make_aware(datetime.strptime(end_date, "%Y-%m-%d"))
+
+    # Query database using Django ORM
+    time_entries = TimeEntry.objects.filter(user__id=emp_id, time_in__date__range=[start_date.date(), end_date.date()])
+
+    # Convert queryset to DataFrame
+    df = pd.DataFrame(list(time_entries.values('user__id', 'user__first_name', 'user__surname', 'time_in', 'time_out', 'hours_worked', 'is_late')))
+
+    # Define file path
+    excel_path = f"media/{file_name}.xlsx"
+    
+    # Save to Excel
+    df.to_excel(excel_path, index=False)
+
+    # Send file as response
+    with open(excel_path, 'rb') as excel_file:
+        response = HttpResponse(excel_file.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response["Content-Disposition"] = f'attachment; filename="{file_name}.xlsx"'
+        return response

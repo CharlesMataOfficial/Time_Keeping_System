@@ -497,3 +497,10 @@ def superadmin_redirect(request):
             request, "You do not have permission to access the super admin page."
         )
         return redirect("custom_admin_page")
+    
+
+def export_by_date(request):
+    file_name = request.GET.get("fileName", "attendance_by_date")
+    start_date = request.GET.get("start")
+    end_date = request.GET.get("end")
+

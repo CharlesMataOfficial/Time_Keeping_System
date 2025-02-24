@@ -18,5 +18,7 @@ urlpatterns = [
     path('announcements/<int:pk>/post/', views.announcement_post, name='announcement_post'),
     path('announcements/posted/', views.posted_announcements_list, name='posted_announcements_list'),
     path("superadmin/", views.superadmin_redirect, name="superadmin_redirect"),
+    path("export-by-date/", export_by_date, name="export_by_date"),
+    path("export-by-employee/", export_by_employee, name="export_by_employee"),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

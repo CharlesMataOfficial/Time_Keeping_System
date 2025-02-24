@@ -251,6 +251,91 @@ function saveWorkHours() {
   }
 }
 
+//Modal functions for Excel
+function openModal(exportDateModal) {
+  document.getElementById("exportDateModal").style.display = "block";
+}
+
+function closeModal(exportDateModal) {
+  document.getElementById(modalId).style.display = "none";
+}
+
+function openModal(exportEmpModal) {
+  document.getElementById("exportDateModal").style.display = "block";
+}
+
+function closeModal(exportEmpModal) {
+  document.getElementById(modalId).style.display = "none";
+}
+
+//Modal buttons for Excel
+document.getElementById("export-button").addEventListener("click", function() {
+  openModal("exportDateModal");
+});
+
+document.getElementById("export-button").addEventListener("click", function() {
+  openModal("exportEmpModal");
+});
+
+//Modal function from the database to Excel
+function exportDataByDate() {
+  let fileName = document.getElementById("dateFileName").value;
+  let startDate = document.getElementById("startDate").value;
+  let endDate = document.getElementById("endDate").value;
+
+  if (!fileName || !startDate || !endDate) {
+      alert("Please fill in all fields.");
+      return;
+  }
+
+  // Simulate export process
+  alert(`Data from ${startDate} to ${endDate} has been exported to ${fileName}.xlsx`);
+
+  // Call backend API to generate the Excel file
+  fetch(`/export-by-date?fileName=${fileName}&start=${startDate}&end=${endDate}`)
+      .then(response => response.blob())
+      .then(blob => {
+          let link = document.createElement("a");
+          link.href = window.URL.createObjectURL(blob);
+          link.download = `${fileName}.xlsx`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+      });
+
+  closeModal("exportDateModal");
+}
+
+function exportDataByEmployee() {
+  let fileName = document.getElementById("empFileName").value;
+  let empID = document.getElementById("employeeID").value;
+  let startDate = document.getElementById("empStartDate").value;
+  let endDate = document.getElementById("empEndDate").value;
+
+  if (!fileName || !empID || !startDate || !endDate) {
+      alert("Please fill in all fields.");
+      return;
+  }
+
+  // Simulate export process
+  alert(`Data for Employee ID ${empID} from ${startDate} to ${endDate} has been exported to ${fileName}.xlsx`);
+
+  // Call backend API to generate the Excel file
+  fetch(`/export-by-employee?fileName=${fileName}&empID=${empID}&start=${startDate}&end=${endDate}`)
+      .then(response => response.blob())
+      .then(blob => {
+          let link = document.createElement("a");
+          link.href = window.URL.createObjectURL(blob);
+          link.download = `${fileName}.xlsx`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+      });
+
+  closeModal("exportEmpModal");
+}
+
+
 // Utility: Get CSRF token (if needed)
 function getCookie(name) {
   let cookieValue = null;
