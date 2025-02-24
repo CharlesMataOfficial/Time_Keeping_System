@@ -411,10 +411,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener("keydown", function (event) {
-  if (event.key.toLowerCase() === "t") {
-      document.getElementById("timeInBtn").click();
-  } else if (event.key.toLowerCase() === "o") {
-      document.getElementById("timeOutBtn").click();
+  if (event.key === "i" || event.key === "I") {
+    clockInModal.style.display = "block"; // Open Time In modal
+  }
+  if (event.key === "o" || event.key === "O") {
+    clockOutModal.style.display = "block"; // Open Time Out modal
   }
 });
 
