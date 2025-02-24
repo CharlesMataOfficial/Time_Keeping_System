@@ -410,14 +410,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-document.addEventListener("keydown", function (event) {
-  if (event.key === "i" || event.key === "I") {
-    clockInModal.style.display = "block"; // Open Time In modal
+document.addEventListener("keydown", (event) => {
+  // Check if any modal is open
+  const isClockInOpen = clockInModal.style.display === "block";
+  const isClockOutOpen = clockOutModal.style.display === "block";
+  const isNewPinOpen = newPinModal.style.display === "block";
+
+  if (isClockInOpen || isClockOutOpen || isNewPinOpen) {
+    // If Escape key is pressed, close the open modal
+    if (event.key === "Escape") {
+      if (isClockInOpen) clockInModal.style.display = "none";
+      if (isClockOutOpen) clockOutModal.style.display = "none";
+      if (isNewPinOpen) newPinModal.style.display = "none";
+    }
+    return; // Stop processing 'i' and 'o' when a modal is open
   }
-  if (event.key === "o" || event.key === "O") {
-    clockOutModal.style.display = "block"; // Open Time Out modal
+
+  // Allow 'i' and 'o' shortcuts only when no modal is open
+  if (event.key.toLowerCase() === "i") {
+    openClockInModal();
+  } else if (event.key.toLowerCase() === "o") {
+    openClockOutModal();
   }
 });
+
+// Function to open the clock-in modal
+function openClockInModal() {
+  clockInModal.style.display = "block";
+}
+
+// Function to open the clock-out modal
+function openClockOutModal() {
+  clockOutModal.style.display = "block";
+}
+
 
 
 // CONVERT TO CSS
