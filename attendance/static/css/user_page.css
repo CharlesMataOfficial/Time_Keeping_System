@@ -132,9 +132,41 @@ header {
   border-radius: 12px;
   overflow: hidden;
   margin-top: 35px;
-  left: 840px; /* Move camera to the very left of its parent container */
+  left: 860px; /* Default position for large screens */
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
+
+/* Move camera left as screen size decreases */
+@media screen and (max-width: 1400px) {
+  .camera {
+    left: 800px; /* Slightly left for medium screens */
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  .camera {
+    left: 650px; /* Move more left for smaller screens */
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .camera {
+    left: 450px; /* Further left for tablet screens */
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .camera {
+    left: 250px; /* Almost to the edge on small devices */
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .camera {
+    left: 60px; /* Close to the left on very small screens */
+  }
+}
+
 
 .camera video {
   width: 100%;
@@ -262,10 +294,8 @@ header {
   align-items: center;
   text-align: center;
   font-size: 12px; /* Adjust font-size as needed */
-  background: #621c1c;
   color: #e2e2e2;
-  padding: 25px;
-  margin-bottom: 15px; /* Adjust space between panels */
+  margin-bottom: 10px; /* Adjust space between panels */
   border-radius: 10px;
   width: 100%;
   height: auto;
@@ -390,8 +420,9 @@ header {
   border: none; /* No border */
   font-size: 15px; /* Font size for visibility */
   cursor: pointer; /* Pointer cursor on hover */
-  margin-top: auto; /* Push button to the bottom */
-  margin-left: 60px;
+  margin-top: auto;
+  margin-left: 45px;
+  margin-bottom: 20px;
 }
 
 .sign-out-btn:hover {

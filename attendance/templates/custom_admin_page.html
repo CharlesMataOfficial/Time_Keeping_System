@@ -80,7 +80,7 @@
         </li>
         <li class="menu-item" onclick="navigateTo('about')">
           <img src="{% static 'images/icons/credits_icon.png' %}" alt="About" />
-          About
+          System Information
         </li>
         <!-- New: Sign Out (triggers hidden logout form) -->
         <li
@@ -291,25 +291,18 @@
 
     <!-- About Screen (new) -->
     <div id="about" class="screen" style="display: none">
-      <h1>About</h1>
+      <h1>System Information</h1>
       <div class="about-container">
-        <!-- Logos -->
         <div class="about-logo-container">
-          <img
-            src="{% static 'images/logos/mmcm.png' %}"
-            alt="MMCM Logo"
-            class="about-logo mapua-logo"
-          />
-          <img
-            src="{% static 'images/logos/agridom2.png' %}"
-            alt="Agridom Logo"
-            class="about-logo agri-logo"
-          />
-          <img
-            src="{% static 'images/logos/mmcm_ccis.png' %}"
-            alt="CCIS Logo"
-            class="about-logo ccis-logo"
-          />
+          <h2>A collaboration of:</h2> <!-- "COLLABORATION" text above the logos -->
+        </div>
+        <div class="about-logo-container">
+          <img src="{% static 'images/logos/mmcm.png' %}" alt="MMCM Logo"class="about-logo mapua-logo">
+          <img src="{% static 'images/logos/agridom2.png' %}" alt="Agridom Logo" class="about-logo agri-logo">
+          <img src="{% static 'images/logos/mmcm_ccis.png' %}" alt="CCIS Logo" class="about-logo ccis-logo">
+        </div>
+        <div class="collaboration-section">
+          <hr class="broken-line">
         </div>
 
         <!-- Intern Information (Left Side) -->
@@ -317,7 +310,7 @@
           <!-- SirPatrick's Card -->
           <div class="intern-card">
             <img
-              src="{% static 'images/logos/mmcm_ccis.png' %}"
+              src="{% static 'images/faces/patrick.png' %}"
               alt="Patrick Alpas"
               class="intern-photo"
             />
@@ -348,7 +341,7 @@
           </div>
 
           <!-- Roxannie's Card -->
-          <div class="intern-card">
+          <!-- <div class="intern-card">
             <img
               src="{% static 'images/faces/rox.png' %}"
               alt="Roxannie Sentillas"
@@ -356,7 +349,7 @@
             />
             <p class="intern-name">Roxannie Sentillas</p>
             <p class="intern-role">IS - Documentation/Tester</p>
-          </div>
+          </div> -->
 
           <!-- Kenneth's Card -->
           <div class="intern-card">
@@ -404,30 +397,16 @@
         </div>
 
         <!-- Description -->
-        <p>
-          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This
-          system was developed for SFGC’s timekeeping and attendance tracking,
-          providing an efficient and user-friendly solution for managing
-          employee attendance. It is designed to streamline employee check-ins,
-          monitor work hours, track attendance records, and generate real-time
-          reports for better workforce management. The system ensures that
-          attendance data is recorded accurately and can be easily accessed for
-          review, making it a valuable tool for supervisors and administrators.
-          This project was conceptualized, designed, and implemented by CCIS
-          intern students from Mapúa Malayan Colleges Mindanao as part of their
-          internship program at Agridom Solutions Corp. The development of this
-          system allowed the interns to apply their academic knowledge to a
-          real-world setting, gaining hands-on experience in software
-          development, user interface design, and database management.
-          Throughout the project, the interns worked on various aspects, such as
-          frontend and backend development, system integration, and testing,
-          ensuring the system met the needs of SFGC. This internship experience
-          not only helped them fulfill the required 240 hours for Computer
-          Science students but also provided an opportunity to contribute to an
-          essential tool that improves operational efficiency within the
-          organization.
-        </p>
-      </div>
+        <div class="red-container">
+          <p>This system was developed for SFGC’s timekeeping providing an efficient and user-friendly 
+            solution for managing employee attendance. It is designed to streamline employee time-ins, monitor work hours, track attendance records, and generate real-time reports for 
+            better workforce management.This project was conceptualized, designed, and implemented by CCIS intern students from Mapúa Malayan Colleges Mindanao as part of their 
+            internship program at Agridom Solutions Corp. The development of this system allowed the interns to apply their academic knowledge to a real-world setting, gaining hands-on 
+            experience in software development, user interface design, and database management. Throughout the project, the interns worked on various aspects, such as frontend and backend 
+            development, system integration, and testing, ensuring the system met the needs of SFGC. This internship experience not only helped them fulfill the required 240 hours for 
+            Computer Science students but also provided an opportunity to improve operational efficiency.
+          </p>
+        </div>
     </div>
 
     <!-- Schedule Modal (from original design) -->

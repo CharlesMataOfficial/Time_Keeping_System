@@ -1,12 +1,9 @@
 // Toggle Menu
 function toggleMenu() {
   const menu = document.getElementById("menu");
-  if (menu.style.left === "0px") {
-    menu.style.left = "-300px";
-  } else {
-    menu.style.left = "0px";
-  }
+  menu.style.left = menu.style.left === "0px" ? "-300px" : "0px";
 }
+
 // Define the ordered menu navigation (matches sidebar order)
 const menuOrder = [
   "dashboard",
@@ -24,82 +21,80 @@ let currentScreen = "dashboard"; // Default to dashboard
 
 // Function to navigate to a screen
 function navigateTo(screenId) {
-  // Hide all screens
+  if (!menuOrder.includes(screenId)) return; // Prevent errors if an invalid screen ID is passed
+
   document.querySelectorAll(".screen").forEach((screen) => {
     screen.style.display = "none";
   });
 
-  // Show the selected screen
   const activeScreen = document.getElementById(screenId);
   if (activeScreen) {
     activeScreen.style.display = "flex";
-    currentScreen = screenId; // Update the current screen
+    currentScreen = screenId;
   }
 
-  // Hide menu when a screen is selected
-  const menu = document.getElementById("menu");
-  if (menu) {
-    menu.style.left = "-300px";
-  }
+  document.getElementById("menu").style.left = "-300px";
 
-  // Always show the dashboard shortcut (if the element exists)
-  const dashboardShortcut = document.getElementById("dashboard-shortcut");
-  if (dashboardShortcut) {
-    dashboardShortcut.style.display = "block";
-  }
   if (screenId === "announcement") {
     fetchAnnouncements();
   }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  // Show Dashboard on page load
-  navigateTo("dashboard");
 
-  // Setup event listener for left arrow
+// Mouse Click - Left Arrow (`<`) Button
+document.getElementById("left-arrow")?.addEventListener("click", function () {
+  let currentIndex = menuOrder.indexOf(currentScreen);
+  if (currentIndex > 0) {
+    navigateTo(menuOrder[currentIndex - 1]);
+  }
+});
+
+// Mouse Click - Right Arrow (`>`) Button
+document.getElementById("right-arrow")?.addEventListener("click", function () {
+  let currentIndex = menuOrder.indexOf(currentScreen);
+  if (currentIndex < menuOrder.length - 1) {
+    navigateTo(menuOrder[currentIndex + 1]);
+  }
+});
+
+// Keyboard Shortcut: Left Arrow (`←`) and Right Arrow (`→`) to navigate
+document.addEventListener("keydown", function (event) {
+  let currentIndex = menuOrder.indexOf(currentScreen);
+
+  if (event.key === "ArrowLeft" && currentIndex > 0) {
+    navigateTo(menuOrder[currentIndex - 1]); // Move left (previous page)
+  } else if (event.key === "ArrowRight" && currentIndex < menuOrder.length - 1) {
+    navigateTo(menuOrder[currentIndex + 1]); // Move right (next page)
+  }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  navigateTo("dashboard"); // Ensure dashboard loads first
+
   const leftArrow = document.getElementById("left-arrow");
+  const rightArrow = document.getElementById("right-arrow");
+
   if (leftArrow) {
     leftArrow.addEventListener("click", function () {
       let currentIndex = menuOrder.indexOf(currentScreen);
       if (currentIndex > 0) {
-        let previousScreen = menuOrder[currentIndex - 1]; // Get the previous screen in the list
-        navigateTo(previousScreen);
+        navigateTo(menuOrder[currentIndex - 1]);
       }
     });
   }
 
-  // Setup event listener for right arrow
-  const rightArrow = document.getElementById("right-arrow");
   if (rightArrow) {
     rightArrow.addEventListener("click", function () {
       let currentIndex = menuOrder.indexOf(currentScreen);
       if (currentIndex < menuOrder.length - 1) {
-        let nextScreen = menuOrder[currentIndex + 1]; // Get the next screen in the list
-        navigateTo(nextScreen);
+        navigateTo(menuOrder[currentIndex + 1]);
       }
     });
-  }
-
-  // Dropdown color change listener
-  const dropdowns = document.querySelectorAll("select");
-  dropdowns.forEach((select) => {
-    select.addEventListener("change", function () {
-      let options = this.options;
-      for (let i = 0; i < options.length; i++) {
-        if (options[i].selected) {
-          options[i].style.color = "black"; // Selected option turns black
-        } else {
-          options[i].style.color = "gray"; // Unselected options remain gray
-        }
-      }
-    });
-  });
-
-  const attendanceCompany = document.getElementById("attendance-company");
-  if (attendanceCompany) {
-    attendanceCompany.addEventListener("change", updateAttendanceHeader);
   }
 });
+
+
+
 // Update the attendance header when dropdown selections change
 document
   .getElementById("attendance-type")
@@ -107,6 +102,7 @@ document
 document
   .getElementById("attendance-company")
   .addEventListener("change", updateAttendanceHeader);
+
 
 // Function to update attendance header text
 function updateAttendanceHeader() {
@@ -515,37 +511,36 @@ function filterAttendance() {
 
 // CONVERT TO CSS
 
-// // Apply the gray styling for unselected options
-// document.addEventListener("DOMContentLoaded", function () {
-//   const dropdowns = document.querySelectorAll("select");
+// Apply the gray styling for unselected options
+document.addEventListener("DOMContentLoaded", function () {
+  const dropdowns = document.querySelectorAll("select");
 
-//   dropdowns.forEach((select) => {
-//     select.addEventListener("change", function () {
-//       let options = this.options;
-//       for (let i = 0; i < options.length; i++) {
-//         if (options[i].selected) {
-//           options[i].style.color = "black"; // Selected option turns black
-//         } else {
-//           options[i].style.color = "gray"; // Unselected options remain gray
-//         }
-//       }
-//     });
-//   });
+  dropdowns.forEach((select) => {
+    select.addEventListener("change", function () {
+      let options = this.options;
+      for (let i = 0; i < options.length; i++) {
+        if (options[i].selected) {
+          options[i].style.color = "black"; // Selected option turns black
+        } else {
+          options[i].style.color = "gray"; // Unselected options remain gray
+        }
+      }
+    });
+  });
 
-//   // Apply initial gray color to options when the page loads
-//   dropdowns.forEach((select) => {
-//     let options = select.options;
-//     for (let i = 0; i < options.length; i++) {
-//       options[i].style.color = "gray"; // Make all options gray initially
-//     }
-//     // Set the selected option color to black
-//     const selectedOption = select.querySelector("option:checked");
-//     if (selectedOption) {
-//       selectedOption.style.color = "black";
-//     }
-//   });
-// });
-
+  // Apply initial gray color to options when the page loads
+  dropdowns.forEach((select) => {
+    let options = select.options;
+    for (let i = 0; i < options.length; i++) {
+      options[i].style.color = "gray"; // Make all options gray initially
+    }
+    // Set the selected option color to black
+    const selectedOption = select.querySelector("option:checked");
+    if (selectedOption) {
+      selectedOption.style.color = "black";
+    }
+  });
+});
 
 function superadmin_redirect() {
   window.location.href = "{% url 'superadmin_redirect' %}";
