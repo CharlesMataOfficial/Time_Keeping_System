@@ -497,3 +497,124 @@ def superadmin_redirect(request):
             request, "You do not have permission to access the super admin page."
         )
         return redirect("custom_admin_page")
+    
+from django.http import JsonResponse
+from django.db.models import Q
+from .models import TimeEntry, CustomUser
+
+# Mapping: key is the code; value is a tuple (main, alias) that should match exactly what’s stored in the database.
+COMPANY_CHOICES = {
+    'ASC': ('ASC', 'AgriDOM'),
+    'SFGCI': ('SFGCI', 'SFGC'),
+    'DJAS': ('DJAS', 'DSC'),
+    'FAC': ('FAC',),  # only one value; no alias
+    'GTI': ('GTI',),
+    'SMI': ('SMI',),
+}
+
+DEPARTMENT_CHOICES = {
+    'hr': "Human Resources",
+    'it': "IT Department",
+    'finance': "Finance",
+}
+
+def attendance_list_json(request):
+    attendance_type = request.GET.get('attendance_type', 'time-log')
+    company_code = request.GET.get('attendance_company', 'all')
+    department_code = request.GET.get('attendance_department', 'all')
+
+    if attendance_type == 'time-log':
+        qs = TimeEntry.objects.select_related('user', 'user__company', 'user__position')\
+            .all().order_by('-time_in')
+
+        if company_code != 'all':
+            # First try a direct lookup using the received value
+            names = COMPANY_CHOICES.get(company_code)
+            if not names:
+                # If not found, perform a reverse lookup to find which tuple contains the alias.
+                for key, names_tuple in COMPANY_CHOICES.items():
+                    if company_code in names_tuple:
+                        names = names_tuple
+                        break
+            if names:
+                # Use case-insensitive lookup for each name in the tuple.
+                query = Q(user__company__name__iexact=names[0])
+                if len(names) > 1:
+                    query |= Q(user__company__name__iexact=names[1])
+                qs = qs.filter(query)
+            else:
+                qs = qs.none()
+
+        if department_code != 'all':
+            qs = qs.filter(user__position__name=department_code)
+
+        data = [
+            {
+                'employee_id': entry.user.employee_id,
+                'name': f"{entry.user.first_name} {entry.user.surname}",
+                'time_in': entry.time_in.strftime("%Y-%m-%d %H:%M:%S"),
+                'time_out': entry.time_out.strftime("%Y-%m-%d %H:%M:%S") if entry.time_out else '',
+                'hours_worked': entry.hours_worked,
+            }
+            for entry in qs
+        ]
+
+    elif attendance_type == 'users-active':
+        qs = CustomUser.objects.filter(timeentry__time_out__isnull=True).distinct()
+        if company_code != 'all':
+            names = COMPANY_CHOICES.get(company_code)
+            if not names:
+                for key, names_tuple in COMPANY_CHOICES.items():
+                    if company_code in names_tuple:
+                        names = names_tuple
+                        break
+            if names:
+                query = Q(company__name__iexact=names[0])
+                if len(names) > 1:
+                    query |= Q(company__name__iexact=names[1])
+                qs = qs.filter(query)
+            else:
+                qs = qs.none()
+
+        if department_code != 'all':
+            qs = qs.filter(position__name=department_code)
+
+        data = [
+            {
+                'employee_id': user.employee_id,
+                'name': f"{user.first_name} {user.surname}",
+            }
+            for user in qs
+        ]
+
+    elif attendance_type == 'users-inactive':
+        qs = CustomUser.objects.exclude(timeentry__time_out__isnull=True).distinct()
+        if company_code != 'all':
+            names = COMPANY_CHOICES.get(company_code)
+            if not names:
+                for key, names_tuple in COMPANY_CHOICES.items():
+                    if company_code in names_tuple:
+                        names = names_tuple
+                        break
+            if names:
+                query = Q(company__name__iexact=names[0])
+                if len(names) > 1:
+                    query |= Q(company__name__iexact=names[1])
+                qs = qs.filter(query)
+            else:
+                qs = qs.none()
+
+        if department_code != 'all':
+            qs = qs.filter(position__name=department_code)
+
+        data = [
+            {
+                'employee_id': user.employee_id,
+                'name': f"{user.first_name} {user.surname}",
+            }
+            for user in qs
+        ]
+    else:
+        data = []
+
+    return JsonResponse({'attendance_list': data, 'attendance_type': attendance_type})
