@@ -1,28 +1,38 @@
-# models.py
 import datetime
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.db.models import Max
 from django.conf import settings
 from django.core.validators import MinLengthValidator
 from django.forms import ValidationError
-from django.utils import timezone  # timezone.now() will now return a naive datetime
-from django.views.decorators.cache import never_cache
-from django.contrib.auth import login
-from django.shortcuts import render, redirect
-from django.urls import reverse
-
+from django.utils import timezone
 
 class CustomUserManager(BaseUserManager):
     def get_next_employee_id(self):
-        highest_user = self.model.objects.order_by('-employee_id').first()
-        if highest_user:
-            try:
-                next_id = str(int(highest_user.employee_id) + 1).zfill(6)
-            except ValueError:
-                next_id = '000001'
-        else:
-            next_id = '000001'
-        return next_id
+        # Get the highest employee ID currently in use
+        highest_id = self.model.objects.aggregate(
+            Max('employee_id'))['employee_id__max']
+
+        if not highest_id:
+            return '000001'  # First employee
+
+        next_id = int(highest_id) + 1
+
+        # If next ID would exceed 999999, look for gaps
+        if next_id > 999999:
+            # Get all employee IDs sorted
+            existing_ids = set(self.model.objects.values_list('employee_id', flat=True))
+
+            # Find first available gap
+            for i in range(1, 1000000):  # From 000001 to 999999
+                candidate = str(i).zfill(6)
+                if candidate not in existing_ids:
+                    return candidate
+
+            raise ValueError("No available employee IDs - all slots filled")
+
+        # Normal case - return next highest ID
+        return str(next_id).zfill(6)
 
     def create_user(self, employee_id=None, password=None, **extra_fields):
         if not employee_id:
@@ -50,23 +60,44 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(employee_id, password, **extra_fields)
 
 
+class Company(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Companies"
+        ordering = ['name']
+        db_table = 'django_companies'  # Changed from 'companies'
+
+class Position(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['name']
+        db_table = 'django_positions'  # Changed from 'positions'
+
 class CustomUser(AbstractUser):
     # Remove the username field
     username = None
     employee_id = models.CharField(unique=True, max_length=6)
     first_name = models.CharField(max_length=100, null=True, blank=True)
     surname = models.CharField(max_length=100, null=True, blank=True)
-    company = models.CharField(max_length=100, null=True, blank=True)
-    position = models.CharField(max_length=100, null=True, blank=True)
+    company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True)
+    position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     date_hired = models.DateField(null=True, blank=True)
     pin = models.CharField(
         max_length=4, validators=[MinLengthValidator(4)], null=True, blank=True
     )
-    status = models.BooleanField(default=True)
     preset_name = models.CharField(max_length=100, null=True, blank=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
+    is_guard = models.BooleanField(default=False)
     if_first_login = models.BooleanField(default=True)
 
     # Remove other redundant fields
@@ -82,6 +113,8 @@ class CustomUser(AbstractUser):
     def authenticate_by_pin(cls, employee_id, pin):
         try:
             user = cls.objects.get(employee_id=employee_id)
+            if not user.is_active:
+                return None
             if user.is_superuser:
                 if user.check_password(pin):
                     return user
@@ -96,13 +129,18 @@ class CustomUser(AbstractUser):
         except cls.DoesNotExist:
             return None
 
+    class Meta:
+        db_table = 'django_users'  # Changed from 'users'
+        verbose_name = "User"
+        verbose_name_plural = "Users"
+
 
 class TimeEntry(models.Model):
     ordering = ["-time_in"]
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     time_in = models.DateTimeField(
-        auto_now_add=True
-    )  # Will be naive and in local time now
+        default=timezone.now, editable=True
+    )
     time_out = models.DateTimeField(null=True, blank=True)
     hours_worked = models.FloatField(null=True, blank=True)
     is_late = models.BooleanField(default=False)
@@ -152,6 +190,13 @@ class TimeEntry(models.Model):
             new_entry.save()
         return new_entry
 
+    def __str__(self):
+        return f"{self.user.employee_id} - {self.user.first_name} {self.user.surname} - {self.time_in.strftime('%Y-%m-%d %H:%M:%S')}"
+
+    class Meta:
+        verbose_name_plural = "Time Entries"
+        db_table = 'django_time_entries'
+
 class Announcement(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -159,3 +204,6 @@ class Announcement(models.Model):
 
     def __str__(self):
         return f"Announcement {self.id}"
+
+    class Meta:
+        db_table = 'django_announcements'

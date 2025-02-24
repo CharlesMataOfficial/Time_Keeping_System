@@ -1,5 +1,5 @@
 from django import forms
-from .models import CustomUser
+from .models import CustomUser, TimeEntry
 
 class CustomUserCreationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -27,3 +27,20 @@ class CustomUserCreationForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+class TimeEntryForm(forms.ModelForm):
+    class Meta:
+        model = TimeEntry
+        fields = ['user', 'time_in', 'time_out', 'is_late', 'image_path', 'hours_worked']
+        widgets = {
+            'hours_worked': forms.HiddenInput(),  # Hide hours_worked as it's calculated automatically
+        }
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if instance.time_in and instance.time_out:
+            delta = instance.time_out - instance.time_in
+            instance.hours_worked = round(delta.total_seconds() / 3600, 2)
+        if commit:
+            instance.save()
+        return instance

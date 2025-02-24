@@ -1228,8 +1228,8 @@ button:hover {
   line-height: 1.2;
 }
 
-.red-container, 
-.red-container p, 
+.red-container,
+.red-container p,
 .red-container span {
   color: white !important;
   text-align: justify !important;
@@ -1268,7 +1268,21 @@ select option {
 }
 
 
-select:focus option:checked, 
+select:focus option:checked,
 select option:checked {
-  color: black !important; 
+  color: black !important;
+}
+
+
+ /* Remove default anchor styles in the menu */
+ .menu a {
+  text-decoration: none;
+  color: inherit;
+  border: none;
+  outline: none;
+}
+
+/* Optional: Make the anchor a block-level element so the entire area is clickable */
+.menu a {
+  display: block;
 }

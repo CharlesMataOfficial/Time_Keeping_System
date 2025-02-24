@@ -1,0 +1,81 @@
+:root {
+  /* Django admin variable names */
+  --primary: #621c1c !important;
+  --secondary: #b41d1d !important;
+  --accent: #f5dd5d !important;
+  --primary-fg: #fff !important;
+  --body-fg: #333 !important;
+  --body-bg: #f2f2f2  !important;
+  --header-color: #fff !important;
+  --link-fg: var(--primary) !important;
+  --link-hover-color: var(--secondary) !important;
+  --breadcrumbs-bg: var(--primary) !important;
+  --breadcrumbs-fg: var(--primary-fg) !important;
+  --error-bg: var(--primary) !important;
+  --button-hover-bg: var(--secondary) !important;
+  --delete-button-bg: var(--primary) !important;
+  --delete-button-fg: var(--primary-fg) !important;
+  --delete-button-hover-bg: var(--secondary) !important;
+  --delete-button-hover-fg: var(--primary-fg) !important;
+}
+
+/* Main background */
+body {
+  background: var(--body-bg);
+}
+
+/* Header styling */
+#header {
+  background: var(--primary) !important;
+  color: var(--primary-fg) !important;
+}
+
+/* Links and buttons */
+a:link,
+a:visited {
+  color: var(--link-fg);
+}
+
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+a.button {
+  background: var(--primary) !important;
+  color: var(--primary-fg) !important;
+}
+
+.button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover {
+  background: var(--secondary) !important;
+}
+
+/* Module styling */
+.module h2,
+.module caption {
+  background: var(--primary) !important;
+}
+
+/* List page filters */
+.selector-chosen h2 {
+  background: var(--primary) !important;
+}
+
+/* Action buttons */
+.object-tools a:link,
+.object-tools a:visited {
+  background: var(--primary);
+}
+
+button.theme-toggle {
+  display: none;
+}
+
+#content-related .module h2 {
+  color: var(--primary-fg)
+}
+
+#changelist .this-page {
+  background-color: var(--accent);
+}

@@ -542,4 +542,6 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-
+function superadmin_redirect() {
+  window.location.href = "{% url 'superadmin_redirect' %}";
+}

@@ -13,6 +13,7 @@ from django.core.files.storage import default_storage
 import os
 from datetime import datetime, timedelta
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
 
 
 @never_cache
@@ -21,39 +22,59 @@ def login_view(request):
         employee_id = request.POST.get("employee_id")
         pin = request.POST.get("pin")
 
-        auth_result = CustomUser.authenticate_by_pin(employee_id, pin)
+        try:
+            # First check if user exists and is active
+            user = CustomUser.objects.get(employee_id=employee_id)
 
-        if auth_result:  # Successful login
-            user = (
-                auth_result
-                if isinstance(auth_result, CustomUser)
-                else auth_result["user"]
-            )
-            login(request, user)
-            if user.is_staff and user.is_superuser:
-                return redirect(reverse("admin:login"))
-            elif user.is_staff and not user.is_superuser:
-                return redirect("custom_admin_page")
+            if not user.is_active:
+                return render(request, "login_page.html",
+                            {"error": "This account is inactive"})
+
+            # Try to authenticate
+            auth_result = CustomUser.authenticate_by_pin(employee_id, pin)
+
+            if auth_result:  # Successful login
+                user = auth_result if isinstance(auth_result, CustomUser) else auth_result["user"]
+                login(request, user)
+
+                if user.is_guard:
+                    return redirect("user_page")
+                elif user.is_staff or user.is_superuser:
+                    return redirect("custom_admin_page")
+                else:
+                    return render(request, "login_page.html",
+                                {"error": "You do not have permission to log in"})
             else:
-                return redirect("user_page")
-        else:  # Authentication failed
-            try:
-                CustomUser.objects.get(employee_id=employee_id)
-                error_message = "Incorrect PIN"
-            except CustomUser.DoesNotExist:
-                error_message = "Employee ID not found"
+                return render(request, "login_page.html",
+                            {"error": "Incorrect PIN"})
 
-            return render(request, "login_page.html", {"error": error_message})
+        except CustomUser.DoesNotExist:
+            return render(request, "login_page.html",
+                        {"error": "Employee ID not found"})
+
     return render(request, "login_page.html")
 
 
 @login_required
 def user_page(request):
+    # Force a refresh from the DB so that the latest value of is_guard is loaded
+    request.user.refresh_from_db()
+    print(
+        "USER_PAGE VIEW: request.user:",
+        request.user,
+        "is_guard:",
+        request.user.is_guard,
+    )
+
+    if not request.user.is_guard:
+        messages.error(
+            request, "Access denied. You do not have permission to access this page."
+        )
+        return redirect("custom_admin_page")
+
     now = timezone.now()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     today_end = today_start + timedelta(days=1)
-
-    # Filter entries for today based on the naive datetimes
     todays_entries = TimeEntry.objects.filter(
         time_in__gte=today_start, time_in__lt=today_end
     ).order_by("-last_modified")
@@ -63,8 +84,8 @@ def user_page(request):
         "user_page.html",
         {
             "all_entries": todays_entries,
-            "partner_logo": "default_logo.png",  # Set default/empty logo
-            "user_company": "",  # Empty company string
+            "partner_logo": "default_logo.png",
+            "user_company": "",
         },
     )
 
@@ -118,10 +139,8 @@ def clock_in_view(request):
             )
         return JsonResponse({"success": True})
 
-    # Regular clock in
     if not isinstance(auth_result, dict) and auth_result:
         user = auth_result
-        # Rest of your clock in logic...
 
         if not user:
             try:
@@ -132,7 +151,7 @@ def clock_in_view(request):
             return JsonResponse({"success": False, "error": error_message})
 
         # Handle company logo
-        user_company = user.company or ""  # Handle None case
+        user_company = user.company.name if user.company else ""  # Handle None case
         user_company = user_company.strip().lower()
 
         company_logo_mapping = {
@@ -169,7 +188,7 @@ def clock_in_view(request):
                 "employee_id": entry.user.employee_id,
                 "first_name": entry.user.first_name,
                 "surname": entry.user.surname,
-                "company": entry.user.company or "",
+                "company": entry.user.company.name if entry.user.company else "",
                 "time_in": entry.time_in.strftime("%I:%M %p"),
                 "time_out": (
                     entry.time_out.strftime("%I:%M %p") if entry.time_out else None
@@ -185,7 +204,7 @@ def clock_in_view(request):
                 "employee_id": user.employee_id,
                 "first_name": user.first_name,
                 "surname": user.surname,
-                "company": user.company or "",
+                "company": user.company.name if user.company else "",
                 "time_in": entry.time_in.strftime("%I:%M %p"),
                 "time_out": None,
                 "image_path": entry.image_path,
@@ -222,7 +241,7 @@ def clock_out_view(request):
             time_out_formatted = open_entry.time_out.strftime("%I:%M %p")
 
             # Handle None company value
-            user_company = user.company or ""
+            user_company = user.company.name if user.company else ""
             user_company = user_company.strip().lower()
 
             # Get the company logo based on the user's company
@@ -251,7 +270,7 @@ def clock_out_view(request):
                     "employee_id": entry.user.employee_id,
                     "first_name": entry.user.first_name,
                     "surname": entry.user.surname,
-                    "company": entry.user.company or "",
+                    "company": entry.user.company.name if entry.user.company else "",
                     "time_in": entry.time_in.strftime("%I:%M %p"),
                     "time_out": (
                         entry.time_out.strftime("%I:%M %p") if entry.time_out else None
@@ -267,7 +286,7 @@ def clock_out_view(request):
                     "employee_id": user.employee_id,
                     "first_name": user.first_name or "",
                     "surname": user.surname or "",
-                    "company": user.company or "",
+                    "company": user.company.name if user.company else "",
                     "time_in": time_in_formatted,
                     "time_out": time_out_formatted,
                     "new_logo": company_logo,
@@ -312,7 +331,7 @@ def get_todays_entries(request):
                 "employee_id": entry.user.employee_id,
                 "first_name": entry.user.first_name,
                 "surname": entry.user.surname,
-                "company": entry.user.company,
+                "company": entry.user.company.name if entry.user.company else "",
                 "time_in": entry.time_in.strftime("%I:%M %p"),
                 "time_out": (
                     entry.time_out.strftime("%I:%M %p") if entry.time_out else None
@@ -321,15 +340,6 @@ def get_todays_entries(request):
         )
 
     return JsonResponse({"entries": entries_data})
-
-
-def custom_admin_page(request):
-    # Check if the user is staff but not a superuser (admin page access logic)
-    if not request.user.is_staff or request.user.is_superuser:
-        return redirect("user_page")  # Redirect non-admin users elsewhere
-
-    # If the user is staff and not a superuser, show the custom admin page
-    return render(request, "custom_admin_page.html")
 
 
 @require_POST
@@ -440,26 +450,50 @@ def announcement_post(request, pk):
         announcement = get_object_or_404(Announcement, pk=pk)
         announcement.is_posted = True
         announcement.save()
-        return JsonResponse({'message': 'Announcement posted'})
-    return HttpResponseBadRequest('Unsupported method')
+        return JsonResponse({"message": "Announcement posted"})
+    return HttpResponseBadRequest("Unsupported method")
+
 
 @csrf_exempt
 def posted_announcements_list(request):
     """
     GET -> Return a list of posted announcements (is_posted=True).
     """
-    if request.method == 'GET':
+    if request.method == "GET":
         # Filter to only posted announcements
-        announcements = Announcement.objects.filter(is_posted=True).order_by('-created_at')
+        announcements = Announcement.objects.filter(is_posted=True).order_by(
+            "-created_at"
+        )
         data = [
             {
-                'id': ann.id,
-                'content': ann.content,
-                'created_at': ann.created_at.isoformat(),
-                'is_posted': ann.is_posted
+                "id": ann.id,
+                "content": ann.content,
+                "created_at": ann.created_at.isoformat(),
+                "is_posted": ann.is_posted,
             }
             for ann in announcements
         ]
         return JsonResponse(data, safe=False)
 
     return HttpResponseBadRequest("Unsupported method")
+
+
+def custom_admin_page(request):
+    # Only allow users that are staff or superusers to access this page.
+    if not (request.user.is_staff or request.user.is_superuser):
+        # Redirect non-admin users to the regular user page (or another page)
+        return redirect("user_page")
+
+    # Otherwise, render the custom admin page
+    return render(request, "custom_admin_page.html")
+
+
+@login_required
+def superadmin_redirect(request):
+    if request.user.is_superuser:
+        return redirect(reverse("admin:index"))
+    else:
+        messages.error(
+            request, "You do not have permission to access the super admin page."
+        )
+        return redirect("custom_admin_page")
