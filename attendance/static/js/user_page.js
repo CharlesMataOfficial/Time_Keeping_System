@@ -410,6 +410,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+document.addEventListener("keydown", function (event) {
+  if (event.key.toLowerCase() === "t") {
+      document.getElementById("timeInBtn").click();
+  } else if (event.key.toLowerCase() === "o") {
+      document.getElementById("timeOutBtn").click();
+  }
+});
+
 
 // CONVERT TO CSS
 
