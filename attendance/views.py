@@ -5,7 +5,7 @@ from .models import CustomUser, TimeEntry, Announcement
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
 import json
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponseBadRequest,  HttpResponse
 from django.views.decorators.http import require_POST, require_GET
 from django.utils import timezone
 from django.core.files.base import ContentFile
@@ -14,6 +14,8 @@ import os
 from datetime import datetime, timedelta
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
+import pandas as pd
+from django.utils.timezone import make_aware
 
 
 @never_cache
@@ -498,3 +500,90 @@ def superadmin_redirect(request):
         )
         return redirect("custom_admin_page")
     
+
+@csrf_exempt
+def export_time_entries_by_date(request):
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    file_name = request.GET.get('file_name', 'time_entries_export')
+
+    if not start_date or not end_date:
+        return HttpResponse("Invalid date range", status=400)
+
+    try:
+        start_date = make_aware(datetime.datetime.strptime(start_date, "%Y-%m-%d"))
+        end_date = make_aware(datetime.datetime.strptime(end_date, "%Y-%m-%d"))
+    except ValueError:
+        return HttpResponse("Invalid date format. Use YYYY-MM-DD.", status=400)
+
+    records = TimeEntry.objects.filter(time_in__range=[start_date, end_date])
+
+    if not records.exists():
+        return HttpResponse("No records found", status=404)
+
+    df = pd.DataFrame.from_records(records.values(
+        'user__id', 'user__first_name', 'user__surname', 
+        'time_in', 'time_out', 'hours_worked', 'is_late'
+    ))
+
+    df.rename(columns={
+        'user__id': 'Employee ID',
+        'user__first_name': 'First Name',
+        'user__surname': 'Last Name',
+        'time_in': 'Time In',
+        'time_out': 'Time Out',
+        'hours_worked': 'Hours Worked',
+        'is_late': 'Late'
+    }, inplace=True)
+
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = f'attachment; filename="{file_name}.xlsx"'
+
+    with pd.ExcelWriter(response, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False)
+
+    return response
+
+
+def export_time_entries_by_employee(request):
+    employee_id = request.GET.get('employee_id')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    file_name = request.GET.get('file_name', 'time_entries_employee')
+
+    if not employee_id or not start_date or not end_date:
+        return HttpResponse("Invalid parameters", status=400)
+
+    try:
+        start_date = make_aware(datetime.datetime.strptime(start_date, "%Y-%m-%d"))
+        end_date = make_aware(datetime.datetime.strptime(end_date, "%Y-%m-%d"))
+    except ValueError:
+        return HttpResponse("Invalid date format. Use YYYY-MM-DD.", status=400)
+
+    records = TimeEntry.objects.filter(user__id=employee_id, time_in__range=[start_date, end_date])
+
+    if not records.exists():
+        return HttpResponse("No records found", status=404)
+
+    df = pd.DataFrame.from_records(records.values(
+        'user__id', 'user__first_name', 'user__surname', 
+        'time_in', 'time_out', 'hours_worked', 'is_late'
+    ))
+
+    df.rename(columns={
+        'user__id': 'Employee ID',
+        'user__first_name': 'First Name',
+        'user__surname': 'Last Name',
+        'time_in': 'Time In',
+        'time_out': 'Time Out',
+        'hours_worked': 'Hours Worked',
+        'is_late': 'Late'
+    }, inplace=True)
+
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = f'attachment; filename="{file_name}.xlsx"'
+
+    with pd.ExcelWriter(response, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False)
+
+    return response

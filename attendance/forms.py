@@ -44,3 +44,14 @@ class TimeEntryForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+class ExportByDateForm(forms.Form):
+    start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    file_name = forms.CharField(max_length=100, required=False)
+
+class ExportByEmployeeForm(forms.Form):
+    employee_id = forms.CharField(max_length=20)
+    start_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    end_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    file_name = forms.CharField(max_length=100, required=False)

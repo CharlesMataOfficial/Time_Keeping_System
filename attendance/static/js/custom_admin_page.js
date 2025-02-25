@@ -252,87 +252,68 @@ function saveWorkHours() {
 }
 
 //Modal functions for Excel
-function openModal(exportDateModal) {
-  document.getElementById("exportDateModal").style.display = "block";
+// Function to open a modal
+function openModal(modalId) {
+  document.getElementById(modalId).style.display = "flex";
 }
 
-function closeModal(exportDateModal) {
+// Function to close a modal
+function closeModal(modalId) {
   document.getElementById(modalId).style.display = "none";
 }
 
-function openModal(exportEmpModal) {
-  document.getElementById("exportDateModal").style.display = "block";
-}
-
-function closeModal(exportEmpModal) {
-  document.getElementById(modalId).style.display = "none";
-}
-
-//Modal buttons for Excel
-document.getElementById("export-button").addEventListener("click", function() {
-  openModal("exportDateModal");
-});
-
-document.getElementById("export-button").addEventListener("click", function() {
-  openModal("exportEmpModal");
-});
-
-//Modal function from the database to Excel
+// Function to export data by date
 function exportDataByDate() {
-  let fileName = document.getElementById("dateFileName").value;
-  let startDate = document.getElementById("startDate").value;
-  let endDate = document.getElementById("endDate").value;
+  const fileName = document.getElementById("dateFileName").value.trim();
+  const startDate = document.getElementById("startDate").value;
+  const endDate = document.getElementById("endDate").value;
 
-  if (!fileName || !startDate || !endDate) {
-      alert("Please fill in all fields.");
+  if (!fileName) {
+      alert("Please enter a file name.");
       return;
   }
 
-  // Simulate export process
-  alert(`Data from ${startDate} to ${endDate} has been exported to ${fileName}.xlsx`);
+  if (!startDate || !endDate) {
+      alert("Please select a start and end date.");
+      return;
+  }
 
-  // Call backend API to generate the Excel file
-  fetch(`/export-by-date?fileName=${fileName}&start=${startDate}&end=${endDate}`)
-      .then(response => response.blob())
-      .then(blob => {
-          let link = document.createElement("a");
-          link.href = window.URL.createObjectURL(blob);
-          link.download = `${fileName}.xlsx`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-      });
+  console.log(`Exporting data by Date - File: ${fileName}, Range: ${startDate} to ${endDate}`);
 
+  // Close modal after export
   closeModal("exportDateModal");
+
+  // TODO: Add actual export logic (e.g., generate and download Excel)
 }
 
+// Function to export data by Employee ID
 function exportDataByEmployee() {
-  let fileName = document.getElementById("empFileName").value;
-  let empID = document.getElementById("employeeID").value;
-  let startDate = document.getElementById("empStartDate").value;
-  let endDate = document.getElementById("empEndDate").value;
+  const fileName = document.getElementById("empFileName").value.trim();
+  const employeeID = document.getElementById("employeeID").value.trim();
+  const startDate = document.getElementById("empStartDate").value;
+  const endDate = document.getElementById("empEndDate").value;
 
-  if (!fileName || !empID || !startDate || !endDate) {
-      alert("Please fill in all fields.");
+  if (!fileName) {
+      alert("Please enter a file name.");
       return;
   }
 
-  // Simulate export process
-  alert(`Data for Employee ID ${empID} from ${startDate} to ${endDate} has been exported to ${fileName}.xlsx`);
+  if (!employeeID) {
+      alert("Please enter an Employee ID.");
+      return;
+  }
 
-  // Call backend API to generate the Excel file
-  fetch(`/export-by-employee?fileName=${fileName}&empID=${empID}&start=${startDate}&end=${endDate}`)
-      .then(response => response.blob())
-      .then(blob => {
-          let link = document.createElement("a");
-          link.href = window.URL.createObjectURL(blob);
-          link.download = `${fileName}.xlsx`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-      });
+  if (!startDate || !endDate) {
+      alert("Please select a start and end date.");
+      return;
+  }
 
+  console.log(`Exporting data by Employee ID - File: ${fileName}, Employee ID: ${employeeID}, Range: ${startDate} to ${endDate}`);
+
+  // Close modal after export
   closeModal("exportEmpModal");
+
+  // TODO: Add actual export logic (e.g., generate and download Excel)
 }
 
 
