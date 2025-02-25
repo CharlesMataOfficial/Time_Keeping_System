@@ -432,83 +432,79 @@ function viewAnnouncements() {
 // Store the header text without displaying it in the HTML
 let attendanceHeaderText = "Time Log > By Company";
 
-function updateAttendanceHeader() {
-  const type = document.getElementById("attendance-type").value;
-  const company = document.getElementById("attendance-company").value;
-
-  let typeText = "Time Log";
-  if (type === "users-active") {
-    typeText = "Users Active";
-  } else if (type === "users-inactive") {
-    typeText = "Users Inactive";
-  }
-
-  // Use the same company options as in filterAttendance for consistency.
-  const companyOptions = {
-    agridom: "Agridom Solutions Corp.",
-    farmtech: "Farmtech Agriland Corporation",
-    subang: "Subang Farm",
-    djas: "DJAS Servitrade Corporation",
-    agri_online: "AGRI Online",
-    sunfood: "Sunfood Marketing Inc.",
-    all: "All companies",
-  };
-  let companyText = companyOptions[company] || "By Company";
-
-  attendanceHeaderText = `${typeText} > ${companyText}`;
-}
-
-// Ensure dropdown selections update the stored header text
-document
-  .getElementById("attendance-type")
-  .addEventListener("change", updateAttendanceHeader);
-document
-  .getElementById("attendance-company")
-  .addEventListener("change", updateAttendanceHeader);
-
-// Update the filter function to show the selected options in a prompt with the correct format
 function filterAttendance() {
-  const type = document.getElementById("attendance-type").value; // Correctly get the type
-  const company = document.getElementById("attendance-company").value; // Get the company value
-  const department = document.getElementById("attendance-department").value; // Get the department value
+  // Get the selected filter values
+  const attendanceType = document.getElementById('attendance-type').value;
+  const attendanceCompany = document.getElementById('attendance-company').value;
+  const attendanceDepartment = document.getElementById('attendance-department').value;
 
-  // Define the options for each dropdown
-  const typeOptions = {
-    "time-log": "Time Log",
-    "users-active": "Users Active",
-    "users-inactive": "Users Inactive",
-  };
+  // Build the URL with query parameters
+  const url = `/attendance-list-json/?attendance_type=${attendanceType}&attendance_company=${attendanceCompany}&attendance_department=${attendanceDepartment}`;
 
-  const companyOptions = {
-    agridom: "Agridom Solutions Corp.",
-    farmtech: "Farmtech Agriland Corporation",
-    subang: "Subang Farm",
-    djas: "DJAS Servitrade Corporation",
-    "agri-online": "AGRI Online",
-    sunfood: "Sunfood Marketing Inc.",
-    all: "All companies",
-  };
+  // Use Fetch API to get data from the backend
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      const container = document.getElementById('attendance_rectangle');
+      container.innerHTML = '';  // Clear previous data
 
-  const departmentOptions = {
-    all: "All departments",
-    hr: "Human Resources",
-    it: "IT Department",
-    finance: "Finance",
-  };
-
-  // Get the selected text for each dropdown option
-  const selectedType = typeOptions[type] || "Time Log";
-  const selectedCompany = companyOptions[company] || "All companies";
-  const selectedDepartment = departmentOptions[department] || "All departments";
-
-  // Generate the filter text
-  const filterText = `Filtering attendance for:\n${selectedType} > ${selectedCompany} > ${selectedDepartment}`;
-
-  // Show the filter information in a prompt
-  alert(filterText);
+      if (data.attendance_type === 'time-log') {
+        // Create table for time-log data
+        let table = document.createElement('table');
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Employee ID</th>
+              <th>Name</th>
+              <th>Time In</th>
+              <th>Time Out</th>
+              <th>Hours Worked</th>
+            </tr>
+          </thead>
+        `;
+        let tbody = document.createElement('tbody');
+        if (data.attendance_list.length) {
+          data.attendance_list.forEach(entry => {
+            let row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${entry.employee_id}</td>
+              <td>${entry.name}</td>
+              <td>${entry.time_in}</td>
+              <td>${entry.time_out}</td>
+              <td>${entry.hours_worked}</td>
+            `;
+            tbody.appendChild(row);
+          });
+        } else {
+          tbody.innerHTML = `<tr><td colspan="5">No time entries found.</td></tr>`;
+        }
+        table.appendChild(tbody);
+        container.appendChild(table);
+      } else {
+        // For users-active or users-inactive, create a list
+        let ul = document.createElement('ul');
+        if (data.attendance_list.length) {
+          data.attendance_list.forEach(user => {
+            let li = document.createElement('li');
+            li.textContent = `${user.employee_id} - ${user.name}`;
+            ul.appendChild(li);
+          });
+        } else {
+          ul.innerHTML = `<li>No users found.</li>`;
+        }
+        container.appendChild(ul);
+      }
+    })
+    .catch(error => console.error('Error fetching attendance data:', error));
 }
+document.getElementById("attendance-company").addEventListener("change", function () {
+  let selectedOption = this.options[this.selectedIndex];
+  let alias = selectedOption.getAttribute("data-alias");
 
-
+  if (alias) {
+      this.value = alias; // This sends the alias to the backend.
+  }
+});
 // CONVERT TO CSS
 
 // Apply the gray styling for unselected options

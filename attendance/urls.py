@@ -18,5 +18,7 @@ urlpatterns = [
     path('announcements/<int:pk>/post/', views.announcement_post, name='announcement_post'),
     path('announcements/posted/', views.posted_announcements_list, name='posted_announcements_list'),
     path("superadmin/", views.superadmin_redirect, name="superadmin_redirect"),
+    path('attendance-list-json/', views.attendance_list_json, name='attendance_list_json'),
+
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
