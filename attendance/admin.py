@@ -4,16 +4,12 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 from django.utils.html import format_html
 from django.conf import settings
-from .models import CustomUser, TimeEntry, Company, Position
+from .models import CustomUser, TimeEntry, Company, Position, TimePreset, DayOverride, ScheduleGroup
 from .forms import CustomUserCreationForm, TimeEntryForm
-from .models import TimePreset
-
-
 class TimeEntryInline(admin.TabularInline):
     model = TimeEntry
     form = TimeEntryForm
     extra = 1  # Number of extra forms to display
-
 
 def deactivate_users(modeladmin, request, queryset):
     queryset.update(is_active=False)
@@ -59,7 +55,7 @@ class CustomUserAdmin(UserAdmin):
                     "company",
                     "position",
                     "date_hired",
-                    "time_preset",
+                    "schedule_group",  # Use schedule_group instead of time_preset
                 )
             },
         ),
@@ -73,14 +69,14 @@ class CustomUserAdmin(UserAdmin):
         "company",
         "position",
         "is_active",
-        "time_preset",
+        "schedule_group",  # Update list_display too
     )
     search_fields = ("employee_id", "first_name", "surname", "company__name", "position__name")
     ordering = ("-employee_id",)
     list_filter = ("is_active", "is_staff", "is_superuser", "is_guard")
 
     # Add autocomplete fields
-    autocomplete_fields = ['company', 'position']
+    autocomplete_fields = ['company', 'position', 'schedule_group']
 
     def save_model(self, request, obj, form, change):
         if not change and not obj.employee_id:
@@ -176,6 +172,15 @@ class TimePresetAdmin(admin.ModelAdmin):
         }),
     )
 
+class DayOverrideInline(admin.TabularInline):
+    model = DayOverride
+    extra = 0
+
+class ScheduleGroupAdmin(admin.ModelAdmin):
+    list_display = ('name', 'default_schedule', 'created_at')
+    search_fields = ('name',)
+    inlines = [DayOverrideInline]
+
 # Unregister the group model
 admin.site.unregister(Group)
 
@@ -185,3 +190,4 @@ admin.site.register(TimePreset, TimePresetAdmin)
 admin.site.register(TimeEntry, TimeEntryAdmin)
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(Position, PositionAdmin)
+admin.site.register(ScheduleGroup, ScheduleGroupAdmin)

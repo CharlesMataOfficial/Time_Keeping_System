@@ -94,22 +94,21 @@ class CustomUser(AbstractUser):
     pin = models.CharField(
         max_length=4, validators=[MinLengthValidator(4)], null=True, blank=True
     )
-    time_preset = models.ForeignKey(
-        'TimePreset',
+    schedule_group = models.ForeignKey(
+        'ScheduleGroup',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name='users',
-        verbose_name="Schedule Preset"
+        verbose_name="Schedule Group"
     )
+    # Remove other redundant fields
+    email = None
+    last_name = None  # Since you're using 'surname'
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_guard = models.BooleanField(default=False)
     if_first_login = models.BooleanField(default=True)
-
-    # Remove other redundant fields
-    email = None
-    last_name = None  # Since you're using 'surname'
 
     USERNAME_FIELD = "employee_id"
     REQUIRED_FIELDS = []
@@ -135,6 +134,12 @@ class CustomUser(AbstractUser):
             return None
         except cls.DoesNotExist:
             return None
+
+    def get_schedule_for_day(self, day_code):
+        """Get the schedule that applies to this user for the specified day."""
+        if self.schedule_group:
+            return self.schedule_group.get_schedule_for_day(day_code)
+        return None  # No schedule defined
 
     class Meta:
         db_table = 'django_users'  # Changed from 'users'
@@ -186,26 +191,32 @@ class TimeEntry(models.Model):
 
         new_entry = cls.objects.create(user=user)
 
-        # Determine lateness based on user's time preset if available
-        today = new_entry.time_in.date()
-        if not cls.objects.filter(user=user, time_in__date=today).exists():
-            time_in_local = new_entry.time_in
+        # Calculate lateness based on schedule
+        time_in_local = new_entry.time_in
+        day_of_week = time_in_local.weekday()  # 0=Monday, 6=Sunday
+        day_mapping = {0: 'mon', 1: 'tue', 2: 'wed', 3: 'thu', 4: 'fri', 5: 'sat', 6: 'sun'}
+        day_code = day_mapping[day_of_week]
 
-            # Use the user's time preset if available, otherwise use default
-            if user.time_preset:
-                expected_start = user.time_preset.start_time
-                grace_period = datetime.timedelta(minutes=user.time_preset.grace_period_minutes)
+        # Get the appropriate schedule
+        if user.schedule_group:
+            preset = user.schedule_group.get_schedule_for_day(day_code)
+            if preset:
+                expected_start = preset.start_time
+                grace_period = datetime.timedelta(minutes=preset.grace_period_minutes)
             else:
-                expected_start = datetime.time(8, 0)  # Default start time
-                grace_period = datetime.timedelta(minutes=5)  # Default grace period
+                expected_start = datetime.time(8, 0)  # Default
+                grace_period = datetime.timedelta(minutes=5)  # Default
+        else:
+            expected_start = datetime.time(8, 0)  # Default
+            grace_period = datetime.timedelta(minutes=5)  # Default
 
-            expected_start_dt = datetime.datetime.combine(
-                time_in_local.date(), expected_start
-            )
-            expected_start_with_grace = expected_start_dt + grace_period
+        expected_start_dt = datetime.datetime.combine(
+            time_in_local.date(), expected_start
+        )
+        expected_start_with_grace = expected_start_dt + grace_period
 
-            new_entry.is_late = time_in_local > expected_start_with_grace
-            new_entry.save()
+        new_entry.is_late = time_in_local > expected_start_with_grace
+        new_entry.save()
 
         return new_entry
 
@@ -241,3 +252,58 @@ class TimePreset(models.Model):
         verbose_name = "Time Preset"
         verbose_name_plural = "Time Presets"
         ordering = ['start_time']
+
+class ScheduleGroup(models.Model):
+    name = models.CharField(max_length=100)
+    default_schedule = models.ForeignKey(
+        'TimePreset',
+        on_delete=models.CASCADE,
+        related_name='default_for_groups'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name}"
+
+    def get_schedule_for_day(self, day_code):
+        """Get the appropriate TimePreset for a specific day"""
+        # Check if there's a day-specific override
+        try:
+            override = self.day_overrides.get(day=day_code)
+            return override.time_preset
+        except DayOverride.DoesNotExist:
+            # If no override exists, return the default schedule
+            return self.default_schedule
+
+    class Meta:
+        verbose_name = "Schedule Group"
+        verbose_name_plural = "Schedule Groups"
+        ordering = ['name']
+
+class DayOverride(models.Model):
+    DAY_CHOICES = [
+        ('mon', 'Monday'),
+        ('tue', 'Tuesday'),
+        ('wed', 'Wednesday'),
+        ('thu', 'Thursday'),
+        ('fri', 'Friday'),
+        ('sat', 'Saturday'),
+        ('sun', 'Sunday'),
+    ]
+
+    schedule_group = models.ForeignKey(
+        ScheduleGroup,
+        on_delete=models.CASCADE,
+        related_name='day_overrides'
+    )
+    day = models.CharField(max_length=3, choices=DAY_CHOICES)
+    time_preset = models.ForeignKey(
+        'TimePreset',
+        on_delete=models.CASCADE,
+        related_name='used_in_overrides'
+    )
+
+    class Meta:
+        verbose_name = "Day Override"
+        verbose_name_plural = "Day Overrides"
+        unique_together = ['schedule_group', 'day']  # Only one override per day per group
