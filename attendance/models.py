@@ -159,16 +159,23 @@ class TimeEntry(models.Model):
         return self.time_in.date()
 
     def clock_out(self):
-        self.time_out = timezone.now()  # Now returns a naive datetime
+        self.time_out = timezone.now()
+
         if self.time_in and self.time_out:
             delta = self.time_out - self.time_in
             self.hours_worked = round(delta.total_seconds() / 3600, 2)
-        # For lateness, assume an expected start time of 9:00 AM
+
+        # Use user's time preset for lateness check if available
         if self.time_in:
-            # Here, self.time_in is already local (naive)
             time_in_local = self.time_in
-            expected_start = datetime.time(9, 0)
+
+            if self.user.time_preset:
+                expected_start = self.user.time_preset.start_time
+            else:
+                expected_start = datetime.time(8, 0)  # Default expected start
+
             self.is_late = time_in_local.time() > expected_start
+
         self.save()
 
     @classmethod
@@ -178,23 +185,28 @@ class TimeEntry(models.Model):
             entry.clock_out()
 
         new_entry = cls.objects.create(user=user)
-        # Determine lateness only for the first entry of the day
-        today = new_entry.time_in.date()  # Already local date
+
+        # Determine lateness based on user's time preset if available
+        today = new_entry.time_in.date()
         if not cls.objects.filter(user=user, time_in__date=today).exists():
             time_in_local = new_entry.time_in
-            expected_start = datetime.time(8, 0)  # Adjust as needed
+
+            # Use the user's time preset if available, otherwise use default
+            if user.time_preset:
+                expected_start = user.time_preset.start_time
+                grace_period = datetime.timedelta(minutes=user.time_preset.grace_period_minutes)
+            else:
+                expected_start = datetime.time(8, 0)  # Default start time
+                grace_period = datetime.timedelta(minutes=5)  # Default grace period
+
             expected_start_dt = datetime.datetime.combine(
                 time_in_local.date(), expected_start
             )
-            grace_period = datetime.timedelta(minutes=5)
             expected_start_with_grace = expected_start_dt + grace_period
 
-            if time_in_local > expected_start_with_grace:
-                new_entry.is_late = True
-            else:
-                new_entry.is_late = False
-
+            new_entry.is_late = time_in_local > expected_start_with_grace
             new_entry.save()
+
         return new_entry
 
     def __str__(self):
