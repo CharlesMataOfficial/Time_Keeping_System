@@ -486,7 +486,7 @@ function updateBirthdays(birthdays) {
     birthdayPanel.innerHTML = '';
     birthdayPanel.appendChild(table);
   } else {
-    birthdayPanel.innerHTML = "<p>No birthdays today</p>";
+    birthdayPanel.innerHTML = "<p></p>";
   }
 }
 
@@ -551,7 +551,7 @@ function updateMilestones(milestones) {
     milestonePanel.innerHTML = '';
     milestonePanel.appendChild(table);
   } else {
-    milestonePanel.innerHTML = "<p>No milestones today</p>";
+    milestonePanel.innerHTML = "<p></p>";
   }
 }
 

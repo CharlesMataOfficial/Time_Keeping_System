@@ -203,13 +203,8 @@ header {
 
 .attendance-list {
   width: 90%; /* Adjust width for smaller screens */
-  flex: 0 0 auto;
   margin: 20px auto;
-  background: #621c1c;
-  border-radius: 10px;
-  padding: 30px;
-  top: -30px;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+  top: -1rem;
   position: relative;
   height: 30%;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -347,7 +342,7 @@ header {
   color: black;
   font-size: 15px;
   font-weight: bold;
-  font-family: 'Arial', sans-serif;
+  font-family: 'Roboto', sans-serif;
 }
 
 /* Zebra striping for rows */
@@ -402,7 +397,7 @@ header {
   color: black;               /* Black font on white background */
   font-size: 15px;            /* Increased font size */
   font-weight: bold;          /* Bold text */
-  font-family: 'Arial', sans-serif;
+  font-family: 'Roboto', sans-serif;
 }
 
 /* Zebra striping for rows */
