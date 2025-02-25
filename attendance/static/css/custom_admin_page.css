@@ -1287,3 +1287,51 @@ select option:checked {
 .menu a {
   display: block;
 }
+ /* Container styling */
+    #attendance_rectangle {
+      padding: 20px;
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background-color: #fff;
+      font-family: Arial, sans-serif;
+    }
+    /* Table styling */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0 auto;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    tr:nth-child(even) {
+      background-color: #fafafa;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+    /* Dropdown and button styling */
+    .attendance-dropdown-container select,
+    .attendance-dropdown-container button {
+      padding: 8px 10px;
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .attendance-dropdown-container button {
+      cursor: pointer;
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+    }
+    .attendance-dropdown-container button:hover {
+      background-color: #0056b3;
+    }

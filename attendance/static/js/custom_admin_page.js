@@ -481,28 +481,42 @@ function filterAttendance() {
         table.appendChild(tbody);
         container.appendChild(table);
       } else {
-        // For users-active or users-inactive, create a list
-        let ul = document.createElement('ul');
+        // For users-active and users-inactive, create a table with employee id and name columns
+        let table = document.createElement('table');
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Employee ID</th>
+              <th>Name</th>
+            </tr>
+          </thead>
+        `;
+        let tbody = document.createElement('tbody');
         if (data.attendance_list.length) {
           data.attendance_list.forEach(user => {
-            let li = document.createElement('li');
-            li.textContent = `${user.employee_id} - ${user.name}`;
-            ul.appendChild(li);
+            let row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${user.employee_id}</td>
+              <td>${user.name}</td>
+            `;
+            tbody.appendChild(row);
           });
         } else {
-          ul.innerHTML = `<li>No users found.</li>`;
+          tbody.innerHTML = `<tr><td colspan="2">No users found.</td></tr>`;
         }
-        container.appendChild(ul);
+        table.appendChild(tbody);
+        container.appendChild(table);
       }
     })
     .catch(error => console.error('Error fetching attendance data:', error));
 }
+
+// Update the company select value to use alias when available
 document.getElementById("attendance-company").addEventListener("change", function () {
   let selectedOption = this.options[this.selectedIndex];
   let alias = selectedOption.getAttribute("data-alias");
-
   if (alias) {
-      this.value = alias; // This sends the alias to the backend.
+    this.value = alias; // This sends the alias to the backend.
   }
 });
 // CONVERT TO CSS
