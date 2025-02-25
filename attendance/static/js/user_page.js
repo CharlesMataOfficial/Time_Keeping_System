@@ -342,31 +342,36 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      // Create a UL element for the bullet list
-      const ul = document.createElement("ul");
+      // Create a table element
+      const table = document.createElement('table');
+      table.classList.add('announcements-table');
+
+      // Create the table body (no header needed)
+      const tbody = document.createElement('tbody');
 
       data.forEach((ann) => {
         const fullText = ann.content;
         const truncatedText =
           fullText.length > 30 ? fullText.substring(0, 30) + "..." : fullText;
 
-        // Create an LI element for each announcement
-        const li = document.createElement("li");
+        // Create a table row for each announcement
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
 
         // Create a span for the announcement text
         const span = document.createElement("span");
         span.textContent = truncatedText;
-        li.appendChild(span);
+        td.appendChild(span);
 
-        // Only create the "See more/See less" link if the text exceeds 30 characters
+        // Add a "See more/See less" link if needed
         if (fullText.length > 30) {
-          const seeMore = document.createElement("a");
-          seeMore.href = "#";
-          seeMore.style.marginLeft = "5px";
-          seeMore.style.color = "red"; // red link text
-          seeMore.style.textDecoration = "none"; // Remove underline if desired
-          seeMore.style.cursor = "pointer";
-          seeMore.textContent = "[See more]";
+          const seeMore = document.createElement('a');
+          seeMore.href = '#';
+          seeMore.style.marginLeft = '5px';
+          seeMore.style.color = 'red';
+          seeMore.style.textDecoration = 'none';
+          seeMore.style.cursor = 'pointer';
+          seeMore.textContent = '[See more]';
 
           // Toggle between truncated and full text on click
           seeMore.addEventListener("click", (e) => {
@@ -378,16 +383,18 @@ document.addEventListener("DOMContentLoaded", function () {
               span.textContent = truncatedText;
               seeMore.textContent = "[See more]";
             }
-            li.appendChild(seeMore); // Ensure the link stays in the LI
+            td.appendChild(seeMore);
           });
 
-          li.appendChild(seeMore);
+          td.appendChild(seeMore);
         }
 
-        ul.appendChild(li);
+        tr.appendChild(td);
+        tbody.appendChild(tr);
       });
 
-      container.appendChild(ul);
+      table.appendChild(tbody);
+      container.appendChild(table);
     })
     .catch((error) => {
       console.error("Error fetching posted announcements:", error);
