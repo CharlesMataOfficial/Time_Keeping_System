@@ -9,7 +9,6 @@ const menuOrder = [
   "dashboard",
   "log",
   "attendance-list",
-  "work-hours",
   "announcement",
   "export-excel",
   "leave-approval",
@@ -93,82 +92,69 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-// Work Hours Functions
-function addWorkHours() {
-  // Collect input values
-  let name = document.getElementById("name").value;
-  let presetType = document.getElementById("preset-type").value;
-  let mondayStart = document.getElementById("monday-start").value;
-  let mondayEnd = document.getElementById("monday-end").value;
-  let tuesdayStart = document.getElementById("tuesday-start").value;
-  let tuesdayEnd = document.getElementById("tuesday-end").value;
-  let wednesdayStart = document.getElementById("wednesday-start").value;
-  let wednesdayEnd = document.getElementById("wednesday-end").value;
-  let thursdayStart = document.getElementById("thursday-start").value;
-  let thursdayEnd = document.getElementById("thursday-end").value;
-  let fridayStart = document.getElementById("friday-start").value;
-  let fridayEnd = document.getElementById("friday-end").value;
-  let saturdayStart = document.getElementById("saturday-start").value;
-  let saturdayEnd = document.getElementById("saturday-end").value;
-  let sundayStart = document.getElementById("sunday-start").value;
-  let sundayEnd = document.getElementById("sunday-end").value;
+// Function to update attendance header text
+function updateAttendanceHeader() {
+  const type = document.getElementById("attendance-type").value;
+  const company = document.getElementById("attendance-company").value;
 
-  // Create an object to send (note the fix for Saturday fields)
-  let WorkHoursData = {
-    name: name,
-    presetType: presetType,
-    mondayStart: mondayStart,
-    mondayEnd: mondayEnd,
-    tuesdayStart: tuesdayStart,
-    tuesdayEnd: tuesdayEnd,
-    wednesdayStart: wednesdayStart,
-    wednesdayEnd: wednesdayEnd,
-    thursdayStart: thursdayStart,
-    thursdayEnd: thursdayEnd,
-    fridayStart: fridayStart,
-    fridayEnd: fridayEnd,
-    saturdayStart: saturdayStart, // fixed
-    saturdayEnd: saturdayEnd, // fixed
-    sundayStart: sundayStart,
-    sundayEnd: sundayEnd,
+  let typeText = "Time Log";
+  if (type === "users-active") {
+    typeText = "Users Active";
+  } else if (type === "users-inactive") {
+    typeText = "Users Inactive";
+  }
+
+  let companyText = "By Company";
+  if (company === "lorem-ipsum-1") {
+    companyText = "Lorem Ipsum 1";
+  } else if (company === "lorem-ipsum-2") {
+    companyText = "Lorem Ipsum 2";
+  }
+
+  // Store the text instead of updating an HTML element
+  attendanceHeaderText = `${typeText} > ${companyText}`;
+}
+
+// Filter attendance based on dropdown selections
+function filterAttendance() {
+  const type = document.getElementById("attendance-type").value; // Correctly get the type
+  const company = document.getElementById("attendance-company").value; // Get the company value
+  const department = document.getElementById("attendance-department").value; // Get the department value
+
+  // Define the options for each dropdown
+  const typeOptions = {
+    "time-log": "Time Log",
+    "users-active": "Users Active",
+    "users-inactive": "Users Inactive",
   };
 
-  // You can now send WorkHoursData via AJAX or further process it
-}
+  const companyOptions = {
+    agridom: "Agridom Solutions Corp.",
+    farmtech: "Farmtech Agriland Corporation",
+    subang: "Subang Farm",
+    djas: "DJAS Servitrade Corporation",
+    "agri-online": "AGRI Online",
+    sunfood: "Sunfood Marketing Inc.",
+    all: "All companies",
+  };
 
-// Modal functions
-function openScheduleModal() {
-  console.log("Opening modal");
-  const modal = document.getElementById("setScheduleModal");
-  if (modal) {
-    modal.style.display = "block";
-  } else {
-    console.error("Modal element not found");
-  }
-}
+  const departmentOptions = {
+    all: "All departments",
+    hr: "Human Resources",
+    it: "IT Department",
+    finance: "Finance",
+  };
 
-function closeModal() {
-  const modal = document.getElementById("setScheduleModal");
-  if (modal) {
-    modal.style.display = "none";
-  }
-}
+  // Get the selected text for each dropdown option
+  const selectedType = typeOptions[type] || "Time Log";
+  const selectedCompany = companyOptions[company] || "All companies";
+  const selectedDepartment = departmentOptions[department] || "All departments";
 
-function editWorkHours() {
-  alert("Edit Work Hours functionality goes here.");
-}
+  // Generate the filter text
+  const filterText = `Filtering attendance for:\n${selectedType} > ${selectedCompany} > ${selectedDepartment}`;
 
-function deleteWorkHours() {
-  alert("Delete Work Hours functionality goes here.");
-}
-
-function saveWorkHours() {
-  const gracePeriod = document.getElementById("grace-period").value;
-  if (gracePeriod) {
-    alert(`Grace Period of ${gracePeriod} minutes saved.`);
-  } else {
-    alert("Please enter a grace period.");
-  }
+  // Show the filter information in a prompt
+  alert(filterText);
 }
 
 // Utility: Get CSRF token (if needed)
