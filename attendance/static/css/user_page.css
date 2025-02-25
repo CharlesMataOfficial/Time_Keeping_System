@@ -412,7 +412,7 @@ header {
 }
 
 .sign-out-btn {
-  color: darkred; /* Red text color */
+  color: rgb(255, 255, 255);
   text-decoration: underline; /* Underlined text */
   background: none; /* Transparent background */
   border: none; /* No border */
