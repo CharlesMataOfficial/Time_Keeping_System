@@ -14,6 +14,7 @@ import os
 from datetime import datetime, timedelta
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
+from .models import CustomUser
 
 
 @never_cache
@@ -497,7 +498,37 @@ def superadmin_redirect(request):
             request, "You do not have permission to access the super admin page."
         )
         return redirect("custom_admin_page")
-    
+
+def get_special_dates(request):
+    today = timezone.now().date()
+
+    # Get users with birthdays today based on 'birth_date'
+    birthday_users = list(
+        CustomUser.objects.filter(
+            birth_date__month=today.month,
+            birth_date__day=today.day
+        ).values("employee_id", "first_name", "surname")
+    )
+
+    # Get users with hiring anniversaries today based on 'date_hired'
+    milestone_users = []
+    for user in CustomUser.objects.filter(
+        date_hired__month=today.month,
+        date_hired__day=today.day
+    ):
+        years = today.year - user.date_hired.year
+        if years >= 1:
+            milestone_users.append({
+                "employee_id": user.employee_id,
+                "first_name": user.first_name,
+                "surname": user.surname,
+                "years": years
+            })
+
+    return JsonResponse({
+        "birthdays": birthday_users,
+        "milestones": milestone_users
+    })
 from django.http import JsonResponse
 from django.db.models import Q
 from .models import TimeEntry, CustomUser

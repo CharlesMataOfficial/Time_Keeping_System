@@ -1,8 +1,10 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;600&display=swap");
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  font-family: "Roboto", sans-serif;
 }
 
 body {
@@ -167,7 +169,6 @@ header {
   }
 }
 
-
 .camera video {
   width: 100%;
   height: 100%;
@@ -210,7 +211,7 @@ header {
   top: -30px;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
   position: relative;
-  height: calc(93vh - 450px); /* Adjust dynamically based on viewport height */
+  height: 30%;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -355,28 +356,25 @@ header {
 }
 
 /* Style the unordered list for bullet points */
-#posted-announcements ul {
-  list-style-type: disc;  /* Use disc bullets */
+.posted-note ul {
+  list-style-type: none;
   margin: 0;
-  padding-left: 20px;     /* Indent bullets */
 }
 
 /* Style each list item */
-#posted-announcements li {
+.posted-note li {
   font-size: 15px;
-  font-weight: bold;
-  font-family: "Arial", sans-serif;
   color: black;
-  text-align: center;       /* You can change to 'left' if you prefer */
-  margin: 0 0 10px 0;       /* Space between items */
+  text-align: left; /* You can change to 'left' if you prefer */
   word-wrap: break-word;
   white-space: normal;
+  padding: 0.5rem;
 }
 
 /* Style for the See more / See less link */
-#posted-announcements li a {
-  color: black;           /* Black link text */
-  text-decoration: none;  /* Remove underline */
+.posted-note li a {
+  color: black; /* Black link text */
+  text-decoration: none; /* Remove underline */
   cursor: pointer;
   margin-left: 5px;
 }

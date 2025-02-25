@@ -62,8 +62,8 @@ function captureImage() {
 
 function uploadImage(imageData, employeeId) {
   const formData = new FormData();
-  formData.append('image', dataURItoBlob(imageData), 'clock_in_image.jpg');
-  formData.append('employee_id', employeeId);
+  formData.append("image", dataURItoBlob(imageData), "clock_in_image.jpg");
+  formData.append("employee_id", employeeId);
 
   return fetch("/upload_image/", {
     method: "POST",
@@ -83,8 +83,8 @@ function uploadImage(imageData, employeeId) {
 }
 
 function dataURItoBlob(dataURI) {
-  const byteString = atob(dataURI.split(',')[1]);
-  const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+  const byteString = atob(dataURI.split(",")[1]);
+  const mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
   const ab = new ArrayBuffer(byteString.length);
   const ia = new Uint8Array(ab);
   for (let i = 0; i < byteString.length; i++) {
@@ -116,7 +116,7 @@ function updateAttendanceList(attendanceList) {
   const tbody = document.getElementById("attendance-items");
   tbody.innerHTML = ""; // Clear existing rows
 
-  attendanceList.forEach(data => {
+  attendanceList.forEach((data) => {
     const row = document.createElement("tr");
     row.setAttribute("data-employee-id", data.employee_id);
 
@@ -204,79 +204,81 @@ clockInForm.addEventListener("submit", (e) => {
     body: JSON.stringify({
       employee_id,
       pin,
-      first_login_check: true
+      first_login_check: true,
     }),
   })
-  .then(response => response.json())
-  .then(data => {
-    if (data.error === "first_login") {
-      clockInModal.style.display = "none";
-      newPinModal.style.display = "block";
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.error === "first_login") {
+        clockInModal.style.display = "none";
+        newPinModal.style.display = "block";
 
-      const newPinForm = document.getElementById("newPinForm");
-      newPinForm.onsubmit = (e) => {
-        e.preventDefault();
-        const newPin = document.getElementById("newPin").value;
+        const newPinForm = document.getElementById("newPinForm");
+        newPinForm.onsubmit = (e) => {
+          e.preventDefault();
+          const newPin = document.getElementById("newPin").value;
 
-        if (newPin && newPin.length === 4 && !isNaN(newPin)) {
-          fetch("/clock_in/", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRFToken": csrftoken,
-            },
-            body: JSON.stringify({
-              employee_id,
-              pin,
-              new_pin: newPin
-            }),
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              alert("PIN successfully changed! Please proceed with clock in using your new PIN.");
-              newPinModal.style.display = "none";
-              newPinForm.reset();
-              clockInForm.reset();
-            }
-          })
-          .catch(error => {
-            console.error('Error:', error);
-            alert("Error: " + error.message);
-          });
-        }
-      };
-    } else {
-      // Regular clock in with image
-      const imageData = captureImage();
-      uploadImage(imageData, employee_id)
-        .then((filePath) => {
-          return fetch("/clock_in/", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRFToken": csrftoken,
-            },
-            body: JSON.stringify({
-              employee_id,
-              pin,
-              image_path: filePath
-            }),
-          });
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            addAttendanceItem(data);
-            alert("Clock In successful!");
-            updatePartnerLogo(data.new_logo);
-            clockInModal.style.display = "none";
-            clockInForm.reset();
-            updateAttendanceList(data.attendance_list); // Update the attendance list
+          if (newPin && newPin.length === 4 && !isNaN(newPin)) {
+            fetch("/clock_in/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken,
+              },
+              body: JSON.stringify({
+                employee_id,
+                pin,
+                new_pin: newPin,
+              }),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  alert(
+                    "PIN successfully changed! Please proceed with clock in using your new PIN."
+                  );
+                  newPinModal.style.display = "none";
+                  newPinForm.reset();
+                  clockInForm.reset();
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+                alert("Error: " + error.message);
+              });
           }
-        });
-    }
-  });
+        };
+      } else {
+        // Regular clock in with image
+        const imageData = captureImage();
+        uploadImage(imageData, employee_id)
+          .then((filePath) => {
+            return fetch("/clock_in/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken,
+              },
+              body: JSON.stringify({
+                employee_id,
+                pin,
+                image_path: filePath,
+              }),
+            });
+          })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              addAttendanceItem(data);
+              alert("Clock In successful!");
+              updatePartnerLogo(data.new_logo);
+              clockInModal.style.display = "none";
+              clockInForm.reset();
+              updateAttendanceList(data.attendance_list); // Update the attendance list
+            }
+          });
+      }
+    });
 });
 
 // --- Handling Clock Out form submission ---
@@ -329,70 +331,52 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .catch((error) => console.error("Error loading entries:", error));
 
-  // Get button and modal elements
-  const timeInBtn = document.getElementById("timeInBtn");
-  const timeOutBtn = document.getElementById("timeOutBtn");
-  const clockInModal = document.getElementById("clockInModal");
-  const clockOutModal = document.getElementById("clockOutModal");
-
-  // Time In button click handler
-  timeInBtn.addEventListener("click", function() {
-      clockInModal.style.display = "block";
-  });
-
-  // Time Out button click handler
-  timeOutBtn.addEventListener("click", function() {
-      clockOutModal.style.display = "block";
-  });
-})
-document.addEventListener('DOMContentLoaded', () => {
-  fetch('/announcements/posted/')
-    .then(response => response.json())
-    .then(data => {
-      const container = document.getElementById('posted-announcements');
-      container.innerHTML = '';
+  fetch("/announcements/posted/")
+    .then((response) => response.json())
+    .then((data) => {
+      const container = document.getElementById("posted-announcements");
+      container.innerHTML = "";
 
       if (data.length === 0) {
-        container.innerHTML = '<p>No posted announcements at this time.</p>';
+        container.innerHTML = "<p>No posted announcements at this time.</p>";
         return;
       }
 
       // Create a UL element for the bullet list
-      const ul = document.createElement('ul');
+      const ul = document.createElement("ul");
 
-      data.forEach(ann => {
+      data.forEach((ann) => {
         const fullText = ann.content;
-        const truncatedText = fullText.length > 30 
-          ? fullText.substring(0, 30) + '...'
-          : fullText;
+        const truncatedText =
+          fullText.length > 30 ? fullText.substring(0, 30) + "..." : fullText;
 
         // Create an LI element for each announcement
-        const li = document.createElement('li');
+        const li = document.createElement("li");
 
         // Create a span for the announcement text
-        const span = document.createElement('span');
+        const span = document.createElement("span");
         span.textContent = truncatedText;
         li.appendChild(span);
 
         // Only create the "See more/See less" link if the text exceeds 30 characters
         if (fullText.length > 30) {
-          const seeMore = document.createElement('a');
-          seeMore.href = '#';
-          seeMore.style.marginLeft = '5px';
-          seeMore.style.color = 'red';         // red link text
-          seeMore.style.textDecoration = 'none';   // Remove underline if desired
-          seeMore.style.cursor = 'pointer';
-          seeMore.textContent = '[See more]';
+          const seeMore = document.createElement("a");
+          seeMore.href = "#";
+          seeMore.style.marginLeft = "5px";
+          seeMore.style.color = "red"; // red link text
+          seeMore.style.textDecoration = "none"; // Remove underline if desired
+          seeMore.style.cursor = "pointer";
+          seeMore.textContent = "[See more]";
 
           // Toggle between truncated and full text on click
-          seeMore.addEventListener('click', (e) => {
+          seeMore.addEventListener("click", (e) => {
             e.preventDefault();
-            if (seeMore.textContent === '[See more]') {
+            if (seeMore.textContent === "[See more]") {
               span.textContent = fullText;
-              seeMore.textContent = '[See less]';
+              seeMore.textContent = "[See less]";
             } else {
               span.textContent = truncatedText;
-              seeMore.textContent = '[See more]';
+              seeMore.textContent = "[See more]";
             }
             li.appendChild(seeMore); // Ensure the link stays in the LI
           });
@@ -405,10 +389,70 @@ document.addEventListener('DOMContentLoaded', () => {
 
       container.appendChild(ul);
     })
-    .catch(error => {
-      console.error('Error fetching posted announcements:', error);
+    .catch((error) => {
+      console.error("Error fetching posted announcements:", error);
     });
+
+  fetch("/get_special_dates/")
+    .then((response) => response.json())
+    .then((data) => {
+      updateBirthdays(data.birthdays);
+      updateMilestones(data.milestones);
+    })
+    .catch((error) => console.error("Error loading special dates:", error));
+
+  // Get button and modal elements
+  const timeInBtn = document.getElementById("timeInBtn");
+  const timeOutBtn = document.getElementById("timeOutBtn");
+  const clockInModal = document.getElementById("clockInModal");
+  const clockOutModal = document.getElementById("clockOutModal");
+
+  // Time In button click handler
+  timeInBtn.addEventListener("click", function () {
+    clockInModal.style.display = "block";
+  });
+
+  // Time Out button click handler
+  timeOutBtn.addEventListener("click", function () {
+    clockOutModal.style.display = "block";
+  });
 });
+
+// Function to update the Birthdays panel
+function updateBirthdays(birthdays) {
+  const birthdayPanel = document.querySelector(".birthdays .panel .note");
+  if (!birthdayPanel) return;
+
+  if (birthdays.length > 0) {
+    let content = "<ul>";
+    birthdays.forEach((user) => {
+      content += `<li>${user.first_name} ${user.surname}</li>`;
+    });
+    content += "</ul>";
+    birthdayPanel.innerHTML = content;
+  } else {
+    birthdayPanel.innerHTML = "<p></p>";
+  }
+}
+
+// Function to update the Milestones panel
+function updateMilestones(milestones) {
+  const milestonePanel = document.querySelector(".milestones .panel .note");
+  if (!milestonePanel) return;
+
+  if (milestones.length > 0) {
+    let content = "<ul>";
+    milestones.forEach((user) => {
+      content += `<li>${user.first_name} ${user.surname} (${user.years} year${
+        user.years > 1 ? "s" : ""
+      }) </li>`;
+    });
+    content += "</ul>";
+    milestonePanel.innerHTML = content;
+  } else {
+    milestonePanel.innerHTML = "<p></p>";
+  }
+}
 
 // CONVERT TO CSS
 
