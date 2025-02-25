@@ -443,7 +443,9 @@ function updateMilestones(milestones) {
   if (milestones.length > 0) {
     let content = "<ul>";
     milestones.forEach((user) => {
-      content += `<li>${user.first_name} ${user.surname} (${user.years} year)${user.years > 1 ? "s" : ""} </li>`;
+      content += `<li>${user.first_name} ${user.surname} (${user.years} year${
+        user.years > 1 ? "s" : ""
+      }) </li>`;
     });
     content += "</ul>";
     milestonePanel.innerHTML = content;
