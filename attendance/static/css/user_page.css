@@ -333,15 +333,15 @@ header {
 }
 
 .announcements {
-  flex-grow: 1; /* Allows it to expand and fill remaining space */
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
 }
 
-/* Note styles for Announcements (Longer Note) */
+/* Container styles for Announcements */
 .announcements .note {
   background: #e2e2e2;
-  width: 110%;
+  width: 100%; /* Prevents content from overlapping on the right side */
   height: 30vh;
   max-width: 500px;
   bottom: -13px;
@@ -350,35 +350,41 @@ header {
   justify-content: center;
   position: relative;
   border-radius: 5px;
-  overflow-y: auto;
-  overflow-x: hidden; /* Hide horizontal scroll */
+  overflow-y: auto; /* Vertical scrollbar appears when needed */
+  overflow-x: hidden;
 }
 
-/* Style the unordered list for bullet points */
-#posted-announcements ul {
-  list-style-type: disc;  /* Use disc bullets */
-  margin: 0;
-  padding-left: 20px;     /* Indent bullets */
+/* Table styles for announcements */
+.announcements-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* Ensures content wraps properly */
 }
 
-/* Style each list item */
-#posted-announcements li {
-  font-size: 15px;
-  font-weight: bold;
-  font-family: "Arial", sans-serif;
-  color: black;
-  text-align: center;       /* You can change to 'left' if you prefer */
-  margin: 0 0 10px 0;       /* Space between items */
+/* Updated cell styling for larger, bold, and modern font */
+.announcements-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: center;
   word-wrap: break-word;
-  white-space: normal;
+  color: black;               /* Black font on white background */
+  font-size: 18px;            /* Increased font size */
+  font-weight: bold;          /* Bold text */
+  font-family: 'Arial', sans-serif;
 }
 
-/* Style for the See more / See less link */
-#posted-announcements li a {
-  color: black;           /* Black link text */
-  text-decoration: none;  /* Remove underline */
-  cursor: pointer;
-  margin-left: 5px;
+/* Zebra striping for rows */
+.announcements-table tbody tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+.announcements-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Hover effect for table rows */
+.announcements-table tbody tr:hover {
+  background-color: #e0e0e0;
 }
 
 .sidebar {
