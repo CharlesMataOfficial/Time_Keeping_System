@@ -1,12 +1,12 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from datetime import datetime
+from datetime import datetime, time
 from attendance.models import (
     CustomUser, Company, Position, TimeEntry,
-    Announcement
+    Announcement, TimePreset, ScheduleGroup
 )
 from attendance.database_legacy import (
-    UsersLegacy, EntriesLegacy
+    UsersLegacy, EntriesLegacy, PresetsLegacy
 )
 
 class Command(BaseCommand):
@@ -20,7 +20,8 @@ class Command(BaseCommand):
         Position.objects.all().delete()
         TimeEntry.objects.all().delete()
         Announcement.objects.all().delete()
-        CustomUser.objects.exclude(is_superuser=True).delete()  # Keep superusers
+        TimePreset.objects.all().delete()
+        ScheduleGroup.objects.all().delete()
 
         # First create companies and positions
         companies = {}
@@ -37,9 +38,37 @@ class Command(BaseCommand):
                     name=legacy_user.position
                 )[0]
 
+        # Create TimePresets and ScheduleGroups
+        presets = {}
+        legacy_presets = PresetsLegacy.objects.all()
+        for legacy_preset in legacy_presets:
+            preset_name = legacy_preset.name
+            if preset_name in presets:
+                self.stdout.write(self.style.WARNING(
+                    f"Duplicate preset name {preset_name} found, skipping."
+                ))
+                continue
+
+            time_preset = TimePreset.objects.create(
+                name=preset_name,
+                start_time=legacy_preset.monday_start or time(8, 0),
+                end_time=legacy_preset.monday_end or time(17, 0),
+                grace_period_minutes=5  # Default grace period
+            )
+            presets[preset_name] = time_preset
+
+            ScheduleGroup.objects.create(
+                name=preset_name,
+                default_schedule=time_preset
+            )
+
         # Create users with proper foreign key relationships
         user_mapping = {}  # To store employee_id -> new_user mapping
         for legacy_user in legacy_users:
+            schedule_group = None
+            if legacy_user.preset_name:
+                schedule_group = ScheduleGroup.objects.get(name=legacy_user.preset_name)
+
             new_user = CustomUser.objects.create(
                 employee_id=legacy_user.employee_id,
                 first_name=legacy_user.first_name,
@@ -52,6 +81,7 @@ class Command(BaseCommand):
                 password='',
                 is_active=bool(legacy_user.status),
                 if_first_login=False,
+                schedule_group=schedule_group
             )
             user_mapping[legacy_user.employee_id] = new_user  # Map by employee_id instead of id
         self.stdout.write(self.style.SUCCESS('Users migrated successfully'))
@@ -65,7 +95,7 @@ class Command(BaseCommand):
                 user = user_mapping.get(employee_id)
                 if not user:
                     self.stdout.write(self.style.WARNING(
-                        f'User mapping not found for employee_id: {employee_id}'
+                        f"User with employee_id {employee_id} not found, skipping entry."
                     ))
                     continue
 
@@ -90,12 +120,8 @@ class Command(BaseCommand):
                     last_modified=timezone.now().replace(tzinfo=None),
                     image_path=None,
                 )
-
             except Exception as e:
-                self.stdout.write(self.style.WARNING(
-                    f'Error creating entry for employee_id {employee_id}: {str(e)}'
-                ))
-                continue
+                self.stdout.write(self.style.ERROR(f"Error migrating entry {entry.id}: {e}"))
 
         self.stdout.write(self.style.SUCCESS('Entries migrated successfully'))
         self.stdout.write(self.style.SUCCESS('All data migrated successfully'))
