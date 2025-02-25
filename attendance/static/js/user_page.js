@@ -431,14 +431,62 @@ function updateBirthdays(birthdays) {
   if (!birthdayPanel) return;
 
   if (birthdays.length > 0) {
-    let content = "<ul>";
+    // Create a table element
+    const table = document.createElement('table');
+    table.classList.add('announcements-table'); // Use the same class as announcements
+
+    // Create the table body (no header needed)
+    const tbody = document.createElement('tbody');
+
     birthdays.forEach((user) => {
-      content += `<li>${user.first_name} ${user.surname}</li>`;
+      const fullText = `${user.first_name} ${user.surname}`;
+      const truncatedText =
+        fullText.length > 30 ? fullText.substring(0, 30) + "..." : fullText;
+
+      // Create a table row for each birthday
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+
+      // Create a span for the birthday text
+      const span = document.createElement("span");
+      span.textContent = truncatedText;
+      td.appendChild(span);
+
+      // Add a "See more/See less" link if needed
+      if (fullText.length > 30) {
+        const seeMore = document.createElement('a');
+        seeMore.href = '#';
+        seeMore.style.marginLeft = '5px';
+        seeMore.style.color = 'red';
+        seeMore.style.textDecoration = 'none';
+        seeMore.style.cursor = 'pointer';
+        seeMore.textContent = '[See more]';
+
+        // Toggle between truncated and full text on click
+        seeMore.addEventListener("click", (e) => {
+          e.preventDefault();
+          if (seeMore.textContent === "[See more]") {
+            span.textContent = fullText;
+            seeMore.textContent = "[See less]";
+          } else {
+            span.textContent = truncatedText;
+            seeMore.textContent = "[See more]";
+          }
+          td.appendChild(seeMore);
+        });
+
+        td.appendChild(seeMore);
+      }
+
+      tr.appendChild(td);
+      tbody.appendChild(tr);
     });
-    content += "</ul>";
-    birthdayPanel.innerHTML = content;
+
+    table.appendChild(tbody);
+    birthdayPanel.innerHTML = '';
+    birthdayPanel.appendChild(table);
   } else {
-    birthdayPanel.innerHTML = "<p></p>";
+    birthdayPanel.innerHTML = "<p>No birthdays today</p>";
   }
 }
 
@@ -448,16 +496,62 @@ function updateMilestones(milestones) {
   if (!milestonePanel) return;
 
   if (milestones.length > 0) {
-    let content = "<ul>";
+    // Create a table element
+    const table = document.createElement('table');
+    table.classList.add('announcements-table'); // Use the same class as announcements
+
+    // Create the table body (no header needed)
+    const tbody = document.createElement('tbody');
+
     milestones.forEach((user) => {
-      content += `<li>${user.first_name} ${user.surname} (${user.years} year${
-        user.years > 1 ? "s" : ""
-      }) </li>`;
+      const fullText = `${user.first_name} ${user.surname} (${user.years} year${user.years > 1 ? "s" : ""})`;
+      const truncatedText =
+        fullText.length > 30 ? fullText.substring(0, 30) + "..." : fullText;
+
+      // Create a table row for each milestone
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+
+      // Create a span for the milestone text
+      const span = document.createElement("span");
+      span.textContent = truncatedText;
+      td.appendChild(span);
+
+      // Add a "See more/See less" link if needed
+      if (fullText.length > 30) {
+        const seeMore = document.createElement('a');
+        seeMore.href = '#';
+        seeMore.style.marginLeft = '5px';
+        seeMore.style.color = 'red';
+        seeMore.style.textDecoration = 'none';
+        seeMore.style.cursor = 'pointer';
+        seeMore.textContent = '[See more]';
+
+        // Toggle between truncated and full text on click
+        seeMore.addEventListener("click", (e) => {
+          e.preventDefault();
+          if (seeMore.textContent === "[See more]") {
+            span.textContent = fullText;
+            seeMore.textContent = "[See less]";
+          } else {
+            span.textContent = truncatedText;
+            seeMore.textContent = "[See more]";
+          }
+          td.appendChild(seeMore);
+        });
+
+        td.appendChild(seeMore);
+      }
+
+      tr.appendChild(td);
+      tbody.appendChild(tr);
     });
-    content += "</ul>";
-    milestonePanel.innerHTML = content;
+
+    table.appendChild(tbody);
+    milestonePanel.innerHTML = '';
+    milestonePanel.appendChild(table);
   } else {
-    milestonePanel.innerHTML = "<p></p>";
+    milestonePanel.innerHTML = "<p>No milestones today</p>";
   }
 }
 
@@ -494,33 +588,3 @@ function openClockInModal() {
 function openClockOutModal() {
   clockOutModal.style.display = "block";
 }
-
-
-
-// CONVERT TO CSS
-
-// // Function to adjust notes
-// function adjustNotes() {
-//   document.querySelectorAll('.note').forEach(note => {
-//     let parent = note.closest('.panel');
-
-//     if (!parent.classList.contains('announcements')) {
-//       note.style.width = `${parent.clientWidth * 0.9}px`;
-//       note.style.height = `${parent.clientHeight * 0.8}px`;
-//     }
-//   });
-// }
-
-// // Adjust notes on window resize
-// window.addEventListener('resize', adjustNotes);
-// adjustNotes();
-
-// // Function to adjust layout
-// function adjustLayout() {
-//   let scale = Math.min(window.innerWidth / 1920, 1); // Keep scaling balanced
-//   document.querySelector('.container').style.transform = `scale(${scale})`;
-// }
-
-// // Adjust layout on window resize
-// window.addEventListener('resize', adjustLayout);
-// adjustLayout();

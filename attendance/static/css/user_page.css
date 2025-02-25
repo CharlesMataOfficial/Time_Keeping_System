@@ -318,19 +318,50 @@ header {
   margin-top: -10px; /* Move Birthdays and Milestones header slightly up */
 }
 
-/* Note styles for Birthdays and Milestones */
+/* Note styles for Birthdays, Milestones, and Announcements */
 .birthdays .note,
-.milestones .note {
-  flex: auto;
+.milestones .note,
+.announcements .note {
   background: #e2e2e2;
-  width: 110%;
-  height: 20vh;
-  max-width: 500px;
-  bottom: -13px;
-  max-height: 500px;
+  width: 100%;
   margin: 5px;
   position: relative;
   border-radius: 5px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Make sure birthdays and milestones use the same table style */
+.announcements-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* Updated cell styling applies to all tables using this class */
+.announcements-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: center;
+  word-wrap: break-word;
+  color: black;
+  font-size: 15px;
+  font-weight: bold;
+  font-family: 'Arial', sans-serif;
+}
+
+/* Zebra striping for rows */
+.announcements-table tbody tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+.announcements-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Hover effect for table rows */
+.announcements-table tbody tr:hover {
+  background-color: #e0e0e0;
 }
 
 .announcements {
@@ -418,6 +449,37 @@ header {
 .milestones .panel {
   width: 100%;
   height: 175px; /* You can specify a fixed height here for Birthdays & Milestones */
+}
+
+.birthdays .note {
+  background: #e2e2e2;
+  width: 100%;
+  height: 30vh;
+  max-width: 500px;
+  bottom: -13px;
+  max-height: 175px; /* Match the panel height you defined */
+  margin: 5px;
+  justify-content: center;
+  position: relative;
+  border-radius: 5px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Container styles for Milestones */
+.milestones .note {
+  background: #e2e2e2;
+  width: 100%;
+  height: 30vh;
+  max-width: 500px;
+  bottom: -13px;
+  max-height: 175px; /* Match the panel height you defined */
+  margin: 5px;
+  justify-content: center;
+  position: relative;
+  border-radius: 5px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .sign-out-btn {

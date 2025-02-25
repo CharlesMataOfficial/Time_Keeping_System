@@ -166,7 +166,7 @@ header {
   }
   100% {
     /* Set this to the negative width of your total logos + gaps */
-    transform: translateX(-100%);
+    transform: translateX(-50%);
   }
 }
 
