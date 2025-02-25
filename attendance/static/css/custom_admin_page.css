@@ -462,121 +462,6 @@ button:hover {
   max-height: 750px; /* Optional: Limit max height */
 }
 
-/* Work Hours Preset Screen */
-#work-hours {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  width: 80%;
-  max-width: 600px;
-  height: 594px;
-  background-size: cover;
-  border-radius: 15px;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-#work-hours h1 {
-  font-size: 60px;
-  margin-top: 30px;
-}
-
-.work-hours-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 10px;
-}
-
-.work-hours-content {
-  width: 95%;
-  height: 240px;
-  margin-bottom: 20px;
-  padding: 10px;
-  border-radius: 15px;
-  background-color: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.work-hours-actions {
-  display: flex;
-  justify-content: center; /* Horizontally center the buttons */
-  align-items: center; /* Vertically center the buttons */
-  gap: 20px; /* Space between the buttons */
-  width: 100%;
-}
-
-.work-hours-actions button {
-  padding: 10px 20px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.work-hours-actions button:hover {
-  background-color: #2980b9;
-}
-
-.separator {
-  width: 600px;
-  height: 2px;
-  background-color: #6f6f6f;
-  margin: 10px 0;
-}
-
-.grace-period {
-  display: flex;
-  flex-direction: column; /* Change the flex direction to column to stack label and input vertically */
-  align-items: center;
-  gap: 10px; /* Space between label and input */
-}
-
-.grace-period label {
-  text-align: center;
-  justify-content: center;
-  font-size: 20px;
-}
-
-.grace-period select {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
-  width: 150px; /* Adjust width as needed */
-}
-
-.grace-period-input-container {
-  justify-content: center;
-  display: flex;
-  gap: 10px; /* Space between input and button */
-}
-
-.save-button {
-  padding: 10px 20px;
-  background-color: #2980b9;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.save-button:hover {
-  background-color: #2980b9;
-}
-
 /* Keeps the container centered always */
 .export-container {
   position: fixed; /* Prevents movement */
@@ -816,7 +701,6 @@ button:hover {
 
 .dashboard-icon,
 .announcement-container,
-.work-hours-content,
 .export-container {
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(10px);

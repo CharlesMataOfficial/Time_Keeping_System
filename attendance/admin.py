@@ -6,6 +6,7 @@ from django.utils.html import format_html
 from django.conf import settings
 from .models import CustomUser, TimeEntry, Company, Position
 from .forms import CustomUserCreationForm, TimeEntryForm
+from .models import TimePreset
 
 
 class TimeEntryInline(admin.TabularInline):
@@ -58,7 +59,7 @@ class CustomUserAdmin(UserAdmin):
                     "company",
                     "position",
                     "date_hired",
-                    "preset_name",
+                    "time_preset",
                 )
             },
         ),
@@ -72,6 +73,7 @@ class CustomUserAdmin(UserAdmin):
         "company",
         "position",
         "is_active",
+        "time_preset",
     )
     search_fields = ("employee_id", "first_name", "surname", "company__name", "position__name")
     ordering = ("-employee_id",)
@@ -160,12 +162,26 @@ class PositionAdmin(admin.ModelAdmin):
     search_fields = ['name']
     list_display = ('name',)
 
+class TimePresetAdmin(admin.ModelAdmin):
+    list_display = ('name', 'start_time', 'end_time', 'grace_period_minutes', 'created_at')
+    search_fields = ('name',)
+    list_filter = ('start_time',)
+    ordering = ('start_time',)
+    fieldsets = (
+        ('Preset Information', {
+            'fields': ('name',)
+        }),
+        ('Schedule', {
+            'fields': ('start_time', 'end_time', 'grace_period_minutes')
+        }),
+    )
 
 # Unregister the group model
 admin.site.unregister(Group)
 
 # Register the models
 admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(TimePreset, TimePresetAdmin)
 admin.site.register(TimeEntry, TimeEntryAdmin)
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(Position, PositionAdmin)

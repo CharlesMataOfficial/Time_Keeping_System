@@ -49,7 +49,6 @@ class Command(BaseCommand):
                 birth_date=legacy_user.birth_date,
                 date_hired=legacy_user.date_hired,
                 pin=legacy_user.pin,
-                preset_name=legacy_user.preset_name,
                 password='',
                 is_active=bool(legacy_user.status),
                 if_first_login=False,

@@ -94,7 +94,14 @@ class CustomUser(AbstractUser):
     pin = models.CharField(
         max_length=4, validators=[MinLengthValidator(4)], null=True, blank=True
     )
-    preset_name = models.CharField(max_length=100, null=True, blank=True)
+    time_preset = models.ForeignKey(
+        'TimePreset',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='users',
+        verbose_name="Schedule Preset"
+    )
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_guard = models.BooleanField(default=False)
@@ -207,3 +214,18 @@ class Announcement(models.Model):
 
     class Meta:
         db_table = 'django_announcements'
+
+class TimePreset(models.Model):
+    name = models.CharField(max_length=100)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    grace_period_minutes = models.IntegerField(default=5)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.start_time.strftime('%I:%M %p')} - {self.end_time.strftime('%I:%M %p')})"
+
+    class Meta:
+        verbose_name = "Time Preset"
+        verbose_name_plural = "Time Presets"
+        ordering = ['start_time']
