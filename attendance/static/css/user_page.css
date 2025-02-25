@@ -368,7 +368,7 @@ header {
   text-align: center;
   word-wrap: break-word;
   color: black;               /* Black font on white background */
-  font-size: 18px;            /* Increased font size */
+  font-size: 15px;            /* Increased font size */
   font-weight: bold;          /* Bold text */
   font-family: 'Arial', sans-serif;
 }
