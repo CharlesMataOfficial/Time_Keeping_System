@@ -172,6 +172,9 @@ class TimePresetAdmin(admin.ModelAdmin):
         }),
     )
 
+    class Media:
+        js = ('admin/js/custom_time_options.js',)
+
 class DayOverrideInline(admin.TabularInline):
     model = DayOverride
     extra = 0
