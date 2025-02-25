@@ -404,7 +404,7 @@ function viewAnnouncements() {
 
   if (viewOption === "recent") {
     // Show only the most recent (last item in the list)
-    const lastItem = listItems[listItems.length - 1];
+    const lastItem = listItems[0];
     if (lastItem) {
       lastItem.style.display = "flex";
     }
