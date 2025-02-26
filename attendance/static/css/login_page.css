@@ -2,6 +2,9 @@
 
 * {
   font-family: "Roboto", sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 form {
@@ -36,16 +39,24 @@ h1 {
   animation: fadeIn 1s ease-in-out;
 }
 
-.form-container {
+.form-container,
+.login-container {
   background: rgba(255, 255, 255, 0.85); /* Opaque background */
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); /* Softer and bigger shadow */
-  max-width: 5000px;
   width: 100%;
-  height: 380px;
   text-align: center;
+}
+
+.form-container {
+  max-width: 5000px;
+  height: 380px;
   margin-top: 40px;
+}
+
+.login-container {
+  max-width: 400px;
 }
 
 @keyframes fadeIn {
@@ -75,17 +86,8 @@ header {
   overflow: hidden; /* Prevent overflow if logos are wide */
 }
 
-.login-container {
-  background: rgba(255, 255, 255, 0.85); /* Lighter with more opacity */
-  border-radius: 12px;
-  text-align: center;
-  padding: 20px;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); /* Softer and bigger shadow */
-  max-width: 400px;
-  width: 100%;
-}
-
-.logo {
+.logo,
+.partner-logo {
   display: flex;
   align-items: center;
 }
@@ -97,9 +99,16 @@ header {
   margin-right: 10px;
 }
 
-.partner-logo {
-  display: flex;
-  align-items: center;
+.partner-logo img {
+  /* Company Logos */
+  background-color: white;
+  padding: 10px; /* Adds space around the logo */
+  border-radius: 10px; /* Optional rounded corners */
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  width: 250px; /* Change this to your desired size */
+  height: auto; /* Maintains aspect ratio */
+  margin-top: 100px;
+  margin-right: 450px;
 }
 
 .partner-logos {
@@ -127,18 +136,6 @@ header {
 .partner-logos img:hover {
   transform: scale(1.1); /* Slightly enlarge logo on hover */
   cursor: pointer;
-}
-
-.partner-logo img {
-  /* Company Logos */
-  background-color: white;
-  padding: 10px; /* Adds space around the logo */
-  border-radius: 10px; /* Optional rounded corners */
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-  width: 250px; /* Change this to your desired size */
-  height: auto; /* Maintains aspect ratio */
-  margin-top: 100px;
-  margin-right: 450px;
 }
 
 .partner-logos-inner {
@@ -186,6 +183,11 @@ header {
   margin-bottom: 15px;
 }
 
+.input-group input:focus {
+  border-color: #772e3f; /* Accent color for active state */
+  box-shadow: 0 0 8px rgba(119, 46, 63, 0.5); /* Subtle shadow to indicate focus */
+}
+
 .login-button {
   display: block;
   width: 15%;
@@ -206,9 +208,4 @@ header {
 .login-button:hover {
   background-color: #5f1f2f;
   transform: translateY(-5px); /* Slight hover lift effect */
-}
-
-.input-group input:focus {
-  border-color: #772e3f; /* Accent color for active state */
-  box-shadow: 0 0 8px rgba(119, 46, 63, 0.5); /* Subtle shadow to indicate focus */
 }

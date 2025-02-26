@@ -1,10 +1,7 @@
-@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;600&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;600&display=swap');
 
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Roboto", sans-serif;
+  font-family: 'Roboto', sans-serif;
 }
 
 body {
@@ -13,546 +10,1344 @@ body {
       rgba(255, 255, 255, 0.6)
     ),
     url("/static/images/bg/grass_bg.jpg");
-  background-size: cover; /* Ensures the image fully covers the container */
+  background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
 }
-
-html,
-body {
-  width: 100%;
-  height: 100vh;
-  overflow: hidden; /* Prevent any scrolling on the body */
+body,
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  display: flex;
+  justify-content: center; /* Horizontally center content */
+  align-items: flex-start; /* Align items at the top to avoid extra space */
+  overflow: hidden; /* Prevent both vertical and horizontal scrollbars */
 }
 
 h1,
-h2,
-h3,
-.clock p {
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+h2 {
+  background: linear-gradient(90deg, #621c1c, #be6364);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
 }
 
 .container {
-  margin-right: 15%;
-  width: 86%;
-  height: 100vh; /* Make the container fit the screen height */
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between; /* Adjust the spacing between items */
-  overflow: hidden;
-}
-
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #621c1c; /* Background color */
-  height: 8vh; /* Adjust height as needed */
-  padding: 0 20px; /* Add spacing inside the header */
-  position: relative; /* Ensures the header stays at the top layer */
-  width: 100%; /* Full width */
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional shadow */
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-}
-
-.logo img {
-  /* SF GROUP LOGO */
-  width: 475px; /* Change this to your desired size */
-  height: auto; /* Maintains aspect ratio */
-  margin-top: 125px;
-  margin-right: 10px;
-}
-
-#partnerLogo {
-  /* Company Logos */
-  background-color: white;
-  padding: 10px; /* Adds space around the logo */
-  border-radius: 10px; /* Optional rounded corners */
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-  width: 300px;
-  height: auto;
-  max-width: 250px; /* Change this to your desired size */
-  max-height: 250px; /* Maintains aspect ratio */
-  margin-top: 6%;
-  margin-right: 8%;
-}
-
-.logo img:hover,
-#partnerLogo :hover {
-  transform: scale(1.05); /* Slight zoom on hover */
-  transition: transform 0.3s ease-in-out;
-}
-
-.clock {
-  display: flex;
-  align-items: center;
-  margin-top: 20px;
-  margin-left: 40px;
-  flex-grow: 1;
-  justify-content: flex-start; /* Aligns items (including the camera) to the left */
-}
-
-.clock-content {
-  flex: 1; /* Allow clock-content to take available space */
-}
-
-.clock h1 {
-  /* Real clock time styling */
-  font-size: 130px;
-  color: #621c1c;
-  margin-top: 80px;
-  margin-bottom: 0; /* Remove bottom margin to align neatly */
-}
-
-.clock p {
-  font-size: 40px;
-  color: #be6364;
-  white-space: nowrap; /* Prevent line breaks */
-  margin-left: 55px;
-}
-
-.clock p span {
-  margin-right: 185px; /* Adjust spacing between date and day */
-}
-
-.clock,
-.attendance-list,
-.camera {
-  transition: transform 0.2s ease-in-out;
-}
-
-.camera {
-  position: absolute; /* Absolute positioning */
-  width: 25%; /* Adjust width for smaller screens */
-  flex: 0 0 auto;
-  height: 350px;
-  border: 2px solid #621c1c;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-top: 35px;
-  left: 860px; /* Default position for large screens */
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-}
-
-/* Move camera left as screen size decreases */
-@media screen and (max-width: 1400px) {
-  .camera {
-    left: 800px; /* Slightly left for medium screens */
-  }
-}
-
-@media screen and (max-width: 1200px) {
-  .camera {
-    left: 650px; /* Move more left for smaller screens */
-  }
-}
-
-@media screen and (max-width: 992px) {
-  .camera {
-    left: 450px; /* Further left for tablet screens */
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .camera {
-    left: 250px; /* Almost to the edge on small devices */
-  }
-}
-
-@media screen and (max-width: 576px) {
-  .camera {
-    left: 60px; /* Close to the left on very small screens */
-  }
-}
-
-.camera video {
+  position: relative;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  overflow: hidden; /* Prevent overflow inside container */
 }
 
-.btn {
-  /* TIME IN TIME OUT BUTTON */
-  padding: 10px 32px;
-  font-size: 25px;
-  background: #621c1c;
-  color: #fff;
-  border: none;
-  border-radius: 50px;
+/* Menu Icon */
+.menu-icon {
+  position: fixed;
+  top: 10px;
+  left: 7px;
   cursor: pointer;
-  margin: 50px;
-  margin-left: 115px;
-  transition: background 0.3s ease, transform 0.3s ease;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional shadow */
+  z-index: 10;
 }
 
-.btn:focus {
-  background: #be6364;
-  transform: scale(1.05); /* Button enlarges slightly */
+.menu-icon img {
+  width: 25px;
+  height: auto;
+  transition: transform 0.3s;
 }
 
-.btn:hover {
-  background-color: #be6364; /* Add color change on hover */
-  transform: scale(1.1); /* Enlarge button slightly */
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+.menu-icon:hover img {
+  transform: rotate(90deg);
 }
 
-.attendance-list {
-  width: 90%; /* Adjust width for smaller screens */
-  margin: 20px auto;
-  top: -1rem;
-  position: relative;
-  height: 30%;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+/* Menu Pop-Up */
+.menu {
+  position: fixed;
+  top: 0;
+  left: -300px; /* Initially hidden */
+  width: 260px;
+  height: 100%;
+  background-image: url("/static/images/red1.jpg");
+  background-size: cover;
+  background-position: center;
+  color: white;
+  transition: left 0.3s ease;
+  padding: 20px;
+  z-index: 2; /* Lower z-index to ensure text stays on top */
 }
 
-.attendance-list h2 {
-  font-size: 20px;
-  color: #ffffff;
-  margin-bottom: 15px;
-  text-align: center;
-  margin-top: -25px;
-}
-
-#attendance-items {
+.menu ul {
   list-style: none;
+}
+
+.menu-item {
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  border-radius: 5px;
+  gap: 12px;
+  margin-left: -71px;
+  transition: transform 0.4s ease-in-out;
+}
+
+.menu-item:hover {
+  background-color: #34495e;
+  transform: translateX(10px);
+}
+
+.menu-item img {
+  width: 30px;
+  height: 30px;
+}
+
+.sign-out {
+  position: absolute;
+  bottom: 30px; /* Moves it above the Sign Out button */
+  left: 40%;
+  width: max-content;
+  text-align: center;
+  transition: none !important; /* Disable animations */
+  font-size: 18px;
+}
+
+.menu-item.sign-out {
+  color: #ffffff;
+  background-color: transparent !important; /* Ensure no background change */
+}
+
+.menu-item.sign-out:hover {
+  color: #621c1c;
+  background-color: transparent !important; /* Prevent hover background */
+}
+
+.menu-item.sign-out:active {
+  background-color: transparent !important; /* Prevent background when clicked */
+}
+
+.sign-out img {
+  width: 20px; /* Adjust size as needed */
+  height: auto;
+  position: relative;
+  bottom: 3px; /* Adjust this value to move the icon higher */
+  left: 5%;
+}
+
+.sign-out:hover {
+  transform: none !important;
+}
+
+/* Screens */
+.screen {
+  display: none; /* Hidden initially */
+  position: absolute; /* Prevent elements from moving up */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  overflow-y: auto; /* Scroll only if content overflows */
+}
+
+#dashboard {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Vertically center the content */
+  align-items: center; /* Horizontally center the content */
+  text-align: center; /* Center text inside */
+  height: 100vh;
+}
+
+#dashboard_title {
+  font-size: 75px;
+  font-weight: bold;
+  margin-top: -500px;
+  margin-right: 105px;
+}
+
+/* Centering the Containers Without Extra Space */
+.dashboard-stats-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Perfectly centers the row */
+  display: flex;
+  gap: 40px; /* Equal spacing between containers */
+  justify-content: center;
+  align-items: center;
+}
+
+/* Total User Time In (Left Side) */
+.total-user-time-container {
+  width: 240px;
+  height: 120px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  top: 0; /* Aligns with the top of Late Employees */
+}
+
+.total-user-time-container h2 {
+  font-size: 14px;
+  color: #621c1c;
+  margin-bottom: 5px;
+}
+
+.total-user-time-container p {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Wrapper for Time In & Time Out */
+.total-user-time-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between; /* Evenly distribute inside */
+  height: 300px; /* Same height as the Top 5 Late Employees container */
+}
+
+/* Total User Time Out - Same Style as Time In */
+.total-user-timeout-container {
+  width: 240px;
+  height: 120px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.total-user-timeout-container {
+  position: relative;
+  bottom: 0; /* Aligns with bottom of Late Employees */
+}
+
+.total-user-timeout-container h2 {
+  font-size: 14px; /* Same as Total User Time In */
+  color: #621c1c;
+  margin-bottom: 5px;
+}
+
+.total-user-timeout-container p {
+  font-size: 20px; /* Same as Total User Time In */
+  font-weight: bold;
+  color: #333;
+}
+
+/* Top 5 Late Employees Container (Middle) */
+.top-late-employees-container {
+  width: 320px;
+  height: 400px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 15px;
+}
+
+.total-late-employees {
+  font-size: 14px; /* Pareho sa Top 5 Late Employees */
+  color: #621c1c; /* Parehong kulay */
+  font-weight: bold;
+  margin-top: 5px; /* Bawasan ang space sa taas */
+  margin-bottom: 3px; /* Bawasan ang space sa baba */
+}
+
+.total-late-employees span {
+  font-size: 20px; /* Pareho sa Total User Time */
+  font-weight: bold;
+  color: #333;
+}
+
+.top-late-employees-container h2 {
+  font-size: 14px;
+  color: #621c1c;
+  margin-bottom: 5px;
+}
+
+.top-late-employees-container p {
+  font-size: 20px; /* Same as Total User Time In */
+  font-weight: bold;
+  color: #333;
+}
+
+/* Bigger Space for Late Employees Names */
+.late-employees-list {
+  width: 100%;
+  height: 500px; /* Gawing mas malaki ang height */
+  /* background: rgba(240, 240, 240, 0.9); */
+  font-size: 14px;
+  color: #333;
+  /* margin-bottom: 5px; */ /* Paliitin ang espasyo sa pagitan */
+  overflow-y: auto; /* Enables scrolling if names exceed space */
+}
+
+.total-late-employees h2 {
+  font-size: 14px; /* Pareho sa Top 5 Late Employees */
+  color: #621c1c; /* Parehong kulay */
+  font-weight: bold; /* Optional: Para mas litaw */
+  margin-bottom: 8px;
+}
+
+.total-late-employees p {
+  font-size: 20px; /* Same as Total User Time In */
+  font-weight: bold;
+  color: #333;
+}
+
+.view-late-button {
+  padding: 6px 14px;
+  background-color: #2980b9;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 14px;
+}
+
+.view-late-button:hover {
+  background-color: #216a9c;
+}
+
+/* Top 5 Early Birds Container (Right Side) */
+.top-early-birds-container {
+  width: 320px;
+  height: 300px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 15px;
+}
+
+/* Position "Top 5 Early Birds" at the top */
+.top-early-birds-container h2 {
+  font-size: 14px;
+  color: #621c1c;
+  margin-bottom: 8px;
+  margin-top: 10px; /* Ensures it's at the top */
+}
+
+/* Bigger Space for Early Birds Names */
+.early-birds-list {
+  width: 100%;
+  height: 200px;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 8px;
+  overflow-y: auto; /* Enables scrolling if names exceed space */
+}
+
+button,
+input,
+select,
+textarea {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 15px rgba(190, 99, 100, 0.8);
+}
+
+#log {
+  position: fixed; /* Keep it fixed in place */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Perfectly center it */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+#log h1 {
+  position: relative;
+  font-size: 75px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+#log_rectangle {
+  width: 1000px;
+  justify-content: center;
+  height: 500px;
+  background-color: #f0f0f0;
+
+  border-radius: 15px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+#attendance_rectangle {
+  width: 1200px;
+  height: 500px;
+  background-color: #f0f0f0;
+  border-radius: 15px;
+  margin: 100px auto;
+  margin-top: 10px; /* Adjust the space above the white rectangle */
+  margin-bottom: 50px;
+  box-sizing: border-box;
+  position: relative;
+  max-height: 500px; /* Adjust this height as needed */
+  overflow-y: auto;  /* Enables vertical scrolling */
+}
+
+#attendance-list h1 {
+  position: absolute;
+  top: 70px; /* Keep it above the container */
+  left: 50%; /* Move to the center */
+  transform: translateX(-50%); /* Perfectly center it */
+  font-size: 75px;
+  text-align: center;
+  width: auto;
+  margin: 0;
+}
+
+#attendance-list {
+  position: absolute;
+  top: 52%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  /* Maintain size but allow responsiveness */
+  width: 90%; /* Responsive width */
+  max-width: 1200px; /* Maximum size */
+  min-width: 900px; /* Prevent it from shrinking too much */
+  height: auto;
+  min-height: 500px; /* Ensure it doesn’t shrink below this */
+  max-height: 750px; /* Optional: Limit max height */
+}
+
+/* Keeps the container centered always */
+.export-container {
+  position: fixed; /* Prevents movement */
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 600px; /* Do not change */
+  height: 400px; /* Do not change */
+  background-size: cover;
+  border-radius: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+#export-excel {
+  position: absolute;
+  top: 52%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  /* Maintain size but allow responsiveness */
+  width: 90%; /* Responsive width */
+  max-width: 1200px; /* Maximum size */
+  min-width: 900px; /* Prevent it from shrinking too much */
+  height: auto;
+  min-height: 500px; /* Ensure it doesn’t shrink below this */
+  max-height: 750px; /* Optional: Limit max height */
+}
+
+/* Export Buttons */
+.export-button {
+  background-color: #2980b9;
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  border-radius: 5px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 25px 0;
+  transition: background 0.3s;
+}
+
+.export-button:hover {
+  background-color: #2980b9;
+}
+
+/* Ensures the title remains fixed and centered */
+#export-excel h1 {
+  position: absolute;
+  top: 1px; /* Keep it above the container */
+  left: 50%; /* Move to the center */
+  transform: translateX(-50%); /* Perfectly center it */
+  font-size: 75px;
+  text-align: center;
+  width: auto;
+  margin: 0;
+}
+
+/* Ensure containers are properly aligned below the title */
+#announcement {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 1000px;
+}
+
+#announcement h1 {
+  font-size: 75px;
+  margin-bottom: -40px;
+  margin-top: 40px;
+}
+
+/* Arrange containers side by side */
+.announcement-content {
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  gap: 20px; /* Space between containers */
+  margin-top: 20px;
+  width: 90%;
+  max-width: 1000px;
+}
+
+/* Container Styling */
+.announcement-container {
+  width: 100%;
+  max-width: 460px;
+  background-size: cover;
+  padding: 15px;
+  margin-top: 90px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
+  padding-bottom: 20px;
+  align-items: flex-start;
+}
+
+/* Textarea Styling */
+.announcement-container textarea {
+  width: 440px;
+  height: 146px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  resize: none;
+}
+
+/* Ensure dropdown and buttons are aligned in one row */
+.announcement-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+/* Container for the list */
+.announcement-list-container {
+  overflow-y: auto; /* Vertical scroll when content overflows */
+  border: 1px solid #ccc; /* Optional: add a border */
+  padding: 5px; /* Optional: add some padding */
+  background-color: #ffffff;
+  text-align: left;
+  margin-top: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  height: 200px;
+  width: 440px;
+}
+
+/* Remove bullet points and spacing from the list */
+#announcement-list {
+  list-style-type: none;
+  margin: 0;
   padding: 0;
 }
 
-#attendance-table {
+/* Each list item: flex container with vertical alignment centered */
+#announcement-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.4; /* Adjust as needed (1.2, 1.4, 1.5, etc.) */
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+/* Checkbox styling */
+#announcement-list li input[type="checkbox"] {
+  flex: 0 0 auto;
+  vertical-align: middle; /* Align with text */
+  margin-bottom: 10px; /* Adjust the value as needed */
+  /* Optionally fix size for consistency:
+  width: 16px;
+  height: 16px;
+  */
+}
+
+/* Text styling */
+#announcement-list li span {
+  flex: 1 1 auto;
+  display: inline-block;
+  vertical-align: middle;
+  word-wrap: break-word; /* Allows text wrapping if it's very long */
+}
+
+/* Dropdown Styling */
+#post-options {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+}
+
+/* Post Button */
+.post-button {
+  padding: 10px 20px;
+  background-color: #2980b9;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.post-button:hover {
+  background-color: #2980b9;
+}
+
+/* Delete and View Buttons */
+.delete-button {
+  padding: 10px 20px;
+  background-color: #2980b9;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.delete-button:hover {
+  background-color: #2980b9;
+}
+
+.view-button {
+  padding: 10px 20px;
+  background-color: #2980b9;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.view-button:hover {
+  background-color: #2980b9;
+}
+
+.dashboard-icon,
+.announcement-container,
+.export-container {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Adjust space below the dropdown */
+.attendance-dropdown-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 150px; /* Adds spacing below the header */
+  margin-bottom: 30px; /* Adjust this to control space below the dropdown */
+}
+
+/* Dropdown and Button Styling */
+.attendance-dropdown-container {
+  display: flex;
+  gap: 10px;
+  justify-content: center; /* Center elements horizontally */
+  align-items: center; /* Align elements properly */
+}
+
+/* Dropdown Styling */
+.attendance-dropdown-container select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+}
+
+/* Go Button Styling */
+.go-button {
+  padding: 10px 20px;
+  background-color: #2980b9;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.go-button:hover {
+  background-color: #2980b9;
+}
+
+/* Right Arrow (Fixed Position) */
+.dashboard-icon-nav {
+  position: fixed;
+  top: 20px;
+  z-index: 1000;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+#dashboard-shortcut-left {
+  left: 40px; /* Adjust the left position */
+}
+
+#dashboard-shortcut-right {
+  right: 40px; /* Adjust the right position */
+}
+
+.dashboard-icon-nav img {
+  width: 30px;
+  height: auto;
+}
+
+.dashboard-icon-nav:hover {
+  transform: scale(1.1);
+}
+
+/* Ensure both the left and right arrows are in fixed positions, side by side */
+.dashboard-icon-top-right {
+  position: fixed;
+  top: 20px;
+  right: 40px;
+  z-index: 1000;
+  cursor: pointer;
+  display: flex; /* Use flexbox to align the icons horizontally */
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px; /* Space between the left and right arrows */
+}
+
+/* Adjust icon sizes */
+.dashboard-icon-top-right img {
+  width: 30px;
+  height: auto;
+}
+
+/* Hover effect for icons */
+.dashboard-icon-top-right img:hover {
+  transform: scale(1.1);
+}
+
+.dashboard-icon-top-right img:first-child {
+  margin-right: 10px; /* Space between the left and right arrows */
+}
+
+.dashboard-icon-top-right img:last-child {
+  margin-left: 10px; /* Space between the left and right arrows */
+}
+
+/* Ensure the arrows stay in place when navigating */
+#dashboard-shortcut {
+  display: flex !important; /* Force it to be shown */
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 20px;
+  right: 40px;
+  z-index: 1000; /* Ensure it's above all elements */
+}
+
+
+
+/* Default option (By company, By department) should always be black */
+#attendance-company option.default-option,
+#attendance-department option.default-option {
+  color: black !important; /* Black text */
+  font-weight: bold; /* Make it stand out */
+}
+
+/* Ensure other options appear gray */
+#attendance-company option,
+#attendance-department option {
+  color: gray;
+}
+
+/* Force selected option to turn black when chosen */
+#attendance-company option:checked,
+#attendance-department option:checked {
+  color: black !important;
+}
+
+#leave-approval {
+  position: fixed; /* Keep it fixed in place */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Perfectly center it */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+#leave-approval h1 {
+  position: relative;
+  font-size: 75px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+#leave-approval_rectangle {
+  width: 700px;
+  height: 500px;
+  background-color: #f0f0f0;
+  border-radius: 15px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sign-out-text:hover {
+  background-color: transparent !important;
+}
+
+#about {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.about-container {
+  background: rgb(255, 255, 255);
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  text-align: justify;
+  width: 1250px;
+  height: auto; /* Adjust height dynamically */
+  border-radius: 15px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 7px; /* Adds space between elements */
+}
+
+#about h1 {
+  font-size: 75px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Align logos side by side */
+.about-logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin: 0; /* No margin */
+  padding: 0; /* No padding */
+}
+
+/* Set uniform size for both logos */
+.about-logo {
+  width: 120px; /* Adjust size as needed */
+  height: auto;
+}
+
+/* Adjust the Mapúa logo size */
+.mapua-logo {
+  width: 127px; /* Change this value to adjust size */
+  position: relative;
+  bottom: 3.5px; /* Move down (increase value) or move up (use negative value) */
+}
+
+/* Adjust the position of the CCIS logo */
+.ccis-logo {
+  position: relative;
+  bottom: 11px; /* Move down (increase value) or move up (use negative value) */
+}
+
+.agri-logo {
+  position: relative;
+}
+
+/* Apply same text style as Dashboard Stats */
+.about-container p {
+  font-size: 15px; /* Match dashboard stats */
+  color: #000000; /* Match dashboard color */
+  background: linear-gradient(90deg, #000000, #000000);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+}
+/* Modal Base Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fefefe;
+  margin: 5% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 600px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  position: relative;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+/* Modal Animation */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Close Button */
+.close {
+  position: absolute;
+  right: 20px;
+  top: 10px;
+  font-size: 28px;
+  font-weight: bold;
+  color: #aaa;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close:hover {
+  color: #000;
+}
+
+/* Modal Table Styles */
+.modal table {
   width: 100%;
   border-collapse: collapse;
-  background: #fff;
-  height: 100%;
+  margin: 20px 0;
 }
 
-#attendance-table thead {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: #621c1c;
+.modal th,
+.modal td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
 }
 
-#attendance-table thead th {
-  background-color: #621c1c;
-  color: #fff;
+.modal th {
+  background-color: #f5f5f5;
+}
+
+/* Modal Input Styles */
+.modal input[type="text"],
+.modal input[type="time"] {
+  width: 100%;
+  padding: 8px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+/* Modal Button Styles */
+.modal button {
+  padding: 10px 20px;
+  margin: 10px 5px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #2980b9;
+  color: white;
+  transition: background-color 0.2s;
+}
+
+.modal button:hover {
+  background-color: #2471a3;
+}
+
+/* Preset Options Container */
+.preset-options {
+  display: flex;
+  justify-content: space-around;
+  margin: 20px 0;
+}
+
+/* Input Container */
+#presetName {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+/* Ensure Intern Cards Stay in One Row */
+.intern-info {
+  display: flex;
+  align-items: center; /* Align photos and text vertically */
+  gap: 20px; /* Space between intern cards */
+  margin-left: 120px; /* Keep everything on the left (120px)*/
+}
+
+/* Each Intern's Card */
+.intern-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center photo, name, and role */
+  text-align: center;
+}
+
+/* Intern Photo - Centered */
+.intern-photo {
+  width: 83px;
+  height: auto;
+  border-radius: 10px;
+}
+
+/* Intern Name & Role */
+.intern-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: black;
+  margin-bottom: 0; /* Remove bottom space */
+}
+
+.intern-role {
+  font-size: 11px !important; /* Smaller font */
+  color: gray !important;
+  margin-top: -1px; /* Reduce space between name and role */
+}
+
+.about-description-container {
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 80%;
+  max-width: 900px;
+  margin: 7px auto;
+}
+
+.red-container {
+  background-color: #621c1c; /* Dark Red */
+  padding: 20px;
+  border-radius: 10px;
+  height: auto;
+  line-height: 1.2;
+}
+
+.red-container,
+.red-container p,
+.red-container span {
+  color: white !important;
+  text-align: justify !important;
+  margin-top:7px;
+  margin-bottom: 1px;
+}
+
+/* Collaboration Section - Adjusted */
+.collaboration-section {
+  text-align: center;
+  margin: 0; /* Remove any margins */
+  padding: 0; /* Remove any padding */
+}
+
+/* Move COLLABORATION text above the logos */
+.collaboration-section h2 {
+  font-size: 10px !important;
+  color: #621c1c;
   font-weight: bold;
   text-transform: uppercase;
-  font-size: 14px;
-  padding: 12px 15px;
-  text-align: left;
+  margin: 0; /* No margin to remove any space */
+  padding: 0; /* Remove padding */
 }
 
-#attendance-table tbody {
+.broken-line {
+  border: none;
+  border-top: 3px dashed #621c1c;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+
+select option {
+  color: gray;
+}
+
+
+select:focus option:checked,
+select option:checked {
+  color: black !important;
+}
+
+
+ /* Remove default anchor styles in the menu */
+ .menu a {
+  text-decoration: none;
+  color: inherit;
+  border: none;
+  outline: none;
+}
+
+/* Optional: Make the anchor a block-level element so the entire area is clickable */
+.menu a {
   display: block;
-  overflow-y: auto;
-  /* height: calc(100vh - 550px); Adjust this value to fit perfectly */
-  height: 100%;
+}
+ /* Container styling */
+    #attendance_rectangle {
+      padding: 20px;
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background-color: #fff;
+      font-family: Roboto, sans-serif;
+    }
+    /* Table styling */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0 auto;
+    }
+    th, td {
+      /* border: 1px solid #ccc; */
+      padding: 10px;
+      text-align: left;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+    /* Dropdown and button styling */
+    .attendance-dropdown-container select,
+    .attendance-dropdown-container button {
+      padding: 8px 10px;
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .attendance-dropdown-container button {
+      cursor: pointer;
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+    }
+    .attendance-dropdown-container button:hover {
+      background-color: #0056b3;
+    }
+
+/* Add these styles at the end of your file */
+
+/* Dashboard tables styling */
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  /* background-color: rgba(240, 240, 240, 0.9); */
+  /* border-radius: 5px; */
+  table-layout: fixed; /* This helps maintain column widths */
 }
 
-#attendance-table thead tr,
-#attendance-table tbody tr {
+.dashboard-table th,
+.dashboard-table td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid rgba(220, 220, 220, 0.5);
+}
+
+.dashboard-table th {
+  /* background-color: rgba(220, 220, 220, 0.9); */
+  color: #333;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.dashboard-table td {
+  font-size: 13px;
+}
+
+/* Fix the column widths */
+.dashboard-table th:first-child,
+.dashboard-table td:first-child {
+  width: 65%; /* Name column takes 65% of the width */
+}
+
+.dashboard-table th:last-child,
+.dashboard-table td:last-child {
+  width: 35%; /* Minutes column takes 35% of the width */
+  text-align: right; /* Right align the minutes */
+}
+
+.dashboard-table .minutes {
+  font-weight: bold;
+}
+
+.dashboard-table .late {
+  color: #e74c3c;
+}
+
+.dashboard-table .early {
+  color: #2ecc71;
+}
+
+/* Fix scrolling container display */
+.late-employees-list,
+.early-birds-list {
+  max-height: 180px;
+  overflow-y: auto;
+  overflow-x: hidden; /* Hide horizontal scrollbar */
+}
+
+/* Fix table displays within scrolling containers */
+.late-employees-list table,
+.early-birds-list table {
+  width: 100%;
+}
+
+/* Update dashboard table styling for better alignment */
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* Make sure the table header is properly styled */
+.dashboard-table thead {
   display: table;
   width: 100%;
   table-layout: fixed;
 }
 
-#attendance-table tbody td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-  color: #333;
-  font-size: 14px;
-}
-
-#attendance-table tbody tr:nth-child(even) {
-  background-color: #f8f8f8;
-}
-
-#attendance-table tbody tr:hover {
-  background-color: #f5f5f5;
-}
-
-.content {
-  display: flex;
-  margin-top: 20px;
-}
-
-.panel {
-  /*CONTENTS INSIDE THE SIDE PANEL*/
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  /* text-align: center; */
-  font-size: 12px; /* Adjust font-size as needed */
-  color: #e2e2e2;
-  margin-bottom: 10px; /* Adjust space between panels */
-  border-radius: 10px;
-  width: 100%;
-  height: auto;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
-  background-color: #621c1c; /* Fallback for older browsers */
-  padding: 15px;
-}
-
-.panel:hover {
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Hover effect */
-  transform: translateY(-5px); /* Slight lift on hover */
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-}
-
-.birthdays .panel h3,
-.milestones .panel h3,
-.announcements .panel h3 {
-  font-size: 15px;
-  margin-top: -10px; /* Move Birthdays and Milestones header slightly up */
-}
-
-/* Note styles for Birthdays, Milestones, and Announcements */
-.birthdays .note,
-.milestones .note,
-.announcements .note {
-  background: #e2e2e2;
-  width: 100%;
-  margin: 5px;
-  position: relative;
-  border-radius: 5px;
+/* Set the table body to match the header */
+.dashboard-table tbody {
+  display: block;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+  width: 100%;
+  max-height: 180px;
 }
 
-/* Make sure birthdays and milestones use the same table style */
-.announcements-table {
+/* Ensure table rows maintain proper width */
+.dashboard-table tbody tr {
+  display: table;
   width: 100%;
-  border-collapse: collapse;
   table-layout: fixed;
 }
 
-/* Zebra striping for rows */
-.announcements-table tbody tr:nth-child(odd) {
-  background-color: #ffffff;
-}
-
-.announcements-table tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-/* Hover effect for table rows */
-.announcements-table tbody tr:hover {
-  background-color: #e0e0e0;
-}
-
-.announcements {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Container styles for Announcements */
-.announcements .note {
-  background: #f9f9f9;
-  width: 100%; /* Prevents content from overlapping on the right side */
-  height: 30vh;
-  max-width: 500px;
-  bottom: -13px;
-  max-height: 500px;
-  margin: 5px;
-  justify-content: center;
-  position: relative;
-  border-radius: 5px;
-  overflow-y: auto; /* Vertical scrollbar appears when needed */
-  overflow-x: hidden;
-}
-
-/* Table styles for announcements */
-.announcements-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed; /* Ensures content wraps properly */
-}
-
-/* Updated cell styling for larger, bold, and modern font */
-.announcements-table td {
-  /* border: 1px solid #ddd; */
-  padding: 0.75rem;
-  text-align: center;
-  word-wrap: break-word;
-  color: black;               /* Black font on white background */
-  font-size: 13px;            /* Increased font size */
-  /* font-weight: bold; */          /* Bold text */
-  font-family: 'Roboto', sans-serif;
-}
-
-/* Zebra striping for rows */
-.announcements-table tbody tr:nth-child(odd) {
-  background-color: #ffffff;
-}
-
-.announcements-table tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-/* Hover effect for table rows */
-.announcements-table tbody tr:hover {
-  background-color: #e0e0e0;
-}
-
-.sidebar {
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: 15%;
-  background-image: url("/static/images/red1.jpg");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  height: 100%;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  z-index: 10;
-}
-
-/* Birthdays container */
-.birthdays,
-.milestones,
-.announcements {
-  flex: 1; /* Makes them shrink evenly */
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.birthdays .panel,
-.milestones .panel {
-  width: 100%;
-  height: 175px; /* You can specify a fixed height here for Birthdays & Milestones */
-}
-
-.birthdays .note {
-  background: #e2e2e2;
-  width: 100%;
-  height: 20vh;
-  max-width: 500px;
-  bottom: -13px;
-  max-height: 275px; /* Match the panel height you defined */
-  margin: 5px;
-  justify-content: center;
-  position: relative;
-  border-radius: 5px;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-/* Container styles for Milestones */
-.milestones .note {
-  background: #e2e2e2;
-  width: 100%;
-  height: 20vh;
-  max-width: 500px;
-  bottom: -13px;
-  max-height: 275px; /* Match the panel height you defined */
-  margin: 5px;
-  justify-content: center;
-  position: relative;
-  border-radius: 5px;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-.sign-out-btn {
-  color: rgb(255, 255, 255);
-  text-decoration: underline; /* Underlined text */
-  background: none; /* Transparent background */
-  border: none; /* No border */
-  font-size: 15px; /* Font size for visibility */
-  cursor: pointer; /* Pointer cursor on hover */
-  margin-top: auto;
-  margin-left: 45px;
-  margin-bottom: 20px;
-}
-
-.sign-out-btn:hover {
-  color: red; /* Darker red for hover effect */
-}
-
-/* Common modal styles */
-.modal {
-  display: none; /* Hidden by default */
-  position: fixed;
-  z-index: 2000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
-}
-
-.modal-content {
-  background-color: #fefefe;
-  margin: 15% auto; /* 15% from the top and centered */
-  padding: 20px;
-  border: 1px solid #888;
-  width: 300px; /* Could be more or less, depending on screen size */
-  border-radius: 8px;
-}
-
-.modal-content input {
-  width: 100%;
+/* Cell styling */
+.dashboard-table th,
+.dashboard-table td {
   padding: 8px;
-  margin: 10px 0;
+  border-bottom: 1px solid #eee;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap; /* Ensure text truncates instead of causing horizontal scroll */
 }
 
-.modal-content button {
-  width: 100%;
-  padding: 10px;
-  background-color: #621c1c;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
+/* Set column widths */
+.dashboard-table th:first-child,
+.dashboard-table td:first-child {
+  width: 65%;
 }
 
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 24px;
+.dashboard-table th:last-child,
+.dashboard-table td:last-child {
+  width: 35%;
+  text-align: right;
+}
+
+/* Other styling */
+.dashboard-table th {
+  /* background-color: rgba(220, 220, 220, 0.9); */
+  color: #333;
+  font-size: 12px;
   font-weight: bold;
-  cursor: pointer;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
-.close:hover,
-.close:focus {
-  color: #000;
-  text-decoration: none;
-  cursor: pointer;
+.dashboard-table .minutes {
+  font-weight: bold;
 }
 
-#newPinForm {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.dashboard-table .late {
+  color: #e74c3c;
 }
 
-#newPinForm input {
-  padding: 8px;
-  font-size: 16px;
-}
-
-#newPinForm button {
-  padding: 8px;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-#newPinForm button:hover {
-  background-color: #45a049;
+.dashboard-table .early {
+  color: #2ecc71;
 }
