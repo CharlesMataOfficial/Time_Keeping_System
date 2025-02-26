@@ -129,23 +129,36 @@
           </div>
         </div>
         <div class="top-late-employees-container">
-          <h2>Top 5 Late Employees:</h2>
-          <div class="late-employees-list">
-            <p></p>
-          </div>
+          <h2>Top 5 Late Employees</h2>
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Minutes Late</th>
+              </tr>
+            </thead>
+            <tbody class="late-employees-list">
+              <!-- Will be populated by JavaScript -->
+            </tbody>
+          </table>
           <div class="total-late-employees">
-            <h2>Total Number of Late Employees:</h2>
+            <h2>Total Late Employees Today</h2>
             <p id="total-late-count">0</p>
           </div>
-          <button class="view-late-button" onclick="viewLateEmployees()">
-            View Late Employees
-          </button>
         </div>
         <div class="top-early-birds-container">
-          <h2>Top 5 Early Birds:</h2>
-          <div class="early-birds-list">
-            <p></p>
-          </div>
+          <h2>Top 5 Early Birds</h2>
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Minutes Early</th>
+              </tr>
+            </thead>
+            <tbody class="early-birds-list">
+              <!-- Will be populated by JavaScript -->
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

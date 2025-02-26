@@ -288,17 +288,12 @@ h2 {
 
 /* Bigger Space for Late Employees Names */
 .late-employees-list {
-  width: 90%;
+  width: 100%;
   height: 500px; /* Gawing mas malaki ang height */
   background: rgba(240, 240, 240, 0.9);
-  border-radius: 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   font-size: 14px;
   color: #333;
   margin-bottom: 5px; /* Paliitin ang espasyo sa pagitan */
-  padding: 10px;
   overflow-y: auto; /* Enables scrolling if names exceed space */
 }
 
@@ -355,17 +350,11 @@ h2 {
 
 /* Bigger Space for Early Birds Names */
 .early-birds-list {
-  width: 90%;
+  width: 100%;
   height: 200px;
-  background: rgba(240, 240, 240, 0.9);
-  border-radius: 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   font-size: 14px;
   color: #333;
   margin-bottom: 8px;
-  padding: 10px;
   overflow-y: auto; /* Enables scrolling if names exceed space */
 }
 
@@ -1225,3 +1214,143 @@ select option:checked {
     .attendance-dropdown-container button:hover {
       background-color: #0056b3;
     }
+
+/* Add these styles at the end of your file */
+
+/* Dashboard tables styling */
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  background-color: rgba(240, 240, 240, 0.9);
+  border-radius: 5px;
+  table-layout: fixed; /* This helps maintain column widths */
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid rgba(220, 220, 220, 0.5);
+}
+
+.dashboard-table th {
+  background-color: rgba(220, 220, 220, 0.9);
+  color: #333;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.dashboard-table td {
+  font-size: 13px;
+}
+
+/* Fix the column widths */
+.dashboard-table th:first-child,
+.dashboard-table td:first-child {
+  width: 65%; /* Name column takes 65% of the width */
+}
+
+.dashboard-table th:last-child,
+.dashboard-table td:last-child {
+  width: 35%; /* Minutes column takes 35% of the width */
+  text-align: right; /* Right align the minutes */
+}
+
+.dashboard-table .minutes {
+  font-weight: bold;
+}
+
+.dashboard-table .late {
+  color: #e74c3c;
+}
+
+.dashboard-table .early {
+  color: #2ecc71;
+}
+
+/* Fix scrolling container display */
+.late-employees-list,
+.early-birds-list {
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+/* Fix table displays within scrolling containers */
+.late-employees-list table,
+.early-birds-list table {
+  width: 100%;
+}
+
+/* Update dashboard table styling for better alignment */
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* Make sure the table header is properly styled */
+.dashboard-table thead {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* Set the table body to match the header */
+.dashboard-table tbody {
+  display: block;
+  overflow-y: auto;
+  width: 100%;
+  max-height: 180px;
+}
+
+/* Ensure table rows maintain proper width */
+.dashboard-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* Cell styling */
+.dashboard-table th,
+.dashboard-table td {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Set column widths */
+.dashboard-table th:first-child,
+.dashboard-table td:first-child {
+  width: 65%;
+}
+
+.dashboard-table th:last-child,
+.dashboard-table td:last-child {
+  width: 35%;
+  text-align: right;
+}
+
+/* Other styling */
+.dashboard-table th {
+  background-color: rgba(220, 220, 220, 0.9);
+  color: #333;
+  font-size: 12px;
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.dashboard-table .minutes {
+  font-weight: bold;
+}
+
+.dashboard-table .late {
+  color: #e74c3c;
+}
+
+.dashboard-table .early {
+  color: #2ecc71;
+}

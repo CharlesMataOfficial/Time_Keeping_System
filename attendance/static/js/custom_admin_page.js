@@ -46,46 +46,48 @@ function loadDashboardData() {
   fetch("/dashboard-data/")
     .then((response) => response.json())
     .then((data) => {
-      // Update total time in and time out counts
+      // Display total counts
       document.getElementById("total-time-in").textContent = data.today_entries.length;
+
       const timeOutCount = data.today_entries.filter(entry => entry.time_out).length;
       document.getElementById("total-time-out").textContent = timeOutCount;
 
-      // Update late employees count
-      const lateCountElement = document.querySelector(".total-late-employees");
-      if (lateCountElement) {
-        lateCountElement.innerHTML = `
-          <h2>Total Number of Late Employees:</h2>
-          <p id="total-late-count">${data.late_count}</p>
-        `;
-      }
+      // Display late count
+      document.getElementById("total-late-count").textContent = data.late_count;
 
-      // Display late employees
+      // Display late employees in table format
       const lateEmployeesList = document.querySelector(".late-employees-list");
       lateEmployeesList.innerHTML = "";
 
       if (data.top_late.length === 0) {
-        lateEmployeesList.innerHTML = "<p>No late employees today</p>";
+        lateEmployeesList.innerHTML = "<tr><td colspan='2'>No late employees today</td></tr>";
       } else {
         data.top_late.forEach((employee) => {
-          // Use the minutes_diff value from the server
-          const minutesLate = Math.abs(Math.round(employee.minutes_diff || 0));
-          lateEmployeesList.innerHTML += `<p>${employee.name}: ${minutesLate} mins late</p>`;
+          const minutes = Math.abs(Math.round(employee.minutes_diff || 0));
+          lateEmployeesList.innerHTML += `
+            <tr>
+              <td>${employee.name}</td>
+              <td class="minutes late">${minutes} mins</td>
+            </tr>
+          `;
         });
       }
 
-      // Display early birds
+      // Display early birds in table format
       const earlyBirdsList = document.querySelector(".early-birds-list");
       earlyBirdsList.innerHTML = "";
 
       if (data.top_early.length === 0) {
-        earlyBirdsList.innerHTML = "<p>No early birds today</p>";
+        earlyBirdsList.innerHTML = "<tr><td colspan='2'>No early birds today</td></tr>";
       } else {
         data.top_early.forEach((employee) => {
-          // For early birds, the minutes_diff will be negative or 0
-          // Take absolute value to show as "minutes early"
-          const minutesEarly = Math.abs(Math.round(employee.minutes_diff || 0));
-          earlyBirdsList.innerHTML += `<p>${employee.name}: ${minutesEarly} mins early</p>`;
+          const minutes = Math.abs(Math.round(employee.minutes_diff || 0));
+          earlyBirdsList.innerHTML += `
+            <tr>
+              <td>${employee.name}</td>
+              <td class="minutes early">${minutes} mins</td>
+            </tr>
+          `;
         });
       }
     })
