@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from .models import CustomUser
-
+from django.db.models import Q
 
 @never_cache
 def login_view(request):
@@ -213,7 +213,6 @@ def clock_in_view(request):
                 "attendance_list": attendance_list,
             }
         )
-
 
 @require_POST
 def clock_out_view(request):
@@ -529,9 +528,7 @@ def get_special_dates(request):
         "birthdays": birthday_users,
         "milestones": milestone_users
     })
-from django.http import JsonResponse
-from django.db.models import Q
-from .models import TimeEntry, CustomUser
+
 
 # Mapping: key is the code; value is a tuple (main, alias) that should match exactly what’s stored in the database.
 COMPANY_CHOICES = {

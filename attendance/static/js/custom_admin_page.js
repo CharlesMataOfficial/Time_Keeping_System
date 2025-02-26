@@ -93,40 +93,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-
-
-// Update the attendance header when dropdown selections change
-document
-  .getElementById("attendance-type")
-  .addEventListener("change", updateAttendanceHeader);
-document
-  .getElementById("attendance-company")
-  .addEventListener("change", updateAttendanceHeader);
-
-
-// Function to update attendance header text
-function updateAttendanceHeader() {
-  const type = document.getElementById("attendance-type").value;
-  const company = document.getElementById("attendance-company").value;
-
-  let typeText = "Time Log";
-  if (type === "users-active") {
-    typeText = "Users Active";
-  } else if (type === "users-inactive") {
-    typeText = "Users Inactive";
-  }
-
-  let companyText = "By Company";
-  if (company === "lorem-ipsum-1") {
-    companyText = "Lorem Ipsum 1";
-  } else if (company === "lorem-ipsum-2") {
-    companyText = "Lorem Ipsum 2";
-  }
-
-  // Store the text instead of updating an HTML element
-  attendanceHeaderText = `${typeText} > ${companyText}`;
-}
-
 // Filter attendance based on dropdown selections
 function filterAttendance() {
   const type = document.getElementById("attendance-type").value; // Correctly get the type
