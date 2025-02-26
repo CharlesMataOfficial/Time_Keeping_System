@@ -92,38 +92,32 @@ class CustomUserAdmin(UserAdmin):
 
 class TimeEntryAdmin(admin.ModelAdmin):
     list_display = (
-        "user",
-        "user__first_name",
-        "user__surname",
-        "time_in",
-        "time_out",
-        "hours_worked",
-        "is_late",
+        'user__first_name', 'user__surname', 'user__employee_id',
+        'time_in', 'time_out', 'hours_worked', 'is_late',
+        'formatted_minutes_late', 'view_image_path'
     )
-    search_fields = (
-        "user__employee_id",
-        "user__first_name",
-        "user__surname",
-    )
-    ordering = ("-time_in",)
-    list_filter = ("time_in", "time_out", "is_late")
+    search_fields = ('user__first_name', 'user__surname', 'user__employee_id')
+    list_filter = ('is_late', 'time_in')
 
-    fieldsets = (
-        (None, {
-            'fields': (
-                'user',
-                'time_in',
-                'time_out',
-                'hours_worked',
-                'is_late',
-                'image_path',
-                'view_image_path',
-            )
-        }),
-    )
+    fieldsets = [
+        ('User Information', {'fields': ['user']}),
+        ('Time Information', {'fields': ['time_in', 'time_out', 'hours_worked']}),
+        ('Status', {'fields': ['is_late', 'minutes_late']}),
+        ('Other', {'fields': ['image_path']}),
+    ]
 
     autocomplete_fields = ['user']
     readonly_fields = ('hours_worked', 'view_image_path',)
+
+    def formatted_minutes_late(self, obj):
+        if obj.minutes_late > 0:
+            return format_html('<span style="color: red;">{} mins late</span>', obj.minutes_late)
+        elif obj.minutes_late < 0:
+            return format_html('<span style="color: green;">{} mins early</span>', abs(obj.minutes_late))
+        else:
+            return "On time"
+    formatted_minutes_late.short_description = 'Arrival Status'
+    formatted_minutes_late.admin_order_field = 'minutes_late'
 
     def save_model(self, request, obj, form, change):
         if obj.time_in and obj.time_out:

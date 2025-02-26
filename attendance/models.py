@@ -149,9 +149,21 @@ class CustomUser(AbstractUser):
         if self.schedule_group:
             return self.schedule_group.get_schedule_for_day(day_code)
         else:
-            # Create a temporary schedule group to use the default logic
-            temp_group = ScheduleGroup()
-            return temp_group.get_schedule_for_day(day_code)
+            # Create default schedules based on the day without using relationships
+            if day_code == "wed":  # Wednesday
+                return TimePreset(
+                    name="Default Wednesday",
+                    start_time=datetime.time(8, 0),  # 8:00 AM
+                    end_time=datetime.time(17, 0),   # 5:00 PM
+                    grace_period_minutes=5
+                )
+            else:  # Mon, Tue, Thu, Fri, Sat, Sun
+                return TimePreset(
+                    name="Default Weekday",
+                    start_time=datetime.time(8, 0),  # 8:00 AM
+                    end_time=datetime.time(19, 0),   # 7:00 PM
+                    grace_period_minutes=5
+                )
 
     class Meta:
         db_table = "django_users"  # Changed from 'users'
@@ -166,6 +178,7 @@ class TimeEntry(models.Model):
     time_out = models.DateTimeField(null=True, blank=True)
     hours_worked = models.FloatField(null=True, blank=True)
     is_late = models.BooleanField(default=False)
+    minutes_late = models.IntegerField(default=0)  # New field: positive for late, negative for early
     last_modified = models.DateTimeField(auto_now=True)
     image_path = models.CharField(max_length=255, null=True, blank=True)
 
@@ -180,16 +193,50 @@ class TimeEntry(models.Model):
             delta = self.time_out - self.time_in
             self.hours_worked = round(delta.total_seconds() / 3600, 2)
 
-        # Use user's time preset for lateness check if available
+        # Use user's schedule for lateness check if available
         if self.time_in:
-            time_in_local = self.time_in
+            try:
+                time_in_local = self.time_in
+                day_of_week = time_in_local.weekday()  # 0=Monday, 6=Sunday
+                day_mapping = {
+                    0: "mon", 1: "tue", 2: "wed", 3: "thu",
+                    4: "fri", 5: "sat", 6: "sun",
+                }
+                day_code = day_mapping[day_of_week]
 
-            if self.user.time_preset:
-                expected_start = self.user.time_preset.start_time
-            else:
-                expected_start = datetime.time(8, 0)  # Default expected start
+                # Get schedule using get_schedule_for_day
+                preset = self.user.get_schedule_for_day(day_code)
+                if preset:
+                    expected_start = preset.start_time
+                    grace_period = datetime.timedelta(minutes=preset.grace_period_minutes)
 
-            self.is_late = time_in_local.time() > expected_start
+                    # Create datetime with schedule time
+                    naive_expected_time = datetime.datetime.combine(
+                        time_in_local.date(), expected_start
+                    )
+
+                    # Make timezone-aware
+                    expected_start_dt = timezone.make_aware(naive_expected_time)
+                    expected_with_grace = expected_start_dt + grace_period
+
+                    # Ensure time_in_local is timezone aware for comparison
+                    if not timezone.is_aware(time_in_local):
+                        time_in_local = timezone.make_aware(time_in_local)
+
+                    # Now both datetimes are timezone-aware for safe comparison
+                    self.is_late = time_in_local > expected_with_grace
+
+                    # Calculate minutes late/early
+                    time_diff = time_in_local - expected_start_dt
+                    self.minutes_late = round(time_diff.total_seconds() / 60)
+                else:
+                    self.is_late = False
+                    self.minutes_late = 0
+            except Exception as e:
+                # In case of errors, don't mark as late
+                self.is_late = False
+                self.minutes_late = 0
+                print(f"Error in clock_out: {e}")
 
         self.save()
 
@@ -202,39 +249,47 @@ class TimeEntry(models.Model):
         new_entry = cls.objects.create(user=user)
 
         # Calculate lateness based on schedule
-        time_in_local = new_entry.time_in
-        day_of_week = time_in_local.weekday()  # 0=Monday, 6=Sunday
-        day_mapping = {
-            0: "mon",
-            1: "tue",
-            2: "wed",
-            3: "thu",
-            4: "fri",
-            5: "sat",
-            6: "sun",
-        }
-        day_code = day_mapping[day_of_week]
+        try:
+            time_in_local = new_entry.time_in
+            day_of_week = time_in_local.weekday()  # 0=Monday, 6=Sunday
+            day_mapping = {
+                0: "mon", 1: "tue", 2: "wed", 3: "thu",
+                4: "fri", 5: "sat", 6: "sun",
+            }
+            day_code = day_mapping[day_of_week]
 
-        # Get the appropriate schedule
-        if user.schedule_group:
-            preset = user.schedule_group.get_schedule_for_day(day_code)
+            # Get the appropriate schedule
+            preset = user.get_schedule_for_day(day_code)
             if preset:
-                expected_start = preset.start_time
+                # Create a datetime object with schedule time
+                naive_expected_time = datetime.datetime.combine(
+                    time_in_local.date(), preset.start_time
+                )
+
+                # Make timezone-aware
+                expected_time = timezone.make_aware(naive_expected_time)
+
+                # Ensure time_in_local is timezone-aware
+                if not timezone.is_aware(time_in_local):
+                    time_in_local = timezone.make_aware(time_in_local)
+
+                # Calculate grace period
                 grace_period = datetime.timedelta(minutes=preset.grace_period_minutes)
-            else:
-                expected_start = datetime.time(8, 0)  # Default
-                grace_period = datetime.timedelta(minutes=5)  # Default
-        else:
-            expected_start = datetime.time(8, 0)  # Default
-            grace_period = datetime.timedelta(minutes=5)  # Default
+                expected_time_with_grace = expected_time + grace_period
 
-        expected_start_dt = datetime.datetime.combine(
-            time_in_local.date(), expected_start
-        )
-        expected_start_with_grace = expected_start_dt + grace_period
+                # Both datetimes are now timezone-aware for safe comparison
+                new_entry.is_late = time_in_local > expected_time_with_grace
 
-        new_entry.is_late = time_in_local > expected_start_with_grace
-        new_entry.save()
+                # Calculate minutes late
+                time_diff = time_in_local - expected_time
+                new_entry.minutes_late = round(time_diff.total_seconds() / 60)
+                new_entry.save()
+        except Exception as e:
+            # If timezone handling fails, set reasonable defaults
+            new_entry.is_late = False
+            new_entry.minutes_late = 0
+            new_entry.save()
+            print(f"Error in clock_in: {e}")
 
         return new_entry
 

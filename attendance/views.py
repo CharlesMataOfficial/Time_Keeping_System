@@ -670,3 +670,65 @@ def attendance_list_json(request):
         data = []
 
     return JsonResponse({'attendance_list': data, 'attendance_type': attendance_type})
+
+@login_required
+@require_GET
+def dashboard_data(request):
+    """Return data for dashboard"""
+    now = timezone.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
+
+    # Get all entries for today
+    todays_entries = TimeEntry.objects.filter(
+        time_in__gte=today_start,
+        time_in__lt=today_end
+    ).select_related('user', 'user__company', 'user__schedule_group')
+
+    processed_entries = []
+    late_count = 0
+
+    for entry in todays_entries:
+        user = entry.user
+        time_in_local = entry.time_in
+
+        # Get user name or default to ID
+        first_name = user.first_name or ""
+        surname = user.surname or ""
+        full_name = f"{first_name} {surname}".strip()
+        if not full_name:
+            full_name = f"User {user.employee_id}"
+
+        # Use the stored minutes_late value
+        if entry.is_late:
+            late_count += 1
+
+        processed_entries.append({
+            'employee_id': user.employee_id,
+            'name': full_name,
+            'company': user.company.name if user.company else "",
+            'time_in': time_in_local.strftime("%I:%M %p"),
+            'time_out': entry.time_out.strftime("%I:%M %p") if entry.time_out else None,
+            'minutes_diff': entry.minutes_late,  # Use the stored value
+            'is_late': entry.is_late
+        })
+
+    # Sort entries - late ones by how late they are (descending)
+    late_entries = sorted(
+        [e for e in processed_entries if e['is_late']],
+        key=lambda x: x['minutes_diff'],
+        reverse=True
+    )[:5]
+
+    # Sort entries - early ones by how early they are (ascending)
+    early_entries = sorted(
+        [e for e in processed_entries if not e['is_late']],
+        key=lambda x: x['minutes_diff']
+    )[:5]
+
+    return JsonResponse({
+        'today_entries': processed_entries,
+        'top_late': late_entries,
+        'top_early': early_entries,
+        'late_count': late_count
+    })

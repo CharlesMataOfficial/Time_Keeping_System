@@ -36,9 +36,63 @@ function navigateTo(screenId) {
 
   if (screenId === "announcement") {
     fetchAnnouncements();
+  } else if (screenId === "dashboard") {
+    loadDashboardData();
   }
 }
 
+// Add this function to load dashboard data
+function loadDashboardData() {
+  fetch("/dashboard-data/")
+    .then((response) => response.json())
+    .then((data) => {
+      // Update total time in and time out counts
+      document.getElementById("total-time-in").textContent = data.today_entries.length;
+      const timeOutCount = data.today_entries.filter(entry => entry.time_out).length;
+      document.getElementById("total-time-out").textContent = timeOutCount;
+
+      // Update late employees count
+      const lateCountElement = document.querySelector(".total-late-employees");
+      if (lateCountElement) {
+        lateCountElement.innerHTML = `
+          <h2>Total Number of Late Employees:</h2>
+          <p id="total-late-count">${data.late_count}</p>
+        `;
+      }
+
+      // Display late employees
+      const lateEmployeesList = document.querySelector(".late-employees-list");
+      lateEmployeesList.innerHTML = "";
+
+      if (data.top_late.length === 0) {
+        lateEmployeesList.innerHTML = "<p>No late employees today</p>";
+      } else {
+        data.top_late.forEach((employee) => {
+          // Use the minutes_diff value from the server
+          const minutesLate = Math.abs(Math.round(employee.minutes_diff || 0));
+          lateEmployeesList.innerHTML += `<p>${employee.name}: ${minutesLate} mins late</p>`;
+        });
+      }
+
+      // Display early birds
+      const earlyBirdsList = document.querySelector(".early-birds-list");
+      earlyBirdsList.innerHTML = "";
+
+      if (data.top_early.length === 0) {
+        earlyBirdsList.innerHTML = "<p>No early birds today</p>";
+      } else {
+        data.top_early.forEach((employee) => {
+          // For early birds, the minutes_diff will be negative or 0
+          // Take absolute value to show as "minutes early"
+          const minutesEarly = Math.abs(Math.round(employee.minutes_diff || 0));
+          earlyBirdsList.innerHTML += `<p>${employee.name}: ${minutesEarly} mins early</p>`;
+        });
+      }
+    })
+    .catch((error) => {
+      console.error("Error loading dashboard data:", error);
+    });
+}
 
 // Mouse Click - Left Arrow (`<`) Button
 document.getElementById("left-arrow")?.addEventListener("click", function () {
@@ -89,6 +143,10 @@ document.addEventListener("DOMContentLoaded", function () {
         navigateTo(menuOrder[currentIndex + 1]);
       }
     });
+  }
+
+  if (currentScreen === "dashboard") {
+    loadDashboardData();
   }
 });
 
