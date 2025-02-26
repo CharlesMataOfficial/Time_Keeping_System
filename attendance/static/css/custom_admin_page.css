@@ -290,10 +290,10 @@ h2 {
 .late-employees-list {
   width: 100%;
   height: 500px; /* Gawing mas malaki ang height */
-  background: rgba(240, 240, 240, 0.9);
+  /* background: rgba(240, 240, 240, 0.9); */
   font-size: 14px;
   color: #333;
-  margin-bottom: 5px; /* Paliitin ang espasyo sa pagitan */
+  /* margin-bottom: 5px; */ /* Paliitin ang espasyo sa pagitan */
   overflow-y: auto; /* Enables scrolling if names exceed space */
 }
 
@@ -1183,15 +1183,15 @@ select option:checked {
       margin: 0 auto;
     }
     th, td {
-      border: 1px solid #ccc;
+      /* border: 1px solid #ccc; */
       padding: 10px;
       text-align: left;
     }
     th {
-      background-color: #f4f4f4;
+      /* background-color: #f4f4f4; */
     }
     tr:nth-child(even) {
-      background-color: #fafafa;
+      /* background-color: #fafafa; */
     }
     tr:hover {
       background-color: #f1f1f1;
@@ -1222,8 +1222,8 @@ select option:checked {
   width: 100%;
   border-collapse: collapse;
   margin: 0;
-  background-color: rgba(240, 240, 240, 0.9);
-  border-radius: 5px;
+  /* background-color: rgba(240, 240, 240, 0.9); */
+  /* border-radius: 5px; */
   table-layout: fixed; /* This helps maintain column widths */
 }
 
@@ -1235,7 +1235,7 @@ select option:checked {
 }
 
 .dashboard-table th {
-  background-color: rgba(220, 220, 220, 0.9);
+  /* background-color: rgba(220, 220, 220, 0.9); */
   color: #333;
   font-size: 12px;
   font-weight: bold;
@@ -1274,6 +1274,7 @@ select option:checked {
 .early-birds-list {
   max-height: 180px;
   overflow-y: auto;
+  overflow-x: hidden; /* Hide horizontal scrollbar */
 }
 
 /* Fix table displays within scrolling containers */
@@ -1300,6 +1301,7 @@ select option:checked {
 .dashboard-table tbody {
   display: block;
   overflow-y: auto;
+  overflow-x: hidden; /* Prevent horizontal scroll */
   width: 100%;
   max-height: 180px;
 }
@@ -1318,6 +1320,7 @@ select option:checked {
   border-bottom: 1px solid #eee;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap; /* Ensure text truncates instead of causing horizontal scroll */
 }
 
 /* Set column widths */
@@ -1334,7 +1337,7 @@ select option:checked {
 
 /* Other styling */
 .dashboard-table th {
-  background-color: rgba(220, 220, 220, 0.9);
+  /* background-color: rgba(220, 220, 220, 0.9); */
   color: #333;
   font-size: 12px;
   font-weight: bold;
