@@ -96,22 +96,6 @@ function loadDashboardData() {
     });
 }
 
-// Mouse Click - Left Arrow (`<`) Button
-document.getElementById("left-arrow")?.addEventListener("click", function () {
-  let currentIndex = menuOrder.indexOf(currentScreen);
-  if (currentIndex > 0) {
-    navigateTo(menuOrder[currentIndex - 1]);
-  }
-});
-
-// Mouse Click - Right Arrow (`>`) Button
-document.getElementById("right-arrow")?.addEventListener("click", function () {
-  let currentIndex = menuOrder.indexOf(currentScreen);
-  if (currentIndex < menuOrder.length - 1) {
-    navigateTo(menuOrder[currentIndex + 1]);
-  }
-});
-
 // Keyboard Shortcut: Left Arrow (`←`) and Right Arrow (`→`) to navigate
 document.addEventListener("keydown", function (event) {
   let currentIndex = menuOrder.indexOf(currentScreen);
