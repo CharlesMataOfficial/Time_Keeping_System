@@ -264,26 +264,25 @@ function closeModal(modalId) {
 
 // Function to export data by date
 function exportDataByDate() {
-  const fileName = document.getElementById("dateFileName").value.trim();
-  const startDate = document.getElementById("startDate").value;
-  const endDate = document.getElementById("endDate").value;
+  // Get form input values
+  const fileName = document.getElementById('dateFileName').value || 'time_entries_export';
+  const startDate = document.getElementById('startDate').value;
+  const endDate = document.getElementById('endDate').value;
 
-  if (!fileName) {
-      alert("Please enter a file name.");
-      return;
-  }
-
+  // Validate dates
   if (!startDate || !endDate) {
-      alert("Please select a start and end date.");
+      alert('Please select both start and end dates.');
       return;
   }
 
-  console.log(`Exporting data by Date - File: ${fileName}, Range: ${startDate} to ${endDate}`);
+  // Construct the export URL
+  const exportUrl = `/export-time-entries-to-excel/?start_date=${startDate}&end_date=${endDate}&file_name=${fileName}`;
 
-  // Close modal after export
-  closeModal("exportDateModal");
-
-  // TODO: Add actual export logic (e.g., generate and download Excel)
+  // Trigger download
+  window.open(exportUrl, '_blank');
+  
+  // Close the modal
+  closeModal('exportDateModal');
 }
 
 // Function to export data by Employee ID
