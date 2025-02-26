@@ -159,48 +159,6 @@ function updateAttendanceHeader() {
   attendanceHeaderText = `${typeText} > ${companyText}`;
 }
 
-// Filter attendance based on dropdown selections
-function filterAttendance() {
-  const type = document.getElementById("attendance-type").value; // Correctly get the type
-  const company = document.getElementById("attendance-company").value; // Get the company value
-  const department = document.getElementById("attendance-department").value; // Get the department value
-
-  // Define the options for each dropdown
-  const typeOptions = {
-    "time-log": "Time Log",
-    "users-active": "Users Active",
-    "users-inactive": "Users Inactive",
-  };
-
-  const companyOptions = {
-    agridom: "Agridom Solutions Corp.",
-    farmtech: "Farmtech Agriland Corporation",
-    subang: "Subang Farm",
-    djas: "DJAS Servitrade Corporation",
-    "agri-online": "AGRI Online",
-    sunfood: "Sunfood Marketing Inc.",
-    all: "All companies",
-  };
-
-  const departmentOptions = {
-    all: "All departments",
-    hr: "Human Resources",
-    it: "IT Department",
-    finance: "Finance",
-  };
-
-  // Get the selected text for each dropdown option
-  const selectedType = typeOptions[type] || "Time Log";
-  const selectedCompany = companyOptions[company] || "All companies";
-  const selectedDepartment = departmentOptions[department] || "All departments";
-
-  // Generate the filter text
-  const filterText = `Filtering attendance for:\n${selectedType} > ${selectedCompany} > ${selectedDepartment}`;
-
-  // Show the filter information in a prompt
-  alert(filterText);
-}
-
 // Utility: Get CSRF token (if needed)
 function getCookie(name) {
   let cookieValue = null;
@@ -383,6 +341,7 @@ function viewAnnouncements() {
   }
 }
 
+// Fix for filterAttendance function in custom_admin_page.js
 function filterAttendance() {
   // Get filter values from dropdowns and search field
   const typeElem = document.getElementById("attendance-type");
@@ -522,16 +481,6 @@ function filterAttendance() {
     })
     .catch(error => console.error("Error fetching attendance data:", error));
 }
-
-// Update the company select value to use alias when available
-document.getElementById("attendance-company").addEventListener("change", function () {
-  let selectedOption = this.options[this.selectedIndex];
-  let alias = selectedOption.getAttribute("data-alias");
-  if (alias) {
-    this.value = alias; // This sends the alias to the backend.
-  }
-});
-// CONVERT TO CSS
 
 // Apply the gray styling for unselected options
 document.addEventListener("DOMContentLoaded", function () {
