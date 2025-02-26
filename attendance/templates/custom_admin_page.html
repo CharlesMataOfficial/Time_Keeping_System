@@ -165,40 +165,45 @@
       <div id="log_rectangle"></div>
     </div>
 
- <!-- Attendance List Screen -->
-  <div id="attendance-list" class="screen">
-    <h1>Attendance List</h1>
-    <div class="attendance-dropdown-wrapper">
-      <div class="attendance-dropdown-container">
-        <select name="attendance_type" id="attendance-type">
-          <option value="time-log">Time Log</option>
-          <option value="users-active">Users Active</option>
-          <option value="users-inactive">Users Inactive</option>
-        </select>
-        <select name="attendance_company" id="attendance-company">
-          <option value="" disabled selected class="default-option">By Company:</option>
-          <option value="all">All companies</option>
-          <option value="ASC" data-alias="AgriDOM">Agridom Solutions Corp.</option>
-          <option value="SFGCI" data-alias="SFGC">SF Group of Companies</option>
-          <option value="DJAS" data-alias="DSC">DJAS Servicetrade Corporation</option>
-          <option value="FAC">Farmtech Agriland Corporation</option>
-          <option value="GTI">Genius Technologies Inc</option>
-          <option value="SMI">Sunfood Marketing Inc.</option>
-        </select>
-        <select name="attendance_department" id="attendance-department">
-          <option disabled selected class="default-option">By Department:</option>
-          <option value="all">All departments</option>
-          <option value="hr">Human Resources</option>
-          <option value="it">IT Department</option>
-          <option value="finance">Finance</option>
-        </select>
-        <button type="button" class="go-button" onclick="filterAttendance()">Go</button>
-      </div>
+<!-- Attendance List Screen -->
+<div id="attendance-list" class="screen">
+  <h1>Attendance List</h1>
+  <div class="attendance-dropdown-wrapper">
+    <div class="attendance-dropdown-container">
+      <div class="attendance-search-wrapper">
+        <input type="text" id="attendance-search" placeholder="Search by name">
+      </div>       
+      <select name="attendance_type" id="attendance-type">
+        <option value="time-log">Time Log</option>
+        <option value="users-active">Users Active</option>
+        <option value="users-inactive">Users Inactive</option>
+      </select>
+      <select name="attendance_company" id="attendance-company">
+        <option value="" disabled selected class="default-option">By Company:</option>
+        <option value="all">All companies</option>
+        <option value="ASC" data-alias="AgriDOM">Agridom Solutions Corp.</option>
+        <option value="SFGCI" data-alias="SFGC">SF Group of Companies</option>
+        <option value="DJAS" data-alias="DSC">DJAS Servicetrade Corporation</option>
+        <option value="FAC">Farmtech Agriland Corporation</option>
+        <option value="GTI">Genius Technologies Inc</option>
+        <option value="SMI">Sunfood Marketing Inc.</option>
+      </select>
+      <select name="attendance_department" id="attendance-department">
+        <option disabled selected class="default-option">By Department:</option>
+        <option value="all">All departments</option>
+        <option value="hr">Human Resources</option>
+        <option value="it">IT Department</option>
+        <option value="finance">Finance</option>
+      </select>
+      <button type="button" class="go-button" onclick="filterAttendance()">Go</button>
     </div>
-
-    <!-- Fetched data will be rendered here -->
-    <div id="attendance_rectangle"></div>
   </div>
+
+  <!-- Fetched data will be rendered here -->
+  <div id="attendance_rectangle"></div>
+</div>
+
+
 
     <!-- Export Excel Screen -->
     <div id="export-excel" class="screen" style="display: none">

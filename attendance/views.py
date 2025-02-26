@@ -550,22 +550,22 @@ def attendance_list_json(request):
     attendance_type = request.GET.get('attendance_type', 'time-log')
     company_code = request.GET.get('attendance_company', 'all')
     department_code = request.GET.get('attendance_department', 'all')
+    # 1. Get the search term from the query parameters
+    search_query = request.GET.get('search', '').strip()
 
     if attendance_type == 'time-log':
         qs = TimeEntry.objects.select_related('user', 'user__company', 'user__position')\
             .all().order_by('-time_in')
 
         if company_code != 'all':
-            # First try a direct lookup using the received value
             names = COMPANY_CHOICES.get(company_code)
             if not names:
-                # If not found, perform a reverse lookup to find which tuple contains the alias.
+                # Reverse lookup if the code isn't directly in COMPANY_CHOICES
                 for key, names_tuple in COMPANY_CHOICES.items():
                     if company_code in names_tuple:
                         names = names_tuple
                         break
             if names:
-                # Use case-insensitive lookup for each name in the tuple.
                 query = Q(user__company__name__iexact=names[0])
                 if len(names) > 1:
                     query |= Q(user__company__name__iexact=names[1])
@@ -575,6 +575,13 @@ def attendance_list_json(request):
 
         if department_code != 'all':
             qs = qs.filter(user__position__name=department_code)
+
+        # 2. Filter by search term if provided
+        if search_query:
+            qs = qs.filter(
+                Q(user__first_name__icontains=search_query) |
+                Q(user__surname__icontains=search_query)
+            )
 
         data = [
             {
@@ -589,6 +596,7 @@ def attendance_list_json(request):
 
     elif attendance_type == 'users-active':
         qs = CustomUser.objects.filter(timeentry__time_out__isnull=True).distinct()
+
         if company_code != 'all':
             names = COMPANY_CHOICES.get(company_code)
             if not names:
@@ -606,6 +614,13 @@ def attendance_list_json(request):
 
         if department_code != 'all':
             qs = qs.filter(position__name=department_code)
+
+        # Filter by search term
+        if search_query:
+            qs = qs.filter(
+                Q(first_name__icontains=search_query) |
+                Q(surname__icontains=search_query)
+            )
 
         data = [
             {
@@ -617,6 +632,7 @@ def attendance_list_json(request):
 
     elif attendance_type == 'users-inactive':
         qs = CustomUser.objects.exclude(timeentry__time_out__isnull=True).distinct()
+
         if company_code != 'all':
             names = COMPANY_CHOICES.get(company_code)
             if not names:
@@ -635,6 +651,13 @@ def attendance_list_json(request):
         if department_code != 'all':
             qs = qs.filter(position__name=department_code)
 
+        # Filter by search term
+        if search_query:
+            qs = qs.filter(
+                Q(first_name__icontains=search_query) |
+                Q(surname__icontains=search_query)
+            )
+
         data = [
             {
                 'employee_id': user.employee_id,
@@ -642,6 +665,7 @@ def attendance_list_json(request):
             }
             for user in qs
         ]
+
     else:
         data = []
 

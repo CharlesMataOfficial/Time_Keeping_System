@@ -93,48 +93,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-// Filter attendance based on dropdown selections
-function filterAttendance() {
-  const type = document.getElementById("attendance-type").value; // Correctly get the type
-  const company = document.getElementById("attendance-company").value; // Get the company value
-  const department = document.getElementById("attendance-department").value; // Get the department value
-
-  // Define the options for each dropdown
-  const typeOptions = {
-    "time-log": "Time Log",
-    "users-active": "Users Active",
-    "users-inactive": "Users Inactive",
-  };
-
-  const companyOptions = {
-    agridom: "Agridom Solutions Corp.",
-    farmtech: "Farmtech Agriland Corporation",
-    subang: "Subang Farm",
-    djas: "DJAS Servitrade Corporation",
-    "agri-online": "AGRI Online",
-    sunfood: "Sunfood Marketing Inc.",
-    all: "All companies",
-  };
-
-  const departmentOptions = {
-    all: "All departments",
-    hr: "Human Resources",
-    it: "IT Department",
-    finance: "Finance",
-  };
-
-  // Get the selected text for each dropdown option
-  const selectedType = typeOptions[type] || "Time Log";
-  const selectedCompany = companyOptions[company] || "All companies";
-  const selectedDepartment = departmentOptions[department] || "All departments";
-
-  // Generate the filter text
-  const filterText = `Filtering attendance for:\n${selectedType} > ${selectedCompany} > ${selectedDepartment}`;
-
-  // Show the filter information in a prompt
-  alert(filterText);
-}
-
 // Work Hours Functions
 function addWorkHours() {
   // Collect input values
@@ -395,86 +353,144 @@ function viewAnnouncements() {
   }
 }
 
-// Store the header text without displaying it in the HTML
-let attendanceHeaderText = "Time Log > By Company";
-
 function filterAttendance() {
-  // Get the selected filter values
-  const attendanceType = document.getElementById('attendance-type').value;
-  const attendanceCompany = document.getElementById('attendance-company').value;
-  const attendanceDepartment = document.getElementById('attendance-department').value;
+  // Get filter values from dropdowns and search field
+  const typeElem = document.getElementById("attendance-type");
+  const companyElem = document.getElementById("attendance-company");
+  const departmentElem = document.getElementById("attendance-department");
+  const searchElem = document.getElementById("attendance-search");
 
-  // Build the URL with query parameters
-  const url = `/attendance-list-json/?attendance_type=${attendanceType}&attendance_company=${attendanceCompany}&attendance_department=${attendanceDepartment}`;
+  // Ensure these elements exist
+  if (!typeElem || !companyElem || !departmentElem || !searchElem) {
+    console.error("One or more filter elements not found.");
+    return;
+  }
 
-  // Use Fetch API to get data from the backend
-  fetch(url)
-    .then(response => response.json())
-    .then(data => {
-      const container = document.getElementById('attendance_rectangle');
-      container.innerHTML = '';  // Clear previous data
+  const type = typeElem.value;
+  const company = companyElem.value;
+  const department = departmentElem.value;
+  const search = searchElem.value;
 
-      if (data.attendance_type === 'time-log') {
-        // Create table for time-log data
-        let table = document.createElement('table');
-        table.innerHTML = `
-          <thead>
-            <tr>
-              <th>Employee ID</th>
-              <th>Name</th>
-              <th>Time In</th>
-              <th>Time Out</th>
-              <th>Hours Worked</th>
-            </tr>
-          </thead>
-        `;
-        let tbody = document.createElement('tbody');
-        if (data.attendance_list.length) {
-          data.attendance_list.forEach(entry => {
-            let row = document.createElement('tr');
-            row.innerHTML = `
-              <td>${entry.employee_id}</td>
-              <td>${entry.name}</td>
-              <td>${entry.time_in}</td>
-              <td>${entry.time_out}</td>
-              <td>${entry.hours_worked}</td>
-            `;
-            tbody.appendChild(row);
-          });
-        } else {
-          tbody.innerHTML = `<tr><td colspan="5">No time entries found.</td></tr>`;
-        }
-        table.appendChild(tbody);
-        container.appendChild(table);
-      } else {
-        // For users-active and users-inactive, create a table with employee id and name columns
-        let table = document.createElement('table');
-        table.innerHTML = `
-          <thead>
-            <tr>
-              <th>Employee ID</th>
-              <th>Name</th>
-            </tr>
-          </thead>
-        `;
-        let tbody = document.createElement('tbody');
-        if (data.attendance_list.length) {
-          data.attendance_list.forEach(user => {
-            let row = document.createElement('tr');
-            row.innerHTML = `
-              <td>${user.employee_id}</td>
-              <td>${user.name}</td>
-            `;
-            tbody.appendChild(row);
-          });
-        } else {
-          tbody.innerHTML = `<tr><td colspan="2">No users found.</td></tr>`;
-        }
-        table.appendChild(tbody);
-        container.appendChild(table);
+  // Build query parameters (including search)
+  const params = new URLSearchParams({
+    attendance_type: type,
+    attendance_company: company,
+    attendance_department: department,
+    search: search
+  });
+
+  // Log the request URL for debugging
+  const requestUrl = '/attendance_list_json/?' + params.toString();
+  console.log('Requesting:', requestUrl);
+
+  fetch(requestUrl)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("Network response was not OK");
       }
+      return response.json();
     })
-    .catch(error => console.error('Error fetching attendance data:', error));
+    .then(data => {
+      console.log("Fetched data:", data);
+
+      // Get the container element for the table
+      const container = document.getElementById("attendance_rectangle");
+      if (!container) {
+        console.error("Container with ID 'attendance_rectangle' not found.");
+        return;
+      }
+      container.innerHTML = "";
+
+      // Check if data exists
+      if (!data.attendance_list || data.attendance_list.length === 0) {
+        container.innerHTML = "<p>No records found.</p>";
+        return;
+      }
+
+      // Create a table to display the attendance data
+      const table = document.createElement("table");
+      table.style.width = "100%";
+      table.style.borderCollapse = "collapse";
+      table.style.marginTop = "10px";
+
+      // Create table header based on attendance type
+      const thead = document.createElement("thead");
+      const headerRow = document.createElement("tr");
+      let headers = [];
+
+      if (data.attendance_type === "time-log") {
+        headers = ["Employee ID", "Name", "Time In", "Time Out", "Hours Worked"];
+      } else {
+        headers = ["Employee ID", "Name"];
+      }
+
+      headers.forEach(headerText => {
+        const th = document.createElement("th");
+        th.textContent = headerText;
+        th.style.border = "1px solid #ddd";
+        th.style.padding = "8px";
+        th.style.backgroundColor = "#f2f2f2";
+        th.style.textAlign = "center";
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      // Create table body with returned attendance data
+      const tbody = document.createElement("tbody");
+      data.attendance_list.forEach(item => {
+        const row = document.createElement("tr");
+
+        if (data.attendance_type === "time-log") {
+          const cellEmployee = document.createElement("td");
+          cellEmployee.textContent = item.employee_id;
+          cellEmployee.style.border = "1px solid #ddd";
+          cellEmployee.style.padding = "8px";
+          row.appendChild(cellEmployee);
+
+          const cellName = document.createElement("td");
+          cellName.textContent = item.name;
+          cellName.style.border = "1px solid #ddd";
+          cellName.style.padding = "8px";
+          row.appendChild(cellName);
+
+          const cellTimeIn = document.createElement("td");
+          cellTimeIn.textContent = item.time_in;
+          cellTimeIn.style.border = "1px solid #ddd";
+          cellTimeIn.style.padding = "8px";
+          row.appendChild(cellTimeIn);
+
+          const cellTimeOut = document.createElement("td");
+          cellTimeOut.textContent = item.time_out;
+          cellTimeOut.style.border = "1px solid #ddd";
+          cellTimeOut.style.padding = "8px";
+          row.appendChild(cellTimeOut);
+
+          const cellHours = document.createElement("td");
+          cellHours.textContent = item.hours_worked;
+          cellHours.style.border = "1px solid #ddd";
+          cellHours.style.padding = "8px";
+          row.appendChild(cellHours);
+        } else {
+          const cellEmployee = document.createElement("td");
+          cellEmployee.textContent = item.employee_id;
+          cellEmployee.style.border = "1px solid #ddd";
+          cellEmployee.style.padding = "8px";
+          row.appendChild(cellEmployee);
+
+          const cellName = document.createElement("td");
+          cellName.textContent = item.name;
+          cellName.style.border = "1px solid #ddd";
+          cellName.style.padding = "8px";
+          row.appendChild(cellName);
+        }
+        tbody.appendChild(row);
+      });
+
+      table.appendChild(tbody);
+      container.appendChild(table);
+    })
+    .catch(error => console.error("Error fetching attendance data:", error));
 }
 
 // Update the company select value to use alias when available
