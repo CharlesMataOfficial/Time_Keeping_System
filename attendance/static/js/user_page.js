@@ -439,9 +439,9 @@ function updateBirthdays(birthdays) {
     const tbody = document.createElement('tbody');
 
     birthdays.forEach((user) => {
-      const fullText = `${user.first_name} ${user.surname}`;
+      const fullText = `${user.first_name} ${user.surname}'s birthday! 🥳`;
       const truncatedText =
-        fullText.length > 30 ? fullText.substring(0, 30) + "..." : fullText;
+        fullText.length > 60 ? fullText.substring(0, 60) + "..." : fullText;
 
       // Create a table row for each birthday
       const tr = document.createElement('tr');
@@ -453,7 +453,7 @@ function updateBirthdays(birthdays) {
       td.appendChild(span);
 
       // Add a "See more/See less" link if needed
-      if (fullText.length > 30) {
+      if (fullText.length > 60) {
         const seeMore = document.createElement('a');
         seeMore.href = '#';
         seeMore.style.marginLeft = '5px';
@@ -504,9 +504,9 @@ function updateMilestones(milestones) {
     const tbody = document.createElement('tbody');
 
     milestones.forEach((user) => {
-      const fullText = `${user.first_name} ${user.surname} (${user.years} year${user.years > 1 ? "s" : ""})`;
+      const fullText = `${user.first_name} ${user.surname} \n${user.years} year${user.years > 1 ? "s" : ""} 🎉`;
       const truncatedText =
-        fullText.length > 30 ? fullText.substring(0, 30) + "..." : fullText;
+        fullText.length > 60 ? fullText.substring(0, 60) + "..." : fullText;
 
       // Create a table row for each milestone
       const tr = document.createElement('tr');
@@ -515,10 +515,11 @@ function updateMilestones(milestones) {
       // Create a span for the milestone text
       const span = document.createElement("span");
       span.textContent = truncatedText;
+      span.style.whiteSpace = "pre-line";
       td.appendChild(span);
 
       // Add a "See more/See less" link if needed
-      if (fullText.length > 30) {
+      if (fullText.length > 60) {
         const seeMore = document.createElement('a');
         seeMore.href = '#';
         seeMore.style.marginLeft = '5px';

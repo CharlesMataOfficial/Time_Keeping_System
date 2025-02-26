@@ -288,7 +288,7 @@ header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
+  /* text-align: center; */
   font-size: 12px; /* Adjust font-size as needed */
   color: #e2e2e2;
   margin-bottom: 10px; /* Adjust space between panels */
@@ -313,12 +313,11 @@ header {
   margin-top: -10px; /* Move Birthdays and Milestones header slightly up */
 }
 
-/* Note styles for Birthdays, Milestones, and Announcements */
-.birthdays .note,
-.milestones .note,
-.announcements .note {
-  background: #e2e2e2;
+/* Note styles for Birthdays, Milestones, and Announcements - consolidated version */
+.note {
+  background: #f9f9f9;
   width: 100%;
+  max-width: 500px;
   margin: 5px;
   position: relative;
   border-radius: 5px;
@@ -326,23 +325,26 @@ header {
   overflow-x: hidden;
 }
 
+.birthdays .note,
+.milestones .note {
+  height: 20vh;
+  max-height: 275px;
+  bottom: -13px;
+  justify-content: center;
+}
+
+.announcements .note {
+  height: 30vh;
+  max-height: 500px;
+  bottom: -13px;
+  justify-content: center;
+}
+
 /* Make sure birthdays and milestones use the same table style */
 .announcements-table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-}
-
-/* Updated cell styling applies to all tables using this class */
-.announcements-table td {
-  border: 1px solid #ddd;
-  padding: 12px;
-  text-align: center;
-  word-wrap: break-word;
-  color: black;
-  font-size: 15px;
-  font-weight: bold;
-  font-family: 'Roboto', sans-serif;
 }
 
 /* Zebra striping for rows */
@@ -365,22 +367,6 @@ header {
   flex-direction: column;
 }
 
-/* Container styles for Announcements */
-.announcements .note {
-  background: #e2e2e2;
-  width: 100%; /* Prevents content from overlapping on the right side */
-  height: 30vh;
-  max-width: 500px;
-  bottom: -13px;
-  max-height: 500px;
-  margin: 5px;
-  justify-content: center;
-  position: relative;
-  border-radius: 5px;
-  overflow-y: auto; /* Vertical scrollbar appears when needed */
-  overflow-x: hidden;
-}
-
 /* Table styles for announcements */
 .announcements-table {
   width: 100%;
@@ -390,13 +376,13 @@ header {
 
 /* Updated cell styling for larger, bold, and modern font */
 .announcements-table td {
-  border: 1px solid #ddd;
-  padding: 12px;
+  /* border: 1px solid #ddd; */
+  padding: 0.75rem;
   text-align: center;
   word-wrap: break-word;
   color: black;               /* Black font on white background */
-  font-size: 15px;            /* Increased font size */
-  font-weight: bold;          /* Bold text */
+  font-size: 13px;            /* Increased font size */
+  /* font-weight: bold; */          /* Bold text */
   font-family: 'Roboto', sans-serif;
 }
 
@@ -444,37 +430,6 @@ header {
 .milestones .panel {
   width: 100%;
   height: 175px; /* You can specify a fixed height here for Birthdays & Milestones */
-}
-
-.birthdays .note {
-  background: #e2e2e2;
-  width: 100%;
-  height: 30vh;
-  max-width: 500px;
-  bottom: -13px;
-  max-height: 175px; /* Match the panel height you defined */
-  margin: 5px;
-  justify-content: center;
-  position: relative;
-  border-radius: 5px;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-/* Container styles for Milestones */
-.milestones .note {
-  background: #e2e2e2;
-  width: 100%;
-  height: 30vh;
-  max-width: 500px;
-  bottom: -13px;
-  max-height: 175px; /* Match the panel height you defined */
-  margin: 5px;
-  justify-content: center;
-  position: relative;
-  border-radius: 5px;
-  overflow-y: auto;
-  overflow-x: hidden;
 }
 
 .sign-out-btn {
