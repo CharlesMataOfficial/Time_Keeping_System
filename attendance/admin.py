@@ -180,9 +180,23 @@ class DayOverrideInline(admin.TabularInline):
     extra = 0
 
 class ScheduleGroupAdmin(admin.ModelAdmin):
-    list_display = ('name', 'default_schedule', 'created_at')
+    list_display = ('name', 'default_schedule', 'get_overrides', 'created_at')
     search_fields = ('name',)
     inlines = [DayOverrideInline]
+
+    def get_overrides(self, obj):
+        overrides = obj.day_overrides.all()
+        if overrides:
+            override_list = [
+                f"{dict(DayOverride.DAY_CHOICES)[o.day]}: "
+                f"{o.time_preset.start_time.strftime('%I:%M %p')} - "
+                f"{o.time_preset.end_time.strftime('%I:%M %p')}"
+                for o in overrides
+            ]
+            return format_html("<br>".join(override_list))
+        return ""
+    get_overrides.short_description = 'Day Overrides'
+    get_overrides.allow_tags = True
 
 # Unregister the group model
 admin.site.unregister(Group)

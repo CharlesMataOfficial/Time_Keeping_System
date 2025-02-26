@@ -7,21 +7,23 @@ from django.core.validators import MinLengthValidator
 from django.forms import ValidationError
 from django.utils import timezone
 
+
 class CustomUserManager(BaseUserManager):
     def get_next_employee_id(self):
         # Get the highest employee ID currently in use
-        highest_id = self.model.objects.aggregate(
-            Max('employee_id'))['employee_id__max']
+        highest_id = self.model.objects.aggregate(Max("employee_id"))[
+            "employee_id__max"
+        ]
 
         if not highest_id:
-            return '000001'  # First employee
+            return "000001"  # First employee
 
         next_id = int(highest_id) + 1
 
         # If next ID would exceed 999999, look for gaps
         if next_id > 999999:
             # Get all employee IDs sorted
-            existing_ids = set(self.model.objects.values_list('employee_id', flat=True))
+            existing_ids = set(self.model.objects.values_list("employee_id", flat=True))
 
             # Find first available gap
             for i in range(1, 1000000):  # From 000001 to 999999
@@ -67,9 +69,10 @@ class Company(models.Model):
         return self.name
 
     class Meta:
-        verbose_name_plural = "Companies"
-        ordering = ['name']
-        db_table = 'django_companies'  # Changed from 'companies'
+        verbose_name_plural = "User Companies"
+        ordering = ["name"]
+        db_table = "django_companies"  # Changed from 'companies'
+
 
 class Position(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -78,8 +81,10 @@ class Position(models.Model):
         return self.name
 
     class Meta:
-        ordering = ['name']
-        db_table = 'django_positions'  # Changed from 'positions'
+        verbose_name_plural = "User Positions"
+        ordering = ["name"]
+        db_table = "django_positions"  # Changed from 'positions'
+
 
 class CustomUser(AbstractUser):
     # Remove the username field
@@ -87,20 +92,24 @@ class CustomUser(AbstractUser):
     employee_id = models.CharField(unique=True, max_length=6)
     first_name = models.CharField(max_length=100, null=True, blank=True)
     surname = models.CharField(max_length=100, null=True, blank=True)
-    company = models.ForeignKey(Company, on_delete=models.SET_NULL, null=True, blank=True)
-    position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True, blank=True)
+    company = models.ForeignKey(
+        Company, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    position = models.ForeignKey(
+        Position, on_delete=models.SET_NULL, null=True, blank=True
+    )
     birth_date = models.DateField(null=True, blank=True)
     date_hired = models.DateField(null=True, blank=True)
     pin = models.CharField(
         max_length=4, validators=[MinLengthValidator(4)], null=True, blank=True
     )
     schedule_group = models.ForeignKey(
-        'ScheduleGroup',
+        "ScheduleGroup",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='users',
-        verbose_name="Schedule Group"
+        related_name="users",
+        verbose_name="Time Schedule",
     )
     # Remove other redundant fields
     email = None
@@ -139,10 +148,13 @@ class CustomUser(AbstractUser):
         """Get the schedule that applies to this user for the specified day."""
         if self.schedule_group:
             return self.schedule_group.get_schedule_for_day(day_code)
-        return None  # No schedule defined
+        else:
+            # Create a temporary schedule group to use the default logic
+            temp_group = ScheduleGroup()
+            return temp_group.get_schedule_for_day(day_code)
 
     class Meta:
-        db_table = 'django_users'  # Changed from 'users'
+        db_table = "django_users"  # Changed from 'users'
         verbose_name = "User"
         verbose_name_plural = "Users"
 
@@ -150,9 +162,7 @@ class CustomUser(AbstractUser):
 class TimeEntry(models.Model):
     ordering = ["-time_in"]
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    time_in = models.DateTimeField(
-        default=timezone.now, editable=True
-    )
+    time_in = models.DateTimeField(default=timezone.now, editable=True)
     time_out = models.DateTimeField(null=True, blank=True)
     hours_worked = models.FloatField(null=True, blank=True)
     is_late = models.BooleanField(default=False)
@@ -194,7 +204,15 @@ class TimeEntry(models.Model):
         # Calculate lateness based on schedule
         time_in_local = new_entry.time_in
         day_of_week = time_in_local.weekday()  # 0=Monday, 6=Sunday
-        day_mapping = {0: 'mon', 1: 'tue', 2: 'wed', 3: 'thu', 4: 'fri', 5: 'sat', 6: 'sun'}
+        day_mapping = {
+            0: "mon",
+            1: "tue",
+            2: "wed",
+            3: "thu",
+            4: "fri",
+            5: "sat",
+            6: "sun",
+        }
         day_code = day_mapping[day_of_week]
 
         # Get the appropriate schedule
@@ -224,8 +242,9 @@ class TimeEntry(models.Model):
         return f"{self.user.employee_id} - {self.user.first_name} {self.user.surname} - {self.time_in.strftime('%Y-%m-%d %H:%M:%S')}"
 
     class Meta:
-        verbose_name_plural = "Time Entries"
-        db_table = 'django_time_entries'
+        verbose_name_plural = "User Entries"
+        db_table = "django_time_entries"
+
 
 class Announcement(models.Model):
     content = models.TextField()
@@ -236,14 +255,20 @@ class Announcement(models.Model):
         return f"Announcement {self.id}"
 
     class Meta:
-        db_table = 'django_announcements'
+        db_table = "django_announcements"
+
 
 class TimePreset(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, blank=True, null=True)
     start_time = models.TimeField()
     end_time = models.TimeField()
     grace_period_minutes = models.IntegerField(default=5)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if self.name is None:
+            self.name = ""
+        super(TimePreset, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} ({self.start_time.strftime('%I:%M %p')} - {self.end_time.strftime('%I:%M %p')})"
@@ -251,16 +276,22 @@ class TimePreset(models.Model):
     class Meta:
         verbose_name = "Time Preset"
         verbose_name_plural = "Time Presets"
-        ordering = ['start_time']
+        ordering = ["start_time"]
+
 
 class ScheduleGroup(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, null=True, blank=True)
     default_schedule = models.ForeignKey(
-        'TimePreset',
-        on_delete=models.CASCADE,
-        related_name='default_for_groups'
+        "TimePreset", on_delete=models.SET_NULL, null=True, blank=True, related_name="default_for_groups"
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if self.name is None or self.name == "":
+            start_time = self.default_schedule.start_time.strftime("%I:%M %p")
+            end_time = self.default_schedule.end_time.strftime("%I:%M %p")
+            self.name = f"{start_time} - {end_time}"
+        super(ScheduleGroup, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name}"
@@ -273,37 +304,54 @@ class ScheduleGroup(models.Model):
             return override.time_preset
         except DayOverride.DoesNotExist:
             # If no override exists, return the default schedule
-            return self.default_schedule
+            if self.default_schedule:
+                return self.default_schedule
+            else:
+                # Create default schedules based on the day
+                if day_code == "wed":  # Wednesday
+                    return TimePreset(
+                        name="Default Wednesday",
+                        start_time=datetime.time(8, 0),  # 8:00 AM
+                        end_time=datetime.time(17, 0),   # 5:00 PM
+                        grace_period_minutes=5
+                    )
+                else:  # Mon, Tue, Thu, Fri, Sat, Sun
+                    return TimePreset(
+                        name="Default Weekday",
+                        start_time=datetime.time(8, 0),  # 8:00 AM
+                        end_time=datetime.time(19, 0),   # 7:00 PM
+                        grace_period_minutes=5
+                    )
 
     class Meta:
-        verbose_name = "Schedule Group"
-        verbose_name_plural = "Schedule Groups"
-        ordering = ['name']
+        verbose_name = "Time Schedule"
+        verbose_name_plural = "Time Schedules"
+        ordering = ["name"]
+
 
 class DayOverride(models.Model):
     DAY_CHOICES = [
-        ('mon', 'Monday'),
-        ('tue', 'Tuesday'),
-        ('wed', 'Wednesday'),
-        ('thu', 'Thursday'),
-        ('fri', 'Friday'),
-        ('sat', 'Saturday'),
-        ('sun', 'Sunday'),
+        ("mon", "Monday"),
+        ("tue", "Tuesday"),
+        ("wed", "Wednesday"),
+        ("thu", "Thursday"),
+        ("fri", "Friday"),
+        ("sat", "Saturday"),
+        ("sun", "Sunday"),
     ]
 
     schedule_group = models.ForeignKey(
-        ScheduleGroup,
-        on_delete=models.CASCADE,
-        related_name='day_overrides'
+        ScheduleGroup, on_delete=models.CASCADE, related_name="day_overrides"
     )
     day = models.CharField(max_length=3, choices=DAY_CHOICES)
     time_preset = models.ForeignKey(
-        'TimePreset',
-        on_delete=models.CASCADE,
-        related_name='used_in_overrides'
+        "TimePreset", on_delete=models.SET_NULL, null=True, blank=True, related_name="used_in_overrides"
     )
 
     class Meta:
         verbose_name = "Day Override"
         verbose_name_plural = "Day Overrides"
-        unique_together = ['schedule_group', 'day']  # Only one override per day per group
+        unique_together = [
+            "schedule_group",
+            "day",
+        ]  # Only one override per day per group
