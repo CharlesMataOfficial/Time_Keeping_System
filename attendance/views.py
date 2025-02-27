@@ -109,96 +109,88 @@ def clock_in_view(request):
     auth_result = CustomUser.authenticate_by_pin(employee_id, pin)
 
     # Handle first login cases
-    if isinstance(auth_result, dict) and auth_result["status"] == "first_login":
+    if isinstance(auth_result, dict) and auth_result.get("status") == "first_login":
         if new_pin:
             # Update PIN for first time login
             user = auth_result["user"]
             user.pin = new_pin
             user.if_first_login = False
             user.save()
-            return JsonResponse(
-                {"success": True, "message": "PIN updated successfully"}
-            )
+            return JsonResponse({"success": True, "message": "PIN updated successfully"})
         else:
             # Prompt for new PIN
-            return JsonResponse(
-                {
-                    "success": False,
-                    "error": "first_login",
-                    "message": "Please set your new PIN",
-                }
-            )
+            return JsonResponse({
+                "success": False,
+                "error": "first_login",
+                "message": "Please set your new PIN"
+            })
 
     # For first login check only
     if first_login_check:
-        if isinstance(auth_result, dict) and auth_result["status"] == "first_login":
-            return JsonResponse(
-                {
-                    "success": False,
-                    "error": "first_login",
-                    "message": "Please set your new PIN",
-                }
-            )
+        if isinstance(auth_result, dict) and auth_result.get("status") == "first_login":
+            return JsonResponse({
+                "success": False,
+                "error": "first_login",
+                "message": "Please set your new PIN"
+            })
         return JsonResponse({"success": True})
 
-    if not isinstance(auth_result, dict) and auth_result:
-        user = auth_result
+    # Check if authentication failed
+    if not auth_result:
+        try:
+            CustomUser.objects.get(employee_id=employee_id)
+            error_message = "Incorrect PIN"
+        except CustomUser.DoesNotExist:
+            error_message = "Employee ID not found"
+        return JsonResponse({"success": False, "error": error_message})
+    
 
-        if not user:
-            try:
-                CustomUser.objects.get(employee_id=employee_id)
-                error_message = "Incorrect PIN"
-            except CustomUser.DoesNotExist:
-                error_message = "Employee ID not found"
-            return JsonResponse({"success": False, "error": error_message})
+    # If authentication passed, proceed with clock in
+    user = auth_result
 
-        # Handle company logo using the utility function
-        user_company = user.company.name if user.company else ""
-        company_logo = get_company_logo(user_company)
+    # Handle company logo using the utility function
+    user_company = user.company.name if user.company else ""
+    company_logo = get_company_logo(user_company)
 
-        # Create time entry
-        entry = TimeEntry.clock_in(user)
-        if image_path:
-            entry.image_path = image_path
-            entry.save()
+    # Create time entry (using the updated clock_in that always creates a new record)
+    entry = TimeEntry.clock_in(user)
+    if image_path:
+        entry.image_path = image_path
+        entry.save()
 
-        # Fetch updated attendance list
-        now = timezone.now()
-        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        today_end = today_start + timedelta(days=1)
-        todays_entries = TimeEntry.objects.filter(
-            time_in__gte=today_start, time_in__lt=today_end
-        ).order_by("-last_modified")
+    # Fetch updated attendance list for today
+    now = timezone.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
+    todays_entries = TimeEntry.objects.filter(
+        time_in__gte=today_start, time_in__lt=today_end
+    ).order_by("-last_modified")
 
-        attendance_list = [
-            {
-                "employee_id": entry.user.employee_id,
-                "first_name": entry.user.first_name,
-                "surname": entry.user.surname,
-                "company": entry.user.company.name if entry.user.company else "",
-                "time_in": entry.time_in.strftime("%I:%M %p"),
-                "time_out": (
-                    entry.time_out.strftime("%I:%M %p") if entry.time_out else None
-                ),
-                "image_path": entry.image_path,
-            }
-            for entry in todays_entries
-        ]
+    attendance_list = [
+        {
+            "employee_id": entry.user.employee_id,
+            "first_name": entry.user.first_name,
+            "surname": entry.user.surname,
+            "company": entry.user.company.name if entry.user.company else "",
+            "time_in": entry.time_in.strftime("%I:%M %p"),
+            "time_out": (entry.time_out.strftime("%I:%M %p") if entry.time_out else None),
+            "image_path": entry.image_path,
+        }
+        for entry in todays_entries
+    ]
 
-        return JsonResponse(
-            {
-                "success": True,
-                "employee_id": user.employee_id,
-                "first_name": user.first_name,
-                "surname": user.surname,
-                "company": user.company.name if user.company else "",
-                "time_in": entry.time_in.strftime("%I:%M %p"),
-                "time_out": None,
-                "image_path": entry.image_path,
-                "new_logo": company_logo,
-                "attendance_list": attendance_list,
-            }
-        )
+    return JsonResponse({
+        "success": True,
+        "employee_id": user.employee_id,
+        "first_name": user.first_name,
+        "surname": user.surname,
+        "company": user.company.name if user.company else "",
+        "time_in": entry.time_in.strftime("%I:%M %p"),
+        "time_out": None,
+        "image_path": entry.image_path,
+        "new_logo": company_logo,
+        "attendance_list": attendance_list,
+    })
 
 @require_POST
 def clock_out_view(request):
@@ -321,7 +313,7 @@ def upload_image(request):
         try:
             user = CustomUser.objects.get(employee_id=employee_id)
         except CustomUser.DoesNotExist:
-            return JsonResponse({"success": False, "error": "User not found"})
+            return JsonResponse({"success": False, "error": "Employee ID not found"})
 
         # Get the current date
         now = datetime.now()
