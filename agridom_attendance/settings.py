@@ -28,7 +28,7 @@ SECRET_KEY = "django-insecure-3*d$t^*1v4iyjvqm&7r(9_w40+zu!yms+&r%dcbr-f3h#b0#1v
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2']
 
 
 # Application definition
@@ -41,9 +41,12 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "attendance",
+    'rest_framework',  # Add Django REST framework
+    'corsheaders',     # For handling CORS
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -148,3 +151,50 @@ LOGOUT_REDIRECT_URL = "login"
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_AGE = 86400  # 1 day
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Keep session active after closing browser
+
+# CORS settings
+CORS_ALLOW_ALL_ORIGINS = True  # For development only, don't use in production!
+
+# Alternatively, explicitly specify allowed origins (safer for production)
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:8000",
+#     "http://localhost:52364",
+#     "http://127.0.0.1:52364",
+#     # Add any additional origins you need
+# ]
+
+# Allow credentials
+CORS_ALLOW_CREDENTIALS = True
+
+# Allow all HTTP methods
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# Allow all headers
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# Set max age for preflight requests
+CORS_PREFLIGHT_MAX_AGE = 86400  # 24 hours
+
+# If you need to handle authentication through tokens
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}

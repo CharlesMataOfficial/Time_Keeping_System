@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from . import api_views  # Create this file for API-specific views
+
 urlpatterns = [
     path('', views.login_view, name='login_page'),  # Login page
     path('login/', views.login_view, name='login'),  # Handles the login form submission
@@ -22,5 +24,16 @@ urlpatterns = [
     path('attendance_list_json/', views.attendance_list_json, name='attendance_list_json'),
     path('dashboard-data/', views.dashboard_data, name='dashboard_data'),
 
+
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# API for mobile
+
+urlpatterns += [
+    path('api/clock_in/', api_views.api_clock_in, name='api_clock_in'),
+    path('api/clock_out/', api_views.api_clock_out, name='api_clock_out'),
+    path('api/user_info/<str:employee_id>/', api_views.api_user_info, name='api_user_info'),
+    path('api/upload_image/', api_views.api_upload_image, name='api_upload_image'),
+    path('api/test/', api_views.api_test, name='api_test'),
+]
 

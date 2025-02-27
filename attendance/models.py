@@ -182,6 +182,14 @@ class TimeEntry(models.Model):
     minutes_late = models.IntegerField(default=0)  # New field: positive for late, negative for early
     last_modified = models.DateTimeField(auto_now=True)
     image_path = models.CharField(max_length=255, null=True, blank=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    location_accuracy = models.FloatField(null=True, blank=True)
+    location_address = models.TextField(blank=True, null=True)
+    checkout_latitude = models.FloatField(null=True, blank=True)
+    checkout_longitude = models.FloatField(null=True, blank=True)
+    checkout_location_accuracy = models.FloatField(null=True, blank=True)
+    checkout_location_address = models.TextField(blank=True, null=True)
 
     @property
     def date(self):
