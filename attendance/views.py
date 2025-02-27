@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from .models import CustomUser
@@ -509,8 +509,10 @@ def attendance_list_json(request):
     print(f"Filtering: type={attendance_type}, company={company_code}, dept={department_code}, search={search_query}")
 
     if attendance_type == 'time-log':
+        # Only include time entries for today
+        today = date.today()
         qs = TimeEntry.objects.select_related('user', 'user__company', 'user__position')\
-            .all().order_by('-time_in')
+            .filter(time_in__date=today).order_by('-last_modified')
 
         if company_code != 'all':
             companies_to_filter = []
@@ -530,8 +532,6 @@ def attendance_list_json(request):
                     query |= Q(user__company__name__iexact=company_name)
                 qs = qs.filter(query)
             else:
-                # If no match was found, still filter by the provided code
-                # This handles custom company codes not in the mapping
                 qs = qs.filter(user__company__name__iexact=company_code)
 
         if department_code != 'all':
@@ -539,10 +539,8 @@ def attendance_list_json(request):
                 dept_name = DEPARTMENT_CHOICES[department_code]
                 qs = qs.filter(user__position__name=dept_name)
             else:
-                # If not in the mapping, use the code directly
                 qs = qs.filter(user__position__name=department_code)
 
-        # Filter by search term if provided
         if search_query:
             qs = qs.filter(
                 Q(user__first_name__icontains=search_query) |
@@ -559,10 +557,8 @@ def attendance_list_json(request):
             }
             for entry in qs
         ]
-
-    elif attendance_type == 'users-active' or attendance_type == 'users-inactive':
-        # Same fix for these sections...
-        # ... (similar changes for other attendance types)
+    elif attendance_type in ['users-active', 'users-inactive']:
+        # ... (rest of your code for users-active/inactive)
         if attendance_type == 'users-active':
             qs = CustomUser.objects.filter(timeentry__time_out__isnull=True).distinct()
         else:  # users-inactive
@@ -589,7 +585,6 @@ def attendance_list_json(request):
         if department_code != 'all':
             qs = qs.filter(position__name=department_code)
 
-        # Filter by search term
         if search_query:
             qs = qs.filter(
                 Q(first_name__icontains=search_query) |
