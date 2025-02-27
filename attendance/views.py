@@ -512,7 +512,7 @@ def attendance_list_json(request):
         # Only include time entries for today
         today = date.today()
         qs = TimeEntry.objects.select_related('user', 'user__company', 'user__position')\
-            .filter(time_in__date=today).order_by('-last_modified')
+            .filter(time_in__date=today, user__is_active=True).order_by('-last_modified')
 
         if company_code != 'all':
             companies_to_filter = []
@@ -560,9 +560,9 @@ def attendance_list_json(request):
     elif attendance_type in ['users-active', 'users-inactive']:
         # ... (rest of your code for users-active/inactive)
         if attendance_type == 'users-active':
-            qs = CustomUser.objects.filter(timeentry__time_out__isnull=True).distinct()
+            qs = CustomUser.objects.filter(is_active=True).distinct()
         else:  # users-inactive
-            qs = CustomUser.objects.exclude(timeentry__time_out__isnull=True).distinct()
+            qs = CustomUser.objects.filter(is_active=False).distinct()
 
         if company_code != 'all':
             companies_to_filter = []
