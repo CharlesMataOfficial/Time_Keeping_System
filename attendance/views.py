@@ -542,10 +542,27 @@ def attendance_list_json(request):
                 qs = qs.filter(user__position__name=department_code)
 
         if search_query:
-            qs = qs.filter(
-                Q(user__first_name__icontains=search_query) |
-                Q(user__surname__icontains=search_query)
-            )
+            # For more exact matching, try to match the complete name first
+            # This will prioritize exact or close matches
+            complete_name_query = Q(user__first_name__icontains=search_query) | \
+                                 Q(user__surname__icontains=search_query) | \
+                                 Q(user__first_name__iexact=search_query) | \
+                                 Q(user__surname__iexact=search_query)
+
+            # Then try concatenated name (first_name + surname)
+            name_parts = search_query.split()
+            if len(name_parts) > 1:
+                # If we have multiple terms, try to match them exactly in order
+                first_name_candidates = [' '.join(name_parts[:i]) for i in range(1, len(name_parts))]
+                surname_candidates = [' '.join(name_parts[i:]) for i in range(1, len(name_parts))]
+
+                for first in first_name_candidates:
+                    for last in surname_candidates:
+                        if first and last:  # Ensure we don't have empty strings
+                            complete_name_query |= (Q(user__first_name__iexact=first) &
+                                                  Q(user__surname__iexact=last))
+
+            qs = qs.filter(complete_name_query)
 
         data = [
             {
@@ -586,10 +603,26 @@ def attendance_list_json(request):
             qs = qs.filter(position__name=department_code)
 
         if search_query:
-            qs = qs.filter(
-                Q(first_name__icontains=search_query) |
-                Q(surname__icontains=search_query)
-            )
+            # For more exact matching, try to match the complete name first
+            complete_name_query = Q(first_name__icontains=search_query) | \
+                                Q(surname__icontains=search_query) | \
+                                Q(first_name__iexact=search_query) | \
+                                Q(surname__iexact=search_query)
+
+            # Then try concatenated name (first_name + surname)
+            name_parts = search_query.split()
+            if len(name_parts) > 1:
+                # If we have multiple terms, try to match them exactly in order
+                first_name_candidates = [' '.join(name_parts[:i]) for i in range(1, len(name_parts))]
+                surname_candidates = [' '.join(name_parts[i:]) for i in range(1, len(name_parts))]
+
+                for first in first_name_candidates:
+                    for last in surname_candidates:
+                        if first and last:  # Ensure we don't have empty strings
+                            complete_name_query |= (Q(first_name__iexact=first) &
+                                                Q(surname__iexact=last))
+
+            qs = qs.filter(complete_name_query)
 
         data = [
             {
