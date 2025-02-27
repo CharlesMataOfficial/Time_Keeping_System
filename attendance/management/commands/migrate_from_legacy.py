@@ -8,6 +8,7 @@ from attendance.models import (
 from attendance.database_legacy import (
     UsersLegacy, EntriesLegacy, PresetsLegacy
 )
+from attendance.utils import STANDARD_DEPARTMENTS  # Import from utils.py
 
 class Command(BaseCommand):
     help = 'Migrate all data from legacy tables to Django models'
@@ -27,32 +28,9 @@ class Command(BaseCommand):
         companies = {}
         positions = {}
 
-        # Define standard departments/positions
-        standard_departments = [
-            "Sales",
-            "Operations - Mindanao",
-            "Technical Services",
-            "Support - Supply Management",
-            "Sales - Mindanao",
-            "Academy",
-            "Office of the CEO",
-            "Office of the COO",
-            "Support - General Services",
-            "Technical - SFGC",
-            "Support - ICT",
-            "Support - Admin",
-            "Support - Finance",
-            "Support - Admin - Luzon",
-            "Support - Supply Management",
-            "Support - Admin",
-            "Support - ICT",
-            "Support - HR",
-            "Support - Supply"
-        ]
-
         # Create all standard departments first
         self.stdout.write('Creating standard departments...')
-        for dept in standard_departments:
+        for dept in STANDARD_DEPARTMENTS:
             positions[dept] = Position.objects.get_or_create(name=dept)[0]
             self.stdout.write(f'- Created department: {dept}')
 

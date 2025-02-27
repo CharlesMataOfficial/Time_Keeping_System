@@ -16,6 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from .models import CustomUser
 from django.db.models import Q
+from .utils import COMPANY_CHOICES, DEPARTMENT_CHOICES, get_day_code, format_minutes, COMPANY_LOGO_MAPPING, get_company_logo
 
 @never_cache
 def login_view(request):
@@ -151,24 +152,9 @@ def clock_in_view(request):
                 error_message = "Employee ID not found"
             return JsonResponse({"success": False, "error": error_message})
 
-        # Handle company logo
-        user_company = user.company.name if user.company else ""  # Handle None case
-        user_company = user_company.strip().lower()
-
-        company_logo_mapping = {
-            "sfgc": "sfgroup.png",
-            "asc": "agridom4.png",
-            "sfgci": "sfgroup.png",
-            "smi": "sunfood.png",
-            "gti": "geniustech.png",
-            "fac": "farmtech.png",
-            "djas": "djas.png",
-            "default": "default_logo.png",
-        }
-
-        company_logo = company_logo_mapping.get(
-            user_company, company_logo_mapping["default"]
-        )
+        # Handle company logo using the utility function
+        user_company = user.company.name if user.company else ""
+        company_logo = get_company_logo(user_company)
 
         # Create time entry
         entry = TimeEntry.clock_in(user)
@@ -242,23 +228,7 @@ def clock_out_view(request):
 
             # Handle None company value
             user_company = user.company.name if user.company else ""
-            user_company = user_company.strip().lower()
-
-            # Get the company logo based on the user's company
-            company_logo_mapping = {
-                "sfgc": "sfgroup.png",
-                "asc": "agridom4.png",
-                "sfgci": "sfgroup.png",
-                "smi": "sunfood.png",
-                "gti": "geniustech.png",
-                "fac": "farmtech.png",
-                "djas": "djas.png",
-                "default": "default_logo.png",
-            }
-
-            company_logo = company_logo_mapping.get(
-                user_company, company_logo_mapping["default"]
-            )
+            company_logo = get_company_logo(user_company)
 
             # Fetch updated attendance list
             todays_entries = TimeEntry.objects.filter(
@@ -530,22 +500,6 @@ def get_special_dates(request):
     })
 
 
-# Mapping: key is the code; value is a tuple (main, alias) that should match exactly what’s stored in the database.
-COMPANY_CHOICES = {
-    'ASC': ('ASC', 'AgriDOM'),
-    'SFGCI': ('SFGCI', 'SFGC'),
-    'DJAS': ('DJAS', 'DSC'),
-    'FAC': ('FAC',),  # only one value; no alias
-    'GTI': ('GTI',),
-    'SMI': ('SMI',),
-}
-
-DEPARTMENT_CHOICES = {
-    'hr': "Human Resources",
-    'it': "IT Department",
-    'finance': "Finance",
-}
-
 def attendance_list_json(request):
     attendance_type = request.GET.get('attendance_type', 'time-log')
     company_code = request.GET.get('attendance_company', 'all')
@@ -581,7 +535,12 @@ def attendance_list_json(request):
                 qs = qs.filter(user__company__name__iexact=company_code)
 
         if department_code != 'all':
-            qs = qs.filter(user__position__name=department_code)
+            if department_code in DEPARTMENT_CHOICES:
+                dept_name = DEPARTMENT_CHOICES[department_code]
+                qs = qs.filter(user__position__name=dept_name)
+            else:
+                # If not in the mapping, use the code directly
+                qs = qs.filter(user__position__name=department_code)
 
         # Filter by search term if provided
         if search_query:

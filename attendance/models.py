@@ -6,6 +6,8 @@ from django.conf import settings
 from django.core.validators import MinLengthValidator
 from django.forms import ValidationError
 from django.utils import timezone
+from django.utils.html import format_html
+from .utils import get_day_code, format_minutes, create_default_time_preset  # Import from utils.py
 
 
 class CustomUserManager(BaseUserManager):
@@ -161,21 +163,8 @@ class CustomUser(AbstractUser):
         if self.schedule_group:
             return self.schedule_group.get_schedule_for_day(day_code)
         else:
-            # Create default schedules based on the day without using relationships
-            if day_code == "wed":  # Wednesday
-                return TimePreset(
-                    name="Default Wednesday",
-                    start_time=datetime.time(8, 0),  # 8:00 AM
-                    end_time=datetime.time(17, 0),   # 5:00 PM
-                    grace_period_minutes=5
-                )
-            else:  # Mon, Tue, Thu, Fri, Sat, Sun
-                return TimePreset(
-                    name="Default Weekday",
-                    start_time=datetime.time(8, 0),  # 8:00 AM
-                    end_time=datetime.time(19, 0),   # 7:00 PM
-                    grace_period_minutes=5
-                )
+            # Use the utility function to create default schedules
+            return create_default_time_preset(day_code)
 
     class Meta:
         db_table = "django_users"  # Changed from 'users'
@@ -209,12 +198,7 @@ class TimeEntry(models.Model):
         if self.time_in:
             try:
                 time_in_local = self.time_in
-                day_of_week = time_in_local.weekday()  # 0=Monday, 6=Sunday
-                day_mapping = {
-                    0: "mon", 1: "tue", 2: "wed", 3: "thu",
-                    4: "fri", 5: "sat", 6: "sun",
-                }
-                day_code = day_mapping[day_of_week]
+                day_code = get_day_code(time_in_local)  # Using utility function
 
                 # Get schedule using get_schedule_for_day
                 preset = self.user.get_schedule_for_day(day_code)
@@ -263,12 +247,8 @@ class TimeEntry(models.Model):
         # Calculate lateness based on schedule
         try:
             time_in_local = new_entry.time_in
-            day_of_week = time_in_local.weekday()  # 0=Monday, 6=Sunday
-            day_mapping = {
-                0: "mon", 1: "tue", 2: "wed", 3: "thu",
-                4: "fri", 5: "sat", 6: "sun",
-            }
-            day_code = day_mapping[day_of_week]
+            # Use utility function instead of duplicating the day mapping
+            day_code = get_day_code(time_in_local)
 
             # Get the appropriate schedule
             preset = user.get_schedule_for_day(day_code)
@@ -309,7 +289,7 @@ class TimeEntry(models.Model):
         return f"{self.user.employee_id} - {self.user.first_name} {self.user.surname} - {self.time_in.strftime('%Y-%m-%d %H:%M:%S')}"
 
     class Meta:
-        verbose_name_plural = "User Entries"
+        verbose_name_plural = "Time Entries"
         db_table = "django_time_entries"
 
 
@@ -374,21 +354,8 @@ class ScheduleGroup(models.Model):
             if self.default_schedule:
                 return self.default_schedule
             else:
-                # Create default schedules based on the day
-                if day_code == "wed":  # Wednesday
-                    return TimePreset(
-                        name="Default Wednesday",
-                        start_time=datetime.time(8, 0),  # 8:00 AM
-                        end_time=datetime.time(17, 0),   # 5:00 PM
-                        grace_period_minutes=5
-                    )
-                else:  # Mon, Tue, Thu, Fri, Sat, Sun
-                    return TimePreset(
-                        name="Default Weekday",
-                        start_time=datetime.time(8, 0),  # 8:00 AM
-                        end_time=datetime.time(19, 0),   # 7:00 PM
-                        grace_period_minutes=5
-                    )
+                # Use the utility function to create default schedules
+                return create_default_time_preset(day_code)
 
     class Meta:
         verbose_name = "Time Schedule"
