@@ -23,7 +23,10 @@ COMPANY_LOGO_MAPPING = {
     "gti": "geniustech.png",
     "fac": "farmtech.png",
     "djas": "djas.png",
+    "agridom": "agridom4.png",
+    "dsc": "djas.png",
     "default": "default_logo.png",
+
 }
 
 # Department mapping
