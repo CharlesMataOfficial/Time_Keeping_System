@@ -238,12 +238,7 @@ class TimeEntry(models.Model):
 
     @classmethod
     def clock_in(cls, user):
-        open_entries = cls.objects.filter(user=user, time_out__isnull=True)
-        for entry in open_entries:
-            entry.clock_out()
-
-        new_entry = cls.objects.create(user=user)
-
+        new_entry = cls.objects.create(user=user)       
         # Calculate lateness based on schedule
         try:
             time_in_local = new_entry.time_in
