@@ -4,19 +4,36 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 from django.utils.html import format_html
 from django.conf import settings
-from .models import CustomUser, TimeEntry, Company, Position, TimePreset, DayOverride, ScheduleGroup
+from .models import (
+    CustomUser,
+    TimeEntry,
+    Company,
+    Department,
+    Position,
+    TimePreset,
+    DayOverride,
+    ScheduleGroup,
+)
 from .forms import CustomUserCreationForm, TimeEntryForm
+
+
 class TimeEntryInline(admin.TabularInline):
     model = TimeEntry
     form = TimeEntryForm
     extra = 1  # Number of extra forms to display
 
+
 def deactivate_users(modeladmin, request, queryset):
     queryset.update(is_active=False)
+
+
 deactivate_users.short_description = "Deactivate selected users"
+
 
 def activate_users(modeladmin, request, queryset):
     queryset.update(is_active=True)
+
+
 activate_users.short_description = "Activate selected users"
 
 
@@ -59,7 +76,10 @@ class CustomUserAdmin(UserAdmin):
                 )
             },
         ),
-        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser", "is_guard")}),
+        (
+            "Permissions",
+            {"fields": ("is_active", "is_staff", "is_superuser", "is_guard")},
+        ),
     )
 
     list_display = (
@@ -71,12 +91,18 @@ class CustomUserAdmin(UserAdmin):
         "is_active",
         "schedule_group",  # Update list_display too
     )
-    search_fields = ("employee_id", "first_name", "surname", "company__name", "position__name")
+    search_fields = (
+        "employee_id",
+        "first_name",
+        "surname",
+        "company__name",
+        "position__name",
+    )
     ordering = ("-employee_id",)
     list_filter = ("is_active", "is_staff", "is_superuser", "is_guard")
 
     # Add autocomplete fields
-    autocomplete_fields = ['company', 'position', 'schedule_group']
+    autocomplete_fields = ["company", "position", "schedule_group"]
 
     def save_model(self, request, obj, form, change):
         if not change and not obj.employee_id:
@@ -85,39 +111,54 @@ class CustomUserAdmin(UserAdmin):
 
     def get_actions(self, request):
         actions = super().get_actions(request)
-        if 'delete_selected' in actions:
-            del actions['delete_selected']
+        if "delete_selected" in actions:
+            del actions["delete_selected"]
         return actions
 
 
 class TimeEntryAdmin(admin.ModelAdmin):
     list_display = (
-        'user__first_name', 'user__surname', 'user__employee_id',
-        'time_in', 'time_out', 'hours_worked', 'is_late',
-        'formatted_minutes_late', 'view_image_path'
+        "user__first_name",
+        "user__surname",
+        "user__employee_id",
+        "time_in",
+        "time_out",
+        "hours_worked",
+        "is_late",
+        "formatted_minutes_late",
+        "view_image_path",
     )
-    search_fields = ('user__first_name', 'user__surname', 'user__employee_id')
-    list_filter = ('is_late', 'time_in')
+    search_fields = ("user__first_name", "user__surname", "user__employee_id")
+    list_filter = ("is_late", "time_in")
 
     fieldsets = [
-        ('User Information', {'fields': ['user']}),
-        ('Time Information', {'fields': ['time_in', 'time_out', 'hours_worked']}),
-        ('Status', {'fields': ['is_late', 'minutes_late']}),
-        ('Other', {'fields': ['image_path']}),
+        ("User Information", {"fields": ["user"]}),
+        ("Time Information", {"fields": ["time_in", "time_out", "hours_worked"]}),
+        ("Status", {"fields": ["is_late", "minutes_late"]}),
+        ("Other", {"fields": ["image_path"]}),
     ]
 
-    autocomplete_fields = ['user']
-    readonly_fields = ('hours_worked', 'view_image_path',)
+    autocomplete_fields = ["user"]
+    readonly_fields = (
+        "hours_worked",
+        "view_image_path",
+    )
 
     def formatted_minutes_late(self, obj):
         if obj.minutes_late > 0:
-            return format_html('<span style="color: red;">{} mins late</span>', obj.minutes_late)
+            return format_html(
+                '<span style="color: red;">{} mins late</span>', obj.minutes_late
+            )
         elif obj.minutes_late < 0:
-            return format_html('<span style="color: green;">{} mins early</span>', abs(obj.minutes_late))
+            return format_html(
+                '<span style="color: green;">{} mins early</span>',
+                abs(obj.minutes_late),
+            )
         else:
             return "On time"
-    formatted_minutes_late.short_description = 'Arrival Status'
-    formatted_minutes_late.admin_order_field = 'minutes_late'
+
+    formatted_minutes_late.short_description = "Arrival Status"
+    formatted_minutes_late.admin_order_field = "minutes_late"
 
     def save_model(self, request, obj, form, change):
         if obj.time_in and obj.time_out:
@@ -127,55 +168,70 @@ class TimeEntryAdmin(admin.ModelAdmin):
 
     def user__first_name(self, obj):
         return obj.user.first_name
-    user__first_name.short_description = 'First Name'
-    user__first_name.admin_order_field = 'user__first_name'
+
+    user__first_name.short_description = "First Name"
+    user__first_name.admin_order_field = "user__first_name"
 
     def user__surname(self, obj):
         return obj.user.surname
-    user__surname.short_description = 'Surname'
-    user__surname.admin_order_field = 'user__surname'
+
+    user__surname.short_description = "Surname"
+    user__surname.admin_order_field = "user__surname"
 
     def view_image_path(self, obj):
         if obj.image_path:
-            return format_html('<a href="{}" target="_blank">View Image</a>',
-                settings.MEDIA_URL + obj.image_path)
+            return format_html(
+                '<a href="{}" target="_blank">View Image</a>',
+                settings.MEDIA_URL + obj.image_path,
+            )
         return "No Image"
-    view_image_path.short_description = 'View Image'
+
+    view_image_path.short_description = "View Image"
 
 
 class CompanyAdmin(admin.ModelAdmin):
-    search_fields = ['name']
-    list_display = ('name',)
+    search_fields = ["name"]
+    list_display = ("name",)
+
+
+class DepartmentAdmin(admin.ModelAdmin):
+    search_fields = ["name"]
+    list_display = ("name",)
 
 
 class PositionAdmin(admin.ModelAdmin):
-    search_fields = ['name']
-    list_display = ('name',)
+    search_fields = ["name"]
+    list_display = ("name",)
+
 
 class TimePresetAdmin(admin.ModelAdmin):
-    list_display = ('name', 'start_time', 'end_time', 'grace_period_minutes', 'created_at')
-    search_fields = ('name',)
-    list_filter = ('start_time',)
-    ordering = ('start_time',)
+    list_display = (
+        "name",
+        "start_time",
+        "end_time",
+        "grace_period_minutes",
+        "created_at",
+    )
+    search_fields = ("name",)
+    list_filter = ("start_time",)
+    ordering = ("start_time",)
     fieldsets = (
-        ('Preset Information', {
-            'fields': ('name',)
-        }),
-        ('Schedule', {
-            'fields': ('start_time', 'end_time', 'grace_period_minutes')
-        }),
+        ("Preset Information", {"fields": ("name",)}),
+        ("Schedule", {"fields": ("start_time", "end_time", "grace_period_minutes")}),
     )
 
     class Media:
-        js = ('admin/js/custom_time_options.js',)
+        js = ("admin/js/custom_time_options.js",)
+
 
 class DayOverrideInline(admin.TabularInline):
     model = DayOverride
     extra = 0
 
+
 class ScheduleGroupAdmin(admin.ModelAdmin):
-    list_display = ('name', 'default_schedule', 'get_overrides', 'created_at')
-    search_fields = ('name',)
+    list_display = ("name", "default_schedule", "get_overrides", "created_at")
+    search_fields = ("name",)
     inlines = [DayOverrideInline]
 
     def get_overrides(self, obj):
@@ -189,8 +245,10 @@ class ScheduleGroupAdmin(admin.ModelAdmin):
             ]
             return format_html("<br>".join(override_list))
         return ""
-    get_overrides.short_description = 'Day Overrides'
+
+    get_overrides.short_description = "Day Overrides"
     get_overrides.allow_tags = True
+
 
 # Unregister the group model
 admin.site.unregister(Group)
@@ -202,3 +260,4 @@ admin.site.register(TimeEntry, TimeEntryAdmin)
 admin.site.register(Company, CompanyAdmin)
 admin.site.register(Position, PositionAdmin)
 admin.site.register(ScheduleGroup, ScheduleGroupAdmin)
+admin.site.register(Department, DepartmentAdmin)

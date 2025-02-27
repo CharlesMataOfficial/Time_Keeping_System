@@ -73,6 +73,18 @@ class Company(models.Model):
         ordering = ["name"]
         db_table = "django_companies"  # Changed from 'companies'
 
+class Department(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "User Departments"
+        ordering = ["name"]
+        db_table = "django_departments"
+
+
 
 class Position(models.Model):
     name = models.CharField(max_length=100, unique=True)

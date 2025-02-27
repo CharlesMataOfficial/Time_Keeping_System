@@ -27,6 +27,36 @@ class Command(BaseCommand):
         companies = {}
         positions = {}
 
+        # Define standard departments/positions
+        standard_departments = [
+            "Sales",
+            "Operations - Mindanao",
+            "Technical Services",
+            "Support - Supply Management",
+            "Sales - Mindanao",
+            "Academy",
+            "Office of the CEO",
+            "Office of the COO",
+            "Support - General Services",
+            "Technical - SFGC",
+            "Support - ICT",
+            "Support - Admin",
+            "Support - Finance",
+            "Support - Admin - Luzon",
+            "Support - Supply Management",
+            "Support - Admin",
+            "Support - ICT",
+            "Support - HR",
+            "Support - Supply"
+        ]
+
+        # Create all standard departments first
+        self.stdout.write('Creating standard departments...')
+        for dept in standard_departments:
+            positions[dept] = Position.objects.get_or_create(name=dept)[0]
+            self.stdout.write(f'- Created department: {dept}')
+
+        # Now proceed with legacy data
         legacy_users = UsersLegacy.objects.all()
         for legacy_user in legacy_users:
             if legacy_user.company:
@@ -34,6 +64,7 @@ class Command(BaseCommand):
                     name=legacy_user.company
                 )[0]
             if legacy_user.position:
+                # This will only create positions not already created above
                 positions[legacy_user.position] = Position.objects.get_or_create(
                     name=legacy_user.position
                 )[0]
