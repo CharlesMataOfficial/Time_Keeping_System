@@ -183,7 +183,6 @@
         <option value="users-inactive">Users Inactive</option>
       </select>
       <select name="attendance_company" id="attendance-company">
-        <option value="" disabled selected class="default-option">By Company:</option>
         <option value="all">All companies</option>
         <option value="ASC" data-alias="AgriDOM">Agridom Solutions Corp.</option>
         <option value="SFGCI" data-alias="SFGC">SF Group of Companies</option>
@@ -193,11 +192,23 @@
         <option value="SMI">Sunfood Marketing Inc.</option>
       </select>
       <select name="attendance_department" id="attendance-department">
-        <option disabled selected class="default-option">By Department:</option>
         <option value="all">All departments</option>
-        <option value="hr">Human Resources</option>
-        <option value="it">IT Department</option>
-        <option value="finance">Finance</option>
+        <option value="SALES">Sales</option>
+        <option value="OM">Operations - Mindanao</option>
+        <option value="SM">Sales - Mindanao</option> 
+        <option value="TS">Technical Services</option>
+        <option value="SSM">Support - Supply Management</option> 
+        <option value="ACADEMY">Academy</option> 
+        <option value="OCEO">Office of the CEO</option>
+        <option value="OCOO">Office of the COO</option> 
+        <option value="SGS">Support - General Services</option>
+        <option value="TSFGC">Technical - SFGC</option>
+        <option value="SICT">Support - ICT</option>
+        <option value="SA">Support - Admin</option>
+        <option value="SF">Support - Finance</option>
+        <option value="SAL">Support - Admin - Luzon</option>
+        <option value="SH">Support - HR</option>
+        <option value="SS">Support - Supply</option>
       </select>
       <button type="button" class="go-button" onclick="filterAttendance()">Go</button>
     </div>

@@ -338,6 +338,7 @@ header {
   max-height: 500px;
   bottom: -13px;
   justify-content: center;
+  color: #000;
 }
 
 /* Make sure birthdays and milestones use the same table style */
