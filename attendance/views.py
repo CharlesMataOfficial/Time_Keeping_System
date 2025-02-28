@@ -882,6 +882,8 @@ def export_time_entries_by_date(request):
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
     response["Content-Disposition"] = f"attachment; filename=time_entries_{export_date}.xlsx"
+
+    log_admin_action(request, "excel_export", f"Exported time_entries_{export_date}.xlsx")
     return response
 
 
@@ -941,4 +943,5 @@ def export_time_entries_by_employee(request):
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
     response["Content-Disposition"] = f"attachment; filename=time_entries_{employee_id}.xlsx"
+    log_admin_action(request, "excel_export", f"Exported time_entries_{employee_id}.xlsx")
     return response
