@@ -21,6 +21,7 @@ urlpatterns = [
     path("get_special_dates/", views.get_special_dates, name="get_special_dates"),
     path('attendance_list_json/', views.attendance_list_json, name='attendance_list_json'),
     path('dashboard-data/', views.dashboard_data, name='dashboard_data'),
+    path('get_logs/', views.get_logs, name='get_logs'),
 
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

@@ -387,3 +387,41 @@ class DayOverride(models.Model):
             "schedule_group",
             "day",
         ]  # Only one override per day per group
+
+
+class AdminLog(models.Model):
+    ACTION_CHOICES = (
+        ('navigation', 'Navigation'),
+        ('announcement_create', 'Announcement Created'),
+        ('announcement_post', 'Announcement Posted'),
+        ('announcement_delete', 'Announcement Deleted'),
+        ('excel_import', 'Excel Import'),
+        ('excel_export', 'Excel Export'),
+        ('leave_approval', 'Leave Approval'),
+        ('login', 'User Login'),
+        ('logout', 'User Logout'),
+        ('admin_create', 'Admin Create'),
+        ('admin_update', 'Admin Update'),
+        ('admin_delete', 'Admin Delete'),
+    )
+
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
+    action = models.CharField(max_length=30, choices=ACTION_CHOICES)
+    description = models.TextField()
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.user} - {self.action} - {self.timestamp}"
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            # If this is an update to an existing record
+            raise PermissionError("Admin logs cannot be modified after creation")
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise PermissionError("Admin logs cannot be deleted")

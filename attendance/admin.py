@@ -13,9 +13,10 @@ from .models import (
     TimePreset,
     DayOverride,
     ScheduleGroup,
+    AdminLog,
 )
 from .forms import CustomUserCreationForm, TimeEntryForm
-
+from .utils import log_admin_action
 
 class TimeEntryInline(admin.TabularInline):
     model = TimeEntry
@@ -108,6 +109,14 @@ class CustomUserAdmin(UserAdmin):
     def save_model(self, request, obj, form, change):
         if not change and not obj.employee_id:
             obj.employee_id = CustomUser.objects.get_next_employee_id()
+
+        # Log admin action with better descriptions
+        action_type = 'admin_update' if change else 'admin_create'
+        if change:
+            log_admin_action(request, action_type, f"Updated user {obj.employee_id}")
+        else:
+            log_admin_action(request, action_type, f"Created user {obj.employee_id}")
+
         super().save_model(request, obj, form, change)
 
     def get_actions(self, request):
@@ -115,6 +124,15 @@ class CustomUserAdmin(UserAdmin):
         if "delete_selected" in actions:
             del actions["delete_selected"]
         return actions
+
+    def delete_model(self, request, obj):
+        # Log the deletion before the object is deleted
+        log_admin_action(
+            request,
+            'admin_delete',
+            f"Deleted user {obj.employee_id}"
+        )
+        super().delete_model(request, obj)
 
 
 class TimeEntryAdmin(admin.ModelAdmin):
@@ -251,6 +269,30 @@ class ScheduleGroupAdmin(admin.ModelAdmin):
     get_overrides.allow_tags = True
 
 
+class AdminLogAdmin(admin.ModelAdmin):
+    list_display = ('user', 'action', 'description', 'ip_address', 'timestamp')
+    list_filter = ('action', 'timestamp')
+    search_fields = ('user__employee_id', 'user__first_name', 'user__surname', 'description')
+    readonly_fields = ('user', 'action', 'description', 'ip_address', 'timestamp')
+    date_hierarchy = 'timestamp'
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False  # Changed from superuser-only to nobody
+
+    def has_change_permission(self, request, obj=None):
+        return False  # Prevent editing
+
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['show_save'] = False
+        extra_context['show_save_and_continue'] = False
+        extra_context['show_delete'] = False
+        return super().changeform_view(request, object_id, form_url, extra_context)
+
+
 # Unregister the group model
 admin.site.unregister(Group)
 
@@ -262,3 +304,4 @@ admin.site.register(Company, CompanyAdmin)
 admin.site.register(Position, PositionAdmin)
 admin.site.register(ScheduleGroup, ScheduleGroupAdmin)
 admin.site.register(Department, DepartmentAdmin)
+admin.site.register(AdminLog, AdminLogAdmin)

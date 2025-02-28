@@ -113,3 +113,24 @@ def create_default_time_preset(day_code):
             end_time=datetime.time(19, 0),   # 7:00 PM
             grace_period_minutes=5
         )
+
+def log_admin_action(request, action, description):
+    """Log admin actions"""
+    from .models import AdminLog  # Import here instead of at the top level
+
+    if request.user.is_authenticated:
+        AdminLog.objects.create(
+            user=request.user,
+            action=action,
+            description=description,
+            ip_address=get_client_ip(request)
+        )
+
+def get_client_ip(request):
+    """Get client IP address"""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
