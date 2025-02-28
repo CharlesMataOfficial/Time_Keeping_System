@@ -38,6 +38,8 @@ function navigateTo(screenId) {
     fetchAnnouncements();
   } else if (screenId === "dashboard") {
     loadDashboardData();
+  } else if (screenId === "log") {
+    loadLogData(); // Load logs when navigating to log screen
   }
 }
 
@@ -94,6 +96,88 @@ function loadDashboardData() {
     .catch((error) => {
       console.error("Error loading dashboard data:", error);
     });
+}
+
+// Function to load and filter log data
+function loadLogData(filtered = false) {
+  let url = "/get_logs/";
+
+  // Add filter parameters if filtering is requested
+  if (filtered) {
+    const searchQuery = document.getElementById("log-search").value;
+    const actionType = document.getElementById("log-action").value;
+    const dateRange = document.getElementById("log-date").value;
+
+    const params = new URLSearchParams();
+    if (searchQuery) params.append("search", searchQuery);
+    if (actionType && actionType !== "all") params.append("action", actionType);
+    if (dateRange && dateRange !== "all") params.append("date_range", dateRange);
+
+    url += "?" + params.toString();
+  }
+
+  fetch(url)
+    .then((response) => response.json())
+    .then((data) => {
+      const container = document.getElementById("log_rectangle");
+      if (!container) return;
+
+      container.innerHTML = ""; // Clear previous content
+
+      if (!data.logs || data.logs.length === 0) {
+        container.innerHTML = "<p>No logs found.</p>";
+        return;
+      }
+
+      // Create a table to display the logs
+      const table = document.createElement("table");
+      table.className = "log-table";
+      table.style.width = "100%";
+      table.style.borderCollapse = "collapse";
+
+      // Create table header
+      const thead = document.createElement("thead");
+      const headerRow = document.createElement("tr");
+      ["Timestamp", "User", "Action", "Description", "IP Address"].forEach(headerText => {
+        const th = document.createElement("th");
+        th.textContent = headerText;
+        th.style.border = "1px solid #ddd";
+        th.style.padding = "8px";
+        th.style.backgroundColor = "#f2f2f2";
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      // Create table body
+      const tbody = document.createElement("tbody");
+      data.logs.forEach(log => {
+        const row = document.createElement("tr");
+
+        // Add cells for each column
+        [log.timestamp, `${log.user} (${log.employee_id})`, log.action,
+         log.description, log.ip_address || "Unknown"].forEach(cellText => {
+          const cell = document.createElement("td");
+          cell.textContent = cellText;
+          cell.style.border = "1px solid #ddd";
+          cell.style.padding = "8px";
+          row.appendChild(cell);
+        });
+
+        tbody.appendChild(row);
+      });
+
+      table.appendChild(tbody);
+      container.appendChild(table);
+    })
+    .catch((error) => {
+      console.error("Error loading log data:", error);
+    });
+}
+
+// Function to apply filters to logs
+function filterLogs() {
+  loadLogData(true);
 }
 
 // Keyboard Shortcut: Left Arrow (`←`) and Right Arrow (`→`) to navigate

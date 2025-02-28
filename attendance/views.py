@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.urls import reverse
-from .models import CustomUser, TimeEntry, Announcement
+from .models import CustomUser, TimeEntry, Announcement, AdminLog
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
 import json
@@ -14,9 +14,17 @@ import os
 from datetime import datetime, timedelta, date, time
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
-from .models import CustomUser, TimeEntry
 from django.db.models import Q
-from .utils import COMPANY_CHOICES, DEPARTMENT_CHOICES, get_day_code, format_minutes, COMPANY_LOGO_MAPPING, get_company_logo
+from .utils import (
+    COMPANY_CHOICES,
+    DEPARTMENT_CHOICES,
+    get_day_code,
+    format_minutes,
+    COMPANY_LOGO_MAPPING,
+    get_company_logo,
+    log_admin_action
+)
+
 from io import BytesIO
 from django.utils.dateparse import parse_date
 from openpyxl import Workbook
@@ -32,30 +40,39 @@ def login_view(request):
             user = CustomUser.objects.get(employee_id=employee_id)
 
             if not user.is_active:
-                return render(request, "login_page.html",
-                            {"error": "This account is inactive"})
+                return render(
+                    request, "login_page.html", {"error": "This account is inactive"}
+                )
 
             # Try to authenticate
             auth_result = CustomUser.authenticate_by_pin(employee_id, pin)
 
             if auth_result:  # Successful login
-                user = auth_result if isinstance(auth_result, CustomUser) else auth_result["user"]
+                user = (
+                    auth_result
+                    if isinstance(auth_result, CustomUser)
+                    else auth_result["user"]
+                )
                 login(request, user)
+                log_admin_action(request, "login", f"Successfully logged in")
 
                 if user.is_guard:
                     return redirect("user_page")
                 elif user.is_staff or user.is_superuser:
                     return redirect("custom_admin_page")
                 else:
-                    return render(request, "login_page.html",
-                                {"error": "You do not have permission to log in"})
+                    return render(
+                        request,
+                        "login_page.html",
+                        {"error": "You do not have permission to log in"},
+                    )
             else:
-                return render(request, "login_page.html",
-                            {"error": "Incorrect PIN"})
+                return render(request, "login_page.html", {"error": "Incorrect PIN"})
 
         except CustomUser.DoesNotExist:
-            return render(request, "login_page.html",
-                        {"error": "Employee ID not found"})
+            return render(
+                request, "login_page.html", {"error": "Employee ID not found"}
+            )
 
     return render(request, "login_page.html")
 
@@ -96,6 +113,8 @@ def user_page(request):
 
 
 def logout_view(request):
+    if request.user.is_authenticated:
+        log_admin_action(request, 'logout', f'User logged out')
     logout(request)
     return redirect("login")
 
@@ -194,6 +213,8 @@ def clock_in_view(request):
         "new_logo": company_logo,
         "attendance_list": attendance_list,
     })
+
+
 
 @require_POST
 def clock_out_view(request):
@@ -415,6 +436,8 @@ def announcement_post(request, pk):
         announcement = get_object_or_404(Announcement, pk=pk)
         announcement.is_posted = True
         announcement.save()
+
+        log_admin_action(request, 'announcement_post', f'Posted announcement: "{announcement.content[:30]}..."')
         return JsonResponse({"message": "Announcement posted"})
     return HttpResponseBadRequest("Unsupported method")
 
@@ -443,19 +466,19 @@ def posted_announcements_list(request):
     return HttpResponseBadRequest("Unsupported method")
 
 
+@login_required
 def custom_admin_page(request):
-    # Only allow users that are staff or superusers to access this page.
     if not (request.user.is_staff or request.user.is_superuser):
-        # Redirect non-admin users to the regular user page (or another page)
         return redirect("user_page")
 
-    # Otherwise, render the custom admin page
+    log_admin_action(request, "navigation", "Accessed the admin dashboard")
     return render(request, "custom_admin_page.html")
 
 
 @login_required
 def superadmin_redirect(request):
     if request.user.is_superuser:
+        log_admin_action(request, "navigation", "Accessed the superadmin page")
         return redirect(reverse("admin:index"))
     else:
         messages.error(
@@ -463,53 +486,56 @@ def superadmin_redirect(request):
         )
         return redirect("custom_admin_page")
 
+
 def get_special_dates(request):
     today = timezone.now().date()
 
     # Get users with birthdays today based on 'birth_date'
     birthday_users = list(
         CustomUser.objects.filter(
-            birth_date__month=today.month,
-            birth_date__day=today.day
+            birth_date__month=today.month, birth_date__day=today.day
         ).values("employee_id", "first_name", "surname")
     )
 
     # Get users with hiring anniversaries today based on 'date_hired'
     milestone_users = []
     for user in CustomUser.objects.filter(
-        date_hired__month=today.month,
-        date_hired__day=today.day
+        date_hired__month=today.month, date_hired__day=today.day
     ):
         years = today.year - user.date_hired.year
         if years >= 1:
-            milestone_users.append({
-                "employee_id": user.employee_id,
-                "first_name": user.first_name,
-                "surname": user.surname,
-                "years": years
-            })
+            milestone_users.append(
+                {
+                    "employee_id": user.employee_id,
+                    "first_name": user.first_name,
+                    "surname": user.surname,
+                    "years": years,
+                }
+            )
 
-    return JsonResponse({
-        "birthdays": birthday_users,
-        "milestones": milestone_users
-    })
+    return JsonResponse({"birthdays": birthday_users, "milestones": milestone_users})
 
 
 def attendance_list_json(request):
-    attendance_type = request.GET.get('attendance_type', 'time-log')
-    company_code = request.GET.get('attendance_company', 'all')
-    department_code = request.GET.get('attendance_department', 'all')
-    search_query = request.GET.get('search', '').strip()
+    attendance_type = request.GET.get("attendance_type", "time-log")
+    company_code = request.GET.get("attendance_company", "all")
+    department_code = request.GET.get("attendance_department", "all")
+    search_query = request.GET.get("search", "").strip()
 
-    print(f"Filtering: type={attendance_type}, company={company_code}, dept={department_code}, search={search_query}")
+    print(
+        f"Filtering: type={attendance_type}, company={company_code}, dept={department_code}, search={search_query}"
+    )
 
-    if attendance_type == 'time-log':
+    if attendance_type == "time-log":
         # Only include time entries for today
         today = date.today()
-        qs = TimeEntry.objects.select_related('user', 'user__company', 'user__position')\
-            .filter(time_in__date=today, user__is_active=True).order_by('-last_modified')
+        qs = (
+            TimeEntry.objects.select_related("user", "user__company", "user__position")
+            .filter(time_in__date=today, user__is_active=True)
+            .order_by("-last_modified")
+        )
 
-        if company_code != 'all':
+        if company_code != "all":
             companies_to_filter = []
             # Check if company_code is directly in COMPANY_CHOICES
             if company_code in COMPANY_CHOICES:
@@ -529,7 +555,7 @@ def attendance_list_json(request):
             else:
                 qs = qs.filter(user__company__name__iexact=company_code)
 
-        if department_code != 'all':
+        if department_code != "all":
             if department_code in DEPARTMENT_CHOICES:
                 dept_name = DEPARTMENT_CHOICES[department_code]
                 qs = qs.filter(user__position__name=dept_name)
@@ -539,44 +565,55 @@ def attendance_list_json(request):
         if search_query:
             # For more exact matching, try to match the complete name first
             # This will prioritize exact or close matches
-            complete_name_query = Q(user__first_name__icontains=search_query) | \
-                                 Q(user__surname__icontains=search_query) | \
-                                 Q(user__first_name__iexact=search_query) | \
-                                 Q(user__surname__iexact=search_query)
+            complete_name_query = (
+                Q(user__first_name__icontains=search_query)
+                | Q(user__surname__icontains=search_query)
+                | Q(user__first_name__iexact=search_query)
+                | Q(user__surname__iexact=search_query)
+            )
 
             # Then try concatenated name (first_name + surname)
             name_parts = search_query.split()
             if len(name_parts) > 1:
                 # If we have multiple terms, try to match them exactly in order
-                first_name_candidates = [' '.join(name_parts[:i]) for i in range(1, len(name_parts))]
-                surname_candidates = [' '.join(name_parts[i:]) for i in range(1, len(name_parts))]
+                first_name_candidates = [
+                    " ".join(name_parts[:i]) for i in range(1, len(name_parts))
+                ]
+                surname_candidates = [
+                    " ".join(name_parts[i:]) for i in range(1, len(name_parts))
+                ]
 
                 for first in first_name_candidates:
                     for last in surname_candidates:
                         if first and last:  # Ensure we don't have empty strings
-                            complete_name_query |= (Q(user__first_name__iexact=first) &
-                                                  Q(user__surname__iexact=last))
+                            complete_name_query |= Q(
+                                user__first_name__iexact=first
+                            ) & Q(user__surname__iexact=last)
 
             qs = qs.filter(complete_name_query)
 
         data = [
             {
-                'employee_id': entry.user.employee_id,
-                'name': f"{entry.user.first_name} {entry.user.surname}",
-                'time_in': entry.time_in.strftime("%Y-%m-%d %H:%M:%S"),
-                'time_out': entry.time_out.strftime("%Y-%m-%d %H:%M:%S") if entry.time_out else '',
-                'hours_worked': entry.hours_worked,
+                "employee_id": entry.user.employee_id,
+                "name": f"{entry.user.first_name} {entry.user.surname}",
+                "time_in": entry.time_in.strftime("%Y-%m-%d %H:%M:%S"),
+                "time_out": (
+                    entry.time_out.strftime("%Y-%m-%d %H:%M:%S")
+                    if entry.time_out
+                    else ""
+                ),
+                "hours_worked": entry.hours_worked,
             }
             for entry in qs
         ]
-    elif attendance_type in ['users-active', 'users-inactive']:
+    elif attendance_type in ["users-active", "users-inactive"]:
         # ... (rest of your code for users-active/inactive)
-        if attendance_type == 'users-active':
+        if attendance_type == "users-active":
             qs = CustomUser.objects.filter(is_active=True).distinct()
         else:  # users-inactive
             qs = CustomUser.objects.filter(is_active=False).distinct()
 
-        if company_code != 'all':
+        if company_code != "all":
             companies_to_filter = []
             if company_code in COMPANY_CHOICES:
                 companies_to_filter = COMPANY_CHOICES[company_code]
@@ -594,42 +631,50 @@ def attendance_list_json(request):
             else:
                 qs = qs.filter(company__name__iexact=company_code)
 
-        if department_code != 'all':
+        if department_code != "all":
             qs = qs.filter(position__name=department_code)
 
         if search_query:
             # For more exact matching, try to match the complete name first
-            complete_name_query = Q(first_name__icontains=search_query) | \
-                                Q(surname__icontains=search_query) | \
-                                Q(first_name__iexact=search_query) | \
-                                Q(surname__iexact=search_query)
+            complete_name_query = (
+                Q(first_name__icontains=search_query)
+                | Q(surname__icontains=search_query)
+                | Q(first_name__iexact=search_query)
+                | Q(surname__iexact=search_query)
+            )
 
             # Then try concatenated name (first_name + surname)
             name_parts = search_query.split()
             if len(name_parts) > 1:
                 # If we have multiple terms, try to match them exactly in order
-                first_name_candidates = [' '.join(name_parts[:i]) for i in range(1, len(name_parts))]
-                surname_candidates = [' '.join(name_parts[i:]) for i in range(1, len(name_parts))]
+                first_name_candidates = [
+                    " ".join(name_parts[:i]) for i in range(1, len(name_parts))
+                ]
+                surname_candidates = [
+                    " ".join(name_parts[i:]) for i in range(1, len(name_parts))
+                ]
 
                 for first in first_name_candidates:
                     for last in surname_candidates:
                         if first and last:  # Ensure we don't have empty strings
-                            complete_name_query |= (Q(first_name__iexact=first) &
-                                                Q(surname__iexact=last))
+                            complete_name_query |= Q(first_name__iexact=first) & Q(
+                                surname__iexact=last
+                            )
 
             qs = qs.filter(complete_name_query)
 
         data = [
             {
-                'employee_id': user.employee_id,
-                'name': f"{user.first_name} {user.surname}",
+                "employee_id": user.employee_id,
+                "name": f"{user.first_name} {user.surname}",
             }
             for user in qs
         ]
     else:
         data = []
 
-    return JsonResponse({'attendance_list': data, 'attendance_type': attendance_type})
+    return JsonResponse({"attendance_list": data, "attendance_type": attendance_type})
+
 
 @login_required
 @require_GET
@@ -641,9 +686,8 @@ def dashboard_data(request):
 
     # Get all entries for today
     todays_entries = TimeEntry.objects.filter(
-        time_in__gte=today_start,
-        time_in__lt=today_end
-    ).select_related('user', 'user__company', 'user__schedule_group')
+        time_in__gte=today_start, time_in__lt=today_end
+    ).select_related("user", "user__company", "user__schedule_group")
 
     processed_entries = []
     late_count = 0
@@ -663,35 +707,113 @@ def dashboard_data(request):
         if entry.is_late:
             late_count += 1
 
-        processed_entries.append({
-            'employee_id': user.employee_id,
-            'name': full_name,
-            'company': user.company.name if user.company else "",
-            'time_in': time_in_local.strftime("%I:%M %p"),
-            'time_out': entry.time_out.strftime("%I:%M %p") if entry.time_out else None,
-            'minutes_diff': entry.minutes_late,  # Use the stored value
-            'is_late': entry.is_late
-        })
+        processed_entries.append(
+            {
+                "employee_id": user.employee_id,
+                "name": full_name,
+                "company": user.company.name if user.company else "",
+                "time_in": time_in_local.strftime("%I:%M %p"),
+                "time_out": (
+                    entry.time_out.strftime("%I:%M %p") if entry.time_out else None
+                ),
+                "minutes_diff": entry.minutes_late,  # Use the stored value
+                "is_late": entry.is_late,
+            }
+        )
 
     # Sort entries - late ones by how late they are (descending)
     late_entries = sorted(
-        [e for e in processed_entries if e['is_late']],
-        key=lambda x: x['minutes_diff'],
-        reverse=True
+        [e for e in processed_entries if e["is_late"]],
+        key=lambda x: x["minutes_diff"],
+        reverse=True,
     )[:5]
 
     # Sort entries - early ones by how early they are (ascending)
     early_entries = sorted(
-        [e for e in processed_entries if not e['is_late']],
-        key=lambda x: x['minutes_diff']
+        [e for e in processed_entries if not e["is_late"]],
+        key=lambda x: x["minutes_diff"],
     )[:5]
 
-    return JsonResponse({
-        'today_entries': processed_entries,
-        'top_late': late_entries,
-        'top_early': early_entries,
-        'late_count': late_count
-    })
+    return JsonResponse(
+        {
+            "today_entries": processed_entries,
+            "top_late": late_entries,
+            "top_early": early_entries,
+            "late_count": late_count,
+        }
+    )
+
+
+@login_required
+@require_GET
+def get_logs(request):
+    """Return log data for the log page with filtering"""
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({"error": "Permission denied"}, status=403)
+
+    # Get filter parameters
+    search_query = request.GET.get("search", "").strip()
+    action_filter = request.GET.get("action", "")
+    date_range = request.GET.get("date_range", "")
+
+    # Base query
+    logs_query = AdminLog.objects.all()
+
+    # Apply filters
+    if search_query:
+        logs_query = logs_query.filter(
+            Q(description__icontains=search_query) |
+            Q(user__first_name__icontains=search_query) |
+            Q(user__surname__icontains=search_query) |
+            Q(user__employee_id__icontains=search_query)
+        )
+
+    if action_filter:
+        logs_query = logs_query.filter(action=action_filter)
+
+    # Date range filtering
+    now = timezone.now()
+    if date_range == "today":
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        logs_query = logs_query.filter(timestamp__gte=today_start)
+    elif date_range == "week":
+        week_start = now - timedelta(days=now.weekday())
+        week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+        logs_query = logs_query.filter(timestamp__gte=week_start)
+    elif date_range == "month":
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        logs_query = logs_query.filter(timestamp__gte=month_start)
+
+    # Get logs with pagination
+    page = request.GET.get("page", 1)
+    limit = request.GET.get("limit", 50)
+
+    try:
+        page = int(page)
+        limit = int(limit)
+    except ValueError:
+        page = 1
+        limit = 50
+
+    start = (page - 1) * limit
+    end = page * limit
+
+    logs = logs_query[start:end]
+
+    log_data = [
+        {
+            "user": f"{log.user.first_name} {log.user.surname}",
+            "employee_id": log.user.employee_id,
+            "action": log.get_action_display(),
+            "description": log.description,
+            "timestamp": log.timestamp.strftime("%Y-%m-%d %I:%M %p"),
+            "ip_address": log.ip_address or "Unknown",
+        }
+        for log in logs
+    ]
+
+    return JsonResponse({"logs": log_data, "total": logs_query.count()})
+
 @require_GET
 def export_time_entries_by_date(request):
     export_date = request.GET.get("export_date")
