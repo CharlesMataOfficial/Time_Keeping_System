@@ -386,6 +386,15 @@ button:hover {
   justify-content: center;
   width: 100%;
   height: 100%;
+  width: 90%;
+  max-width: 1200px;
+  height: 80vh;
+  max-height: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  padding: 20px;
 }
 
 #log h1 {
@@ -404,6 +413,10 @@ button:hover {
   overflow: hidden;
   /* display: flex; */
   /* align-items: center; */
+  max-height: 70vh; /* 70% of viewport height */
+  overflow-y: auto; /* Enable vertical scrolling */
+  width: 100%;
+  padding: 10px;
 }
 
 #attendance_rectangle {
@@ -1105,6 +1118,8 @@ button:hover {
   border-radius: 10px;
   height: auto;
   line-height: 1.2;
+  margin-top:7px;
+  margin-bottom: 1px;
 }
 
 .red-container,
@@ -1112,8 +1127,6 @@ button:hover {
 .red-container span {
   color: white !important;
   text-align: justify !important;
-  margin-top:7px;
-  margin-bottom: 1px;
 }
 
 /* Collaboration Section - Adjusted */
@@ -1296,4 +1309,48 @@ select option:checked {
 .late-employees-list table,
 .early-birds-list table {
   width: 100%;
+}
+
+.log-filters-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.log-filters-container {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.log-filters-container select,
+.log-filters-container input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  background: white;
+}
+
+#log-search {
+  width: 200px;
+}
+
+/* Fix log container scrolling */
+#log_rectangle {
+  max-height: 70vh; /* 70% of viewport height */
+  overflow-y: auto; /* Enable vertical scrolling */
+  width: 100%;
+  padding: 10px;
+}
+
+/* Position the filters above the scrollable area */
+.log-filters-wrapper {
+  width: 100%;
+  margin-bottom: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }

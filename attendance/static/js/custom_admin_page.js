@@ -98,9 +98,25 @@ function loadDashboardData() {
     });
 }
 
-// Add this function to load log data
-function loadLogData() {
-  fetch("/get_logs/")
+// Function to load and filter log data
+function loadLogData(filtered = false) {
+  let url = "/get_logs/";
+
+  // Add filter parameters if filtering is requested
+  if (filtered) {
+    const searchQuery = document.getElementById("log-search").value;
+    const actionType = document.getElementById("log-action").value;
+    const dateRange = document.getElementById("log-date").value;
+
+    const params = new URLSearchParams();
+    if (searchQuery) params.append("search", searchQuery);
+    if (actionType && actionType !== "all") params.append("action", actionType);
+    if (dateRange && dateRange !== "all") params.append("date_range", dateRange);
+
+    url += "?" + params.toString();
+  }
+
+  fetch(url)
     .then((response) => response.json())
     .then((data) => {
       const container = document.getElementById("log_rectangle");
@@ -157,6 +173,11 @@ function loadLogData() {
     .catch((error) => {
       console.error("Error loading log data:", error);
     });
+}
+
+// Function to apply filters to logs
+function filterLogs() {
+  loadLogData(true);
 }
 
 // Keyboard Shortcut: Left Arrow (`←`) and Right Arrow (`→`) to navigate

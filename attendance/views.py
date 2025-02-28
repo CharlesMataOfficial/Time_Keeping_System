@@ -751,11 +751,44 @@ def dashboard_data(request):
 @login_required
 @require_GET
 def get_logs(request):
-    """Return log data for the log page"""
+    """Return log data for the log page with filtering"""
     if not (request.user.is_staff or request.user.is_superuser):
         return JsonResponse({"error": "Permission denied"}, status=403)
 
-    # Get log entries with pagination
+    # Get filter parameters
+    search_query = request.GET.get("search", "").strip()
+    action_filter = request.GET.get("action", "")
+    date_range = request.GET.get("date_range", "")
+
+    # Base query
+    logs_query = AdminLog.objects.all()
+
+    # Apply filters
+    if search_query:
+        logs_query = logs_query.filter(
+            Q(description__icontains=search_query) |
+            Q(user__first_name__icontains=search_query) |
+            Q(user__surname__icontains=search_query) |
+            Q(user__employee_id__icontains=search_query)
+        )
+
+    if action_filter:
+        logs_query = logs_query.filter(action=action_filter)
+
+    # Date range filtering
+    now = timezone.now()
+    if date_range == "today":
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        logs_query = logs_query.filter(timestamp__gte=today_start)
+    elif date_range == "week":
+        week_start = now - timedelta(days=now.weekday())
+        week_start = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+        logs_query = logs_query.filter(timestamp__gte=week_start)
+    elif date_range == "month":
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        logs_query = logs_query.filter(timestamp__gte=month_start)
+
+    # Get logs with pagination
     page = request.GET.get("page", 1)
     limit = request.GET.get("limit", 50)
 
@@ -769,7 +802,7 @@ def get_logs(request):
     start = (page - 1) * limit
     end = page * limit
 
-    logs = AdminLog.objects.all()[start:end]
+    logs = logs_query[start:end]
 
     log_data = [
         {
@@ -783,4 +816,4 @@ def get_logs(request):
         for log in logs
     ]
 
-    return JsonResponse({"logs": log_data, "total": AdminLog.objects.count()})
+    return JsonResponse({"logs": log_data, "total": logs_query.count()})
