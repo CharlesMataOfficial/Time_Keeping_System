@@ -1298,3 +1298,71 @@ select option:checked {
 .early-birds-list table {
   width: 100%;
 }
+
+/* Modal container */
+.modal_export_style {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4); /* Black with opacity */
+}
+
+/* Modal content box */
+.modal_export_content {
+  background-color: #fefefe;
+  margin: 10% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 400px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* Close button */
+.modal_export_close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.modal_export_close:hover,
+.modal_export_close:focus {
+  color: #000;
+}
+
+/* Export option buttons */
+.modal_export_options {
+  margin: 20px 0;
+}
+.modal_export_options button {
+  margin: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Export section styles */
+.modal_export_section {
+  margin: 20px 0;
+}
+.modal_export_section label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+.modal_export_section input {
+  padding: 8px;
+  margin-bottom: 10px;
+  width: 80%;
+}
+.modal_export_section button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}

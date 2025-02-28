@@ -220,14 +220,38 @@
 
 
 
-    <!-- Export Excel Screen -->
-    <div id="export-excel" class="screen" style="display: none">
-      <h1>Export to Excel</h1>
-      <div class="export-container">
-        <button class="export-button">Date</button>
-        <button class="export-button">Employee ID</button>
-      </div>
+  <!-- Export Excel Screen -->
+<div id="export-excel" class="screen" style="display: none">
+  <h1>Export to Excel</h1>
+  <div class="export-container">
+    <button class="export-button" id="export_date_button">Date</button>
+    <button class="export-button" id="export_employee_button">Employee ID</button>
+  </div>
+</div>
+
+<!-- Export Excel Modal -->
+<div id="modal_export_excel" class="modal_export_style">
+  <div class="modal_export_content">
+    <span class="modal_export_close" id="modal_export_close">&times;</span>
+    <h2>Export Excel Options</h2>
+    <div class="modal_export_options">
+      <button id="modal_export_by_date_btn">Export by Date</button>
+      <button id="modal_export_by_employee_btn">Export by Employee ID</button>
     </div>
+    <!-- Section for Export by Date -->
+    <div id="modal_export_by_date_section" class="modal_export_section" style="display: none;">
+      <label for="modal_export_date">Select Date:</label>
+      <input type="date" id="modal_export_date">
+      <button id="modal_export_date_submit">Export</button>
+    </div>
+    <!-- Section for Export by Employee ID -->
+    <div id="modal_export_by_employee_section" class="modal_export_section" style="display: none;">
+      <label for="modal_export_employee_id">Employee ID:</label>
+      <input type="text" id="modal_export_employee_id" placeholder="Enter Employee ID">
+      <button id="modal_export_employee_submit">Export</button>
+    </div>
+  </div>
+</div>
 
     <!-- Announcement Screen -->
     <div id="announcement" class="screen" style="display: none">

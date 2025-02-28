@@ -5,18 +5,21 @@ from .models import CustomUser, TimeEntry, Announcement
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
 import json
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.http import require_POST, require_GET
 from django.utils import timezone
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 import os
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, time
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
-from .models import CustomUser
+from .models import CustomUser, TimeEntry
 from django.db.models import Q
 from .utils import COMPANY_CHOICES, DEPARTMENT_CHOICES, get_day_code, format_minutes, COMPANY_LOGO_MAPPING, get_company_logo
+from io import BytesIO
+from django.utils.dateparse import parse_date
+from openpyxl import Workbook
 
 @never_cache
 def login_view(request):
@@ -689,3 +692,131 @@ def dashboard_data(request):
         'top_early': early_entries,
         'late_count': late_count
     })
+@require_GET
+def export_time_entries_by_date(request):
+    export_date = request.GET.get("export_date")
+    if not export_date:
+        return HttpResponse("Date parameter is required.", status=400)
+    
+    # Parse the date string (expects format "YYYY-MM-DD")
+    date_obj = parse_date(export_date)
+    if not date_obj:
+        return HttpResponse("Invalid date format.", status=400)
+    
+    # Build datetime range for the day using naive datetimes
+    today_start = datetime.combine(date_obj, time.min)
+    today_end = datetime.combine(date_obj, time.max)
+    
+    # Fetch time entries for the specified day (using naive datetimes)
+    qs = TimeEntry.objects.filter(
+        time_in__gte=today_start,
+        time_in__lte=today_end
+    ).order_by("time_in")
+    
+    # Create an Excel workbook and worksheet
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Time Entries"
+    
+    # Write header row with 10 fields:
+    headers = [
+        "ID",
+        "Employee ID",
+        "First Name",
+        "Surname",
+        "Company",
+        "Date",
+        "Time In",
+        "Time Out",
+        "Hours Worked",
+        "Is Late"
+    ]
+    ws.append(headers)
+    
+    # Write each time entry as a row
+    for entry in qs:
+        row = [
+            entry.id,
+            entry.user.employee_id,
+            entry.user.first_name,
+            entry.user.surname,
+            entry.user.company.name if entry.user.company else "",
+            entry.time_in.strftime("%Y-%m-%d"),      # Date portion
+            entry.time_in.strftime("%H:%M:%S"),       # Only time for Time In
+            entry.time_out.strftime("%H:%M:%S") if entry.time_out else "",
+            entry.hours_worked,
+            "Yes" if entry.is_late else "No",
+        ]
+        ws.append(row)
+    
+    # Save the workbook to an in-memory buffer
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    # Return the Excel file as an HTTP response
+    response = HttpResponse(
+        output,
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f"attachment; filename=time_entries_{export_date}.xlsx"
+    return response
+
+
+@require_GET
+def export_time_entries_by_employee(request):
+    employee_id = request.GET.get("employee_id")
+    if not employee_id:
+        return HttpResponse("Employee ID parameter is required.", status=400)
+    
+    # Filter time entries by the provided employee id
+    qs = TimeEntry.objects.filter(user__employee_id=employee_id).order_by("time_in")
+    
+    # Create an Excel workbook and worksheet
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Time Entries"
+    
+    # Write header row with 10 fields:
+    headers = [
+        "ID",
+        "Employee ID",
+        "First Name",
+        "Surname",
+        "Company",
+        "Date",
+        "Time In",
+        "Time Out",
+        "Hours Worked",
+        "Is Late"
+    ]
+    ws.append(headers)
+    
+    # Write each time entry as a row
+    for entry in qs:
+        row = [
+            entry.id,
+            entry.user.employee_id,
+            entry.user.first_name,
+            entry.user.surname,
+            entry.user.company.name if entry.user.company else "",
+            entry.time_in.strftime("%Y-%m-%d"),      # Date portion
+            entry.time_in.strftime("%H:%M:%S"),       # Only time for Time In
+            entry.time_out.strftime("%H:%M:%S") if entry.time_out else "",
+            entry.hours_worked,
+            "Yes" if entry.is_late else "No",
+        ]
+        ws.append(row)
+    
+    # Save the workbook to an in-memory buffer
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    # Return the Excel file as an HTTP response
+    response = HttpResponse(
+        output,
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f"attachment; filename=time_entries_{employee_id}.xlsx"
+    return response
