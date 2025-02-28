@@ -112,6 +112,9 @@ class CustomUser(AbstractUser):
     position = models.ForeignKey(
         Position, on_delete=models.SET_NULL, null=True, blank=True
     )
+    department = models.ForeignKey(
+        Department, on_delete=models.SET_NULL, null=True, blank=True
+    )
     birth_date = models.DateField(null=True, blank=True)
     date_hired = models.DateField(null=True, blank=True)
     pin = models.CharField(
@@ -238,7 +241,7 @@ class TimeEntry(models.Model):
 
     @classmethod
     def clock_in(cls, user):
-        new_entry = cls.objects.create(user=user)       
+        new_entry = cls.objects.create(user=user)
         # Calculate lateness based on schedule
         try:
             time_in_local = new_entry.time_in

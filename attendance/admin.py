@@ -71,8 +71,9 @@ class CustomUserAdmin(UserAdmin):
                 "fields": (
                     "company",
                     "position",
+                    "department",
                     "date_hired",
-                    "schedule_group",  # Use schedule_group instead of time_preset
+                    "schedule_group",
                 )
             },
         ),
@@ -102,7 +103,7 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ("is_active", "is_staff", "is_superuser", "is_guard")
 
     # Add autocomplete fields
-    autocomplete_fields = ["company", "position", "schedule_group"]
+    autocomplete_fields = ["company", "position", "department","schedule_group"]
 
     def save_model(self, request, obj, form, change):
         if not change and not obj.employee_id:
