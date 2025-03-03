@@ -88,7 +88,7 @@ DATABASES = {
         "NAME": "agri_db",  # Replace with your database name
         "USER": "root",  # Default MySQL username
         "PASSWORD": "",  # Replace with your MySQL password
-        "HOST": "127.0.0.1",  # Default MySQL host
+        "HOST": "127.0.0.1",  # CHANGE THIS TO PC's IP ADDRESS
         "PORT": "3306",
     }
 }
@@ -119,7 +119,7 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "/static/"
+STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -147,3 +147,12 @@ LOGOUT_REDIRECT_URL = "login"
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_AGE = 86400  # 1 day
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Keep session active after closing browser
+
+# Security Settings for HTTPS
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# Make sure static files use HTTPS
+# STATIC_URL = 'https://' + ALLOWED_HOSTS[0] + ':8000/static/' if ALLOWED_HOSTS else '/static/'
