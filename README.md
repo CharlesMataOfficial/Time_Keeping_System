@@ -1,12 +1,15 @@
 # Requirements
 
 - Python
-- openSSL
+- [mkcert](https://github.com/FiloSottile/mkcert)
 
-If hosted on the local network openSSL required to generate SSL certificate (For HTTPS)
+If hosted on the local network mkcert is required to generate SSL certificate (For HTTPS)
+
+Once you have the requirements
 
 ```cmd
-openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
+mkcert -install
+mkcert localhost 127.0.0.1 ::1 PC_IP_ADDRESS
 ```
 
 Then open terminal to the django folder (where manage.py is located)
@@ -18,8 +21,8 @@ pip install -r requirements.txt
 Once requirements are satisfied, run
 
 ```cmd
-python manage.py runserver 0.0.0.0:8000 --cert-file cert.pem --key-file key.pem
+python manage.py runsslserver IP_ADDRESS_HERE(OR USE 0.0.0.0):8000 --certificate CERT_NAME.pem --key CERT_KEY_NAME.pem
 ```
 
 Go to <https://IP-ADDRESS-HERE:8000/>
-IF css is not loading, just hit ctrl + f5 to refresh the page
+IF css is not loading, just hit ctrl + f5 OR just f5 to refresh the page

@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "attendance",
-    "django-extensions",
+    "sslserver",
 ]
 
 MIDDLEWARE = [
@@ -140,8 +140,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR)
 APPEND_SLASH = False
 
 AUTH_USER_MODEL = "attendance.CustomUser"
-
-LOGOUT_REDIRECT_URL = "login"
 
 LOGOUT_REDIRECT_URL = "login"
 
