@@ -1,6 +1,6 @@
 # Requirements
 
-- Python
+- Python <= 3.11.x
 - [mkcert](https://github.com/FiloSottile/mkcert)
 
 If hosted on the local network mkcert is required to generate SSL certificate (For HTTPS)
