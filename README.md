@@ -21,7 +21,8 @@ pip install -r requirements.txt
 Once requirements are satisfied, run
 
 ```cmd
-python manage.py runsslserver IP_ADDRESS_HERE(OR USE 0.0.0.0):8000 --certificate CERT_NAME.pem --key CERT_KEY_NAME.pem
+python manage.py runsslserver IP_ADDRESS_HERE:8000 --certificate CERT_NAME.pem --key CERT_KEY_NAME.pem
+:: You can use 0.0.0.0:8000 also
 ```
 
 Go to <https://IP-ADDRESS-HERE:8000/>
