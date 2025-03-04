@@ -60,7 +60,7 @@
             src="{% static 'images/icons/excel_icon.png' %}"
             alt="Export Excel"
           />
-          Export Excel
+          Excel Files
         </li>
         <li class="menu-item" onclick="navigateTo('leave-approval')">
           <img
@@ -250,10 +250,11 @@
 
  <!-- Export Excel Screen -->
  <div id="export-excel" class="screen">
-  <h1>Export to Excel</h1>
+  <h1>Excel Files</h1>
   <div class="export-container">
-    <button class="export-button" id="export_date_button">Date</button>
-    <button class="export-button" id="export_employee_button">Employee ID</button>
+    <button class="export-button" id="export_date_button">Export Date Log</button>
+    <button class="export-button" id="export_employee_button"> Export Employee ID</button>
+    <button class="export-button" id="export_employee_button"> Import Excel</button>
   </div>
 </div>
 
@@ -288,7 +289,6 @@
   <input type="text" id="modal_export_employee_id" placeholder="Enter Employee ID">
   <button id="modal_export_employee_submit" type="button">Export Excel</button>
 </div>
-    <!-- Other sections for export by a single date or employee ID can remain here -->
   </div>
 </div>
 
