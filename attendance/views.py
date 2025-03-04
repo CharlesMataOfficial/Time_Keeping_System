@@ -22,9 +22,8 @@ from .utils import (
     format_minutes,
     COMPANY_LOGO_MAPPING,
     get_company_logo,
-    log_admin_action
+    log_admin_action,
 )
-
 from io import BytesIO
 from django.utils.dateparse import parse_date
 from openpyxl import Workbook
@@ -165,7 +164,7 @@ def clock_in_view(request):
         except CustomUser.DoesNotExist:
             error_message = "Employee ID not found"
         return JsonResponse({"success": False, "error": error_message})
-    
+
 
     # If authentication passed, proceed with clock in
     user = auth_result
@@ -819,27 +818,27 @@ def export_time_entries_by_date(request):
     export_date = request.GET.get("export_date")
     if not export_date:
         return HttpResponse("Date parameter is required.", status=400)
-    
+
     # Parse the date string (expects format "YYYY-MM-DD")
     date_obj = parse_date(export_date)
     if not date_obj:
         return HttpResponse("Invalid date format.", status=400)
-    
+
     # Build datetime range for the day using naive datetimes
     today_start = datetime.combine(date_obj, time.min)
     today_end = datetime.combine(date_obj, time.max)
-    
+
     # Fetch time entries for the specified day (using naive datetimes)
     qs = TimeEntry.objects.filter(
         time_in__gte=today_start,
         time_in__lte=today_end
     ).order_by("time_in")
-    
+
     # Create an Excel workbook and worksheet
     wb = Workbook()
     ws = wb.active
     ws.title = "Time Entries"
-    
+
     # Write header row with 10 fields:
     headers = [
         "ID",
@@ -854,7 +853,7 @@ def export_time_entries_by_date(request):
         "Is Late"
     ]
     ws.append(headers)
-    
+
     # Write each time entry as a row
     for entry in qs:
         row = [
@@ -870,12 +869,12 @@ def export_time_entries_by_date(request):
             "Yes" if entry.is_late else "No",
         ]
         ws.append(row)
-    
+
     # Save the workbook to an in-memory buffer
     output = BytesIO()
     wb.save(output)
     output.seek(0)
-    
+
     # Return the Excel file as an HTTP response
     response = HttpResponse(
         output,
@@ -892,15 +891,15 @@ def export_time_entries_by_employee(request):
     employee_id = request.GET.get("employee_id")
     if not employee_id:
         return HttpResponse("Employee ID parameter is required.", status=400)
-    
+
     # Filter time entries by the provided employee id
     qs = TimeEntry.objects.filter(user__employee_id=employee_id).order_by("time_in")
-    
+
     # Create an Excel workbook and worksheet
     wb = Workbook()
     ws = wb.active
     ws.title = "Time Entries"
-    
+
     # Write header row with 10 fields:
     headers = [
         "ID",
@@ -915,7 +914,7 @@ def export_time_entries_by_employee(request):
         "Is Late"
     ]
     ws.append(headers)
-    
+
     # Write each time entry as a row
     for entry in qs:
         row = [
@@ -931,12 +930,12 @@ def export_time_entries_by_employee(request):
             "Yes" if entry.is_late else "No",
         ]
         ws.append(row)
-    
+
     # Save the workbook to an in-memory buffer
     output = BytesIO()
     wb.save(output)
     output.seek(0)
-    
+
     # Return the Excel file as an HTTP response
     response = HttpResponse(
         output,

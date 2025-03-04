@@ -158,13 +158,13 @@ header {
 }
 
 @keyframes scroll-logos {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    /* Set this to the negative width of your total logos + gaps */
-    transform: translateX(-50%);
-  }
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        /* Set this to the negative width of your total logos + gaps */
+        transform: translateX(-100%);
+    }
 }
 
 .input-group {
