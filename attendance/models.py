@@ -84,9 +84,7 @@ class Department(models.Model):
     class Meta:
         verbose_name_plural = "User Departments"
         ordering = ["name"]
-        db_table = "django_departments"
-
-
+        db_table = "django_departments" # Changed From 'departments'
 
 class Position(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -395,7 +393,7 @@ class AdminLog(models.Model):
         ('announcement_create', 'Announcement Created'),
         ('announcement_post', 'Announcement Posted'),
         ('announcement_delete', 'Announcement Deleted'),
-        ('excel_import', 'Excel Import'),
+        ('_import', 'Excel Import'),
         ('excel_export', 'Excel Export'),
         ('leave_approval', 'Leave Approval'),
         ('login', 'User Login'),
