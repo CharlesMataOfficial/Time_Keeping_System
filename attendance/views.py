@@ -5,13 +5,13 @@ from .models import CustomUser, TimeEntry, Announcement, AdminLog
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
 import json
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
 from django.views.decorators.http import require_POST, require_GET
 from django.utils import timezone
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 import os
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, time
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.db.models import Q
@@ -22,9 +22,11 @@ from .utils import (
     format_minutes,
     COMPANY_LOGO_MAPPING,
     get_company_logo,
+    log_admin_action,
 )
-from .utils import log_admin_action
-
+from io import BytesIO
+from django.utils.dateparse import parse_date
+from openpyxl import Workbook
 
 @never_cache
 def login_view(request):
@@ -128,96 +130,88 @@ def clock_in_view(request):
     auth_result = CustomUser.authenticate_by_pin(employee_id, pin)
 
     # Handle first login cases
-    if isinstance(auth_result, dict) and auth_result["status"] == "first_login":
+    if isinstance(auth_result, dict) and auth_result.get("status") == "first_login":
         if new_pin:
             # Update PIN for first time login
             user = auth_result["user"]
             user.pin = new_pin
             user.if_first_login = False
             user.save()
-            return JsonResponse(
-                {"success": True, "message": "PIN updated successfully"}
-            )
+            return JsonResponse({"success": True, "message": "PIN updated successfully"})
         else:
             # Prompt for new PIN
-            return JsonResponse(
-                {
-                    "success": False,
-                    "error": "first_login",
-                    "message": "Please set your new PIN",
-                }
-            )
+            return JsonResponse({
+                "success": False,
+                "error": "first_login",
+                "message": "Please set your new PIN"
+            })
 
     # For first login check only
     if first_login_check:
-        if isinstance(auth_result, dict) and auth_result["status"] == "first_login":
-            return JsonResponse(
-                {
-                    "success": False,
-                    "error": "first_login",
-                    "message": "Please set your new PIN",
-                }
-            )
+        if isinstance(auth_result, dict) and auth_result.get("status") == "first_login":
+            return JsonResponse({
+                "success": False,
+                "error": "first_login",
+                "message": "Please set your new PIN"
+            })
         return JsonResponse({"success": True})
 
-    if not isinstance(auth_result, dict) and auth_result:
-        user = auth_result
+    # Check if authentication failed
+    if not auth_result:
+        try:
+            CustomUser.objects.get(employee_id=employee_id)
+            error_message = "Incorrect PIN"
+        except CustomUser.DoesNotExist:
+            error_message = "Employee ID not found"
+        return JsonResponse({"success": False, "error": error_message})
 
-        if not user:
-            try:
-                CustomUser.objects.get(employee_id=employee_id)
-                error_message = "Incorrect PIN"
-            except CustomUser.DoesNotExist:
-                error_message = "Employee ID not found"
-            return JsonResponse({"success": False, "error": error_message})
 
-        # Handle company logo using the utility function
-        user_company = user.company.name if user.company else ""
-        company_logo = get_company_logo(user_company)
+    # If authentication passed, proceed with clock in
+    user = auth_result
 
-        # Create time entry
-        entry = TimeEntry.clock_in(user)
-        if image_path:
-            entry.image_path = image_path
-            entry.save()
+    # Handle company logo using the utility function
+    user_company = user.company.name if user.company else ""
+    company_logo = get_company_logo(user_company)
 
-        # Fetch updated attendance list
-        now = timezone.now()
-        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        today_end = today_start + timedelta(days=1)
-        todays_entries = TimeEntry.objects.filter(
-            time_in__gte=today_start, time_in__lt=today_end
-        ).order_by("-last_modified")
+    # Create time entry (using the updated clock_in that always creates a new record)
+    entry = TimeEntry.clock_in(user)
+    if image_path:
+        entry.image_path = image_path
+        entry.save()
 
-        attendance_list = [
-            {
-                "employee_id": entry.user.employee_id,
-                "first_name": entry.user.first_name,
-                "surname": entry.user.surname,
-                "company": entry.user.company.name if entry.user.company else "",
-                "time_in": entry.time_in.strftime("%I:%M %p"),
-                "time_out": (
-                    entry.time_out.strftime("%I:%M %p") if entry.time_out else None
-                ),
-                "image_path": entry.image_path,
-            }
-            for entry in todays_entries
-        ]
+    # Fetch updated attendance list for today
+    now = timezone.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
+    todays_entries = TimeEntry.objects.filter(
+        time_in__gte=today_start, time_in__lt=today_end
+    ).order_by("-last_modified")
 
-        return JsonResponse(
-            {
-                "success": True,
-                "employee_id": user.employee_id,
-                "first_name": user.first_name,
-                "surname": user.surname,
-                "company": user.company.name if user.company else "",
-                "time_in": entry.time_in.strftime("%I:%M %p"),
-                "time_out": None,
-                "image_path": entry.image_path,
-                "new_logo": company_logo,
-                "attendance_list": attendance_list,
-            }
-        )
+    attendance_list = [
+        {
+            "employee_id": entry.user.employee_id,
+            "first_name": entry.user.first_name,
+            "surname": entry.user.surname,
+            "company": entry.user.company.name if entry.user.company else "",
+            "time_in": entry.time_in.strftime("%I:%M %p"),
+            "time_out": (entry.time_out.strftime("%I:%M %p") if entry.time_out else None),
+            "image_path": entry.image_path,
+        }
+        for entry in todays_entries
+    ]
+
+    return JsonResponse({
+        "success": True,
+        "employee_id": user.employee_id,
+        "first_name": user.first_name,
+        "surname": user.surname,
+        "company": user.company.name if user.company else "",
+        "time_in": entry.time_in.strftime("%I:%M %p"),
+        "time_out": None,
+        "image_path": entry.image_path,
+        "new_logo": company_logo,
+        "attendance_list": attendance_list,
+    })
 
 
 @require_POST
@@ -341,7 +335,7 @@ def upload_image(request):
         try:
             user = CustomUser.objects.get(employee_id=employee_id)
         except CustomUser.DoesNotExist:
-            return JsonResponse({"success": False, "error": "User not found"})
+            return JsonResponse({"success": False, "error": "Employee ID not found"})
 
         # Get the current date
         now = datetime.now()
@@ -817,3 +811,132 @@ def get_logs(request):
     ]
 
     return JsonResponse({"logs": log_data, "total": logs_query.count()})
+
+@require_GET
+def export_time_entries_by_date(request):
+    export_date = request.GET.get("export_date")
+    if not export_date:
+        return HttpResponse("Date parameter is required.", status=400)
+
+    # Parse the date string (expects format "YYYY-MM-DD")
+    date_obj = parse_date(export_date)
+    if not date_obj:
+        return HttpResponse("Invalid date format.", status=400)
+
+    # Build datetime range for the day using naive datetimes
+    today_start = datetime.combine(date_obj, time.min)
+    today_end = datetime.combine(date_obj, time.max)
+
+    # Fetch time entries for the specified day (using naive datetimes)
+    qs = TimeEntry.objects.filter(
+        time_in__gte=today_start,
+        time_in__lte=today_end
+    ).order_by("time_in")
+
+    # Create an Excel workbook and worksheet
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Time Entries"
+
+    # Write header row with 10 fields:
+    headers = [
+        "ID",
+        "Employee ID",
+        "First Name",
+        "Surname",
+        "Company",
+        "Date",
+        "Time In",
+        "Time Out",
+        "Hours Worked",
+        "Is Late"
+    ]
+    ws.append(headers)
+
+    # Write each time entry as a row
+    for entry in qs:
+        row = [
+            entry.id,
+            entry.user.employee_id,
+            entry.user.first_name,
+            entry.user.surname,
+            entry.user.company.name if entry.user.company else "",
+            entry.time_in.strftime("%Y-%m-%d"),      # Date portion
+            entry.time_in.strftime("%H:%M:%S"),       # Only time for Time In
+            entry.time_out.strftime("%H:%M:%S") if entry.time_out else "",
+            entry.hours_worked,
+            "Yes" if entry.is_late else "No",
+        ]
+        ws.append(row)
+
+    # Save the workbook to an in-memory buffer
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    # Return the Excel file as an HTTP response
+    response = HttpResponse(
+        output,
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f"attachment; filename=time_entries_{export_date}.xlsx"
+    return response
+
+
+@require_GET
+def export_time_entries_by_employee(request):
+    employee_id = request.GET.get("employee_id")
+    if not employee_id:
+        return HttpResponse("Employee ID parameter is required.", status=400)
+
+    # Filter time entries by the provided employee id
+    qs = TimeEntry.objects.filter(user__employee_id=employee_id).order_by("time_in")
+
+    # Create an Excel workbook and worksheet
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Time Entries"
+
+    # Write header row with 10 fields:
+    headers = [
+        "ID",
+        "Employee ID",
+        "First Name",
+        "Surname",
+        "Company",
+        "Date",
+        "Time In",
+        "Time Out",
+        "Hours Worked",
+        "Is Late"
+    ]
+    ws.append(headers)
+
+    # Write each time entry as a row
+    for entry in qs:
+        row = [
+            entry.id,
+            entry.user.employee_id,
+            entry.user.first_name,
+            entry.user.surname,
+            entry.user.company.name if entry.user.company else "",
+            entry.time_in.strftime("%Y-%m-%d"),      # Date portion
+            entry.time_in.strftime("%H:%M:%S"),       # Only time for Time In
+            entry.time_out.strftime("%H:%M:%S") if entry.time_out else "",
+            entry.hours_worked,
+            "Yes" if entry.is_late else "No",
+        ]
+        ws.append(row)
+
+    # Save the workbook to an in-memory buffer
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    # Return the Excel file as an HTTP response
+    response = HttpResponse(
+        output,
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f"attachment; filename=time_entries_{employee_id}.xlsx"
+    return response

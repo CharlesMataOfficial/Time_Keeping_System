@@ -187,7 +187,7 @@ window.addEventListener("click", (e) => {
   }
 });
 
-// --- Handling Clock In form submission ---
+ // --- Handling Clock In form submission ---
 clockInForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
@@ -209,6 +209,13 @@ clockInForm.addEventListener("submit", (e) => {
   })
     .then((response) => response.json())
     .then((data) => {
+      // If the response is unsuccessful and it's not a first login prompt, alert the error
+      if (!data.success && data.error !== "first_login") {
+        alert("Clock In Error: " + data.error);
+        return;
+      }
+
+      // If it's a first login, handle PIN update
       if (data.error === "first_login") {
         clockInModal.style.display = "none";
         newPinModal.style.display = "block";
@@ -240,6 +247,8 @@ clockInForm.addEventListener("submit", (e) => {
                   newPinModal.style.display = "none";
                   newPinForm.reset();
                   clockInForm.reset();
+                } else {
+                  alert("Error: " + data.error);
                 }
               })
               .catch((error) => {
@@ -248,36 +257,48 @@ clockInForm.addEventListener("submit", (e) => {
               });
           }
         };
-      } else {
-        // Regular clock in with image
-        const imageData = captureImage();
-        uploadImage(imageData, employee_id)
-          .then((filePath) => {
-            return fetch("/clock_in/", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": csrftoken,
-              },
-              body: JSON.stringify({
-                employee_id,
-                pin,
-                image_path: filePath,
-              }),
-            });
-          })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.success) {
-              addAttendanceItem(data);
-              alert("Clock In successful!");
-              updatePartnerLogo(data.new_logo);
-              clockInModal.style.display = "none";
-              clockInForm.reset();
-              updateAttendanceList(data.attendance_list); // Update the attendance list
-            }
-          });
+        return; // Stop further processing until the new PIN is set.
       }
+
+      // Otherwise, proceed with regular clock in (with image)
+      const imageData = captureImage();
+      uploadImage(imageData, employee_id)
+        .then((filePath) => {
+          return fetch("/clock_in/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrftoken,
+            },
+            body: JSON.stringify({
+              employee_id,
+              pin,
+              image_path: filePath,
+            }),
+          });
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          // If the clock in attempt returns an error, alert it
+          if (!data.success) {
+            alert("Clock In Error: " + data.error);
+            return;
+          }
+          addAttendanceItem(data);
+          alert("Clock In successful!");
+          updatePartnerLogo(data.new_logo);
+          clockInModal.style.display = "none";
+          clockInForm.reset();
+          updateAttendanceList(data.attendance_list); // Update the attendance list
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("Error: " + error.message);
+        });
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("Error: " + error.message);
     });
 });
 
