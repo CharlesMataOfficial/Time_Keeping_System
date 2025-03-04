@@ -1,8 +1,9 @@
-# attendance/admin.py
+import datetime
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 from django.utils.html import format_html
+from django.utils import timezone
 from django.conf import settings
 from .models import (
     CustomUser,
@@ -16,7 +17,7 @@ from .models import (
     AdminLog,
 )
 from .forms import CustomUserCreationForm, TimeEntryForm
-from .utils import log_admin_action
+from .utils import log_admin_action, get_day_code
 
 class TimeEntryInline(admin.TabularInline):
     model = TimeEntry
@@ -180,9 +181,51 @@ class TimeEntryAdmin(admin.ModelAdmin):
     formatted_minutes_late.admin_order_field = "minutes_late"
 
     def save_model(self, request, obj, form, change):
+        # Calculate hours worked if both time_in and time_out are set
         if obj.time_in and obj.time_out:
             delta = obj.time_out - obj.time_in
             obj.hours_worked = round(delta.total_seconds() / 3600, 2)
+
+        # Calculate lateness based on schedule
+        if obj.time_in:
+            try:
+                time_in_local = obj.time_in
+                day_code = get_day_code(time_in_local)  # Using utility function
+
+                # Get schedule using get_schedule_for_day
+                preset = obj.user.get_schedule_for_day(day_code)
+                if preset:
+                    expected_start = preset.start_time
+                    grace_period = datetime.timedelta(minutes=preset.grace_period_minutes)
+
+                    # Create datetime with schedule time
+                    naive_expected_time = datetime.datetime.combine(
+                        time_in_local.date(), expected_start
+                    )
+
+                    # Make timezone-aware
+                    expected_start_dt = timezone.make_aware(naive_expected_time)
+                    expected_with_grace = expected_start_dt + grace_period
+
+                    # Ensure time_in_local is timezone aware for comparison
+                    if not timezone.is_aware(time_in_local):
+                        time_in_local = timezone.make_aware(time_in_local)
+
+                    # Now both datetimes are timezone-aware for safe comparison
+                    obj.is_late = time_in_local > expected_with_grace
+
+                    # Calculate minutes late/early
+                    time_diff = time_in_local - expected_start_dt
+                    obj.minutes_late = round(time_diff.total_seconds() / 60)
+                else:
+                    obj.is_late = False
+                    obj.minutes_late = 0
+            except Exception as e:
+                # In case of errors, don't mark as late
+                obj.is_late = False
+                obj.minutes_late = 0
+                print(f"Error calculating lateness: {e}")
+
         super().save_model(request, obj, form, change)
 
     def user__first_name(self, obj):
