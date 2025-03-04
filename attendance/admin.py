@@ -159,38 +159,34 @@ class TimeEntryAdmin(admin.ModelAdmin):
     ]
 
     autocomplete_fields = ["user"]
-    readonly_fields = (
-        "hours_worked",
-        "view_image_path",
-    )
 
-    def formatted_minutes_late(self, obj):
-        if obj.minutes_late > 0:
-            return format_html(
-                '<span style="color: red;">{} mins late</span>', obj.minutes_late
-            )
-        elif obj.minutes_late < 0:
-            return format_html(
-                '<span style="color: green;">{} mins early</span>',
-                abs(obj.minutes_late),
-            )
-        else:
-            return "On time"
+    # Make these fields read-only
+    readonly_fields = ("hours_worked", "is_late", "minutes_late", "view_image_path")
 
-    formatted_minutes_late.short_description = "Arrival Status"
-    formatted_minutes_late.admin_order_field = "minutes_late"
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+
+        # Check if fields exist in base_fields before setting help_text
+        if 'hours_worked' in form.base_fields:
+            form.base_fields['hours_worked'].help_text = "Automatically calculated based on time in and time out."
+        if 'is_late' in form.base_fields:
+            form.base_fields['is_late'].help_text = "Automatically calculated based on time in and user's schedule."
+        if 'minutes_late' in form.base_fields:
+            form.base_fields['minutes_late'].help_text = "Automatically calculated based on time in and user's schedule."
+
+        return form
 
     def save_model(self, request, obj, form, change):
-        # Calculate hours worked if both time_in and time_out are set
+        # Always calculate hours worked if time_in and time_out exist
         if obj.time_in and obj.time_out:
             delta = obj.time_out - obj.time_in
             obj.hours_worked = round(delta.total_seconds() / 3600, 2)
 
-        # Calculate lateness based on schedule
+        # Always calculate lateness if time_in exists
         if obj.time_in:
             try:
                 time_in_local = obj.time_in
-                day_code = get_day_code(time_in_local)  # Using utility function
+                day_code = get_day_code(time_in_local)
 
                 # Get schedule using get_schedule_for_day
                 preset = obj.user.get_schedule_for_day(day_code)
@@ -198,35 +194,65 @@ class TimeEntryAdmin(admin.ModelAdmin):
                     expected_start = preset.start_time
                     grace_period = datetime.timedelta(minutes=preset.grace_period_minutes)
 
-                    # Create datetime with schedule time
                     naive_expected_time = datetime.datetime.combine(
                         time_in_local.date(), expected_start
                     )
 
-                    # Make timezone-aware
                     expected_start_dt = timezone.make_aware(naive_expected_time)
                     expected_with_grace = expected_start_dt + grace_period
 
-                    # Ensure time_in_local is timezone aware for comparison
                     if not timezone.is_aware(time_in_local):
                         time_in_local = timezone.make_aware(time_in_local)
 
-                    # Now both datetimes are timezone-aware for safe comparison
                     obj.is_late = time_in_local > expected_with_grace
 
-                    # Calculate minutes late/early
                     time_diff = time_in_local - expected_start_dt
                     obj.minutes_late = round(time_diff.total_seconds() / 60)
                 else:
                     obj.is_late = False
                     obj.minutes_late = 0
             except Exception as e:
-                # In case of errors, don't mark as late
                 obj.is_late = False
                 obj.minutes_late = 0
                 print(f"Error calculating lateness: {e}")
 
         super().save_model(request, obj, form, change)
+
+    def formatted_minutes_late(self, obj):
+        if obj.minutes_late > 0:
+            # Format late time in hours and minutes
+            hours = obj.minutes_late // 60
+            mins = obj.minutes_late % 60
+
+            if hours > 0:
+                if mins > 0:
+                    time_str = f"{hours} hr {mins} min late"
+                else:
+                    time_str = f"{hours} hr late"
+            else:
+                time_str = f"{mins} min late"
+
+            return format_html('<span style="color: red;">{}</span>', time_str)
+        elif obj.minutes_late < 0:
+            # Format early time in hours and minutes (use absolute value)
+            abs_mins = abs(obj.minutes_late)
+            hours = abs_mins // 60
+            mins = abs_mins % 60
+
+            if hours > 0:
+                if mins > 0:
+                    time_str = f"{hours} hr {mins} min early"
+                else:
+                    time_str = f"{hours} hr early"
+            else:
+                time_str = f"{mins} min early"
+
+            return format_html('<span style="color: green;">{}</span>', time_str)
+        else:
+            return ""
+
+    formatted_minutes_late.short_description = "Arrival Status"
+    formatted_minutes_late.admin_order_field = "minutes_late"
 
     def user__first_name(self, obj):
         return obj.user.first_name
