@@ -15,8 +15,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         self.stdout.write('Starting migration...')
-
-        self.stdout.write('Clearing existing data...')
         Company.objects.all().delete()
         Position.objects.all().delete()
         TimeEntry.objects.all().delete()

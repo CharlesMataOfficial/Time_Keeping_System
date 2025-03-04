@@ -397,8 +397,6 @@ class AdminLog(models.Model):
         ('announcement_create', 'Announcement Created'),
         ('announcement_post', 'Announcement Posted'),
         ('announcement_delete', 'Announcement Deleted'),
-        ('_import', 'Excel Import'),
-        ('excel_export', 'Excel Export'),
         ('leave_approval', 'Leave Approval'),
         ('login', 'User Login'),
         ('logout', 'User Logout'),
