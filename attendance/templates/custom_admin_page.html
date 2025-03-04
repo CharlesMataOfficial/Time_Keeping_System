@@ -241,10 +241,50 @@
     <div id="export-excel" class="screen" style="display: none">
       <h1>Export to Excel</h1>
       <div class="export-container">
-        <button class="export-button">Date</button>
-        <button class="export-button">Employee ID</button>
+        <button class="export-button" onclick="openModal('exportDateModal')">Date</button>
+        <button class="export-button"  onclick="openModal ('exportEmpModal')">Employee ID</button>
       </div>
     </div>
+
+    <!-- Modal for Export by Date -->
+    <div id="exportDateModal" class="modal">
+    <div class="modal-content">
+      <h2>Export by Date</h2>
+        <label for="dateFileName">File Name:</label>
+        <input type="text" id="dateFileName" placeholder="Enter file name">
+      
+        <label for="startDate">Start Date:</label>
+        <input type="date" id="startDate">
+
+        <label for="endDate">End Date:</label>
+        <input type="date" id="endDate">
+
+        <button onclick="exportDataByDate()">Export</button>
+        <button onclick="closeModal('exportDateModal')">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Modal for Export by Employee ID -->
+    <div id="exportEmpModal" class="modal">
+    <div class="modal-content">
+      <h2>Export by Employee ID</h2>
+        <label for="empFileName">File Name:</label>
+        <input type="text" id="empFileName" placeholder="Enter file name">
+
+        <label for="employeeID">Employee ID:</label>
+        <input type="text" id="employeeID" placeholder="Enter Employee ID">
+
+        <label for="empStartDate">Start Date:</label>
+        <input type="date" id="empStartDate">
+
+        <label for="empEndDate">End Date:</label>
+        <input type="date" id="empEndDate">
+
+        <button onclick="exportDataByEmployee()">Export</button>
+        <button onclick="closeModal('exportEmpModal')">Cancel</button>
+    
+    </div>
+  </div>
 
     <!-- Announcement Screen -->
     <div id="announcement" class="screen" style="display: none">

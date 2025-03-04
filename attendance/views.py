@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.urls import reverse
-from .models import CustomUser, TimeEntry, Announcement, AdminLog
+from .models import CustomUser, TimeEntry, Announcement, AdminLog, Q
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
 import json
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponseBadRequest,  HttpResponse
 from django.views.decorators.http import require_POST, require_GET
 from django.utils import timezone
 from django.core.files.base import ContentFile
@@ -14,7 +14,6 @@ import os
 from datetime import datetime, timedelta, date
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
-from django.db.models import Q
 from .utils import (
     COMPANY_CHOICES,
     DEPARTMENT_CHOICES,
@@ -22,8 +21,10 @@ from .utils import (
     format_minutes,
     COMPANY_LOGO_MAPPING,
     get_company_logo,
+    log_admin_action,
 )
-from .utils import log_admin_action
+import pandas as pd
+from django.utils.timezone import make_aware
 
 
 @never_cache
@@ -817,3 +818,197 @@ def get_logs(request):
     ]
 
     return JsonResponse({"logs": log_data, "total": logs_query.count()})
+    
+
+@csrf_exempt
+def export_time_entries_by_date(request):
+    employee_id = request.GET.get('employee_id')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    is_late = request.GET.get('is_late')
+    file_name = request.GET.get('file_name', 'time_entries_export')
+
+    # 🛡️ Validate input
+    try:
+        if start_date:
+            start_date = make_aware(datetime.datetime.strptime(start_date, "%Y-%m-%d"))
+        if end_date:
+            end_date = make_aware(datetime.datetime.strptime(end_date, "%Y-%m-%d"))
+        is_late = bool(int(is_late)) if is_late is not None else None
+    except ValueError:
+        return HttpResponse("Invalid input format", status=400)
+
+    # 🔍 Build query using Q objects
+    query = Q()
+    if start_date and end_date:
+        query &= Q(time_in__range=[start_date, end_date])
+    if employee_id:
+        query &= Q(user__id=employee_id)
+    if is_late is not None:
+        query &= Q(is_late=is_late)
+
+    # 🧠 Fetch and optimize query
+    records = (TimeEntry.objects
+        .filter(query)
+        .select_related('user')
+        .values(
+            'user__id', 'user__first_name', 'user__last_name',
+            'time_in', 'time_out', 'hours_worked', 'is_late'
+        )
+    )
+
+    if not records.exists():
+        return HttpResponse("No records found", status=404)
+
+    # 📊 Create a DataFrame from QuerySet
+    df = pd.DataFrame.from_records(records)
+
+    # 📝 Rename columns for better presentation
+    df.rename(columns={
+        'user__id': 'Employee ID',
+        'user__first_name': 'First Name',
+        'user__last_name': 'Last Name',
+        'time_in': 'Time In',
+        'time_out': 'Time Out',
+        'hours_worked': 'Hours Worked',
+        'is_late': 'Late'
+    }, inplace=True)
+
+    # ⏰ Format datetime columns
+    df['Time In'] = pd.to_datetime(df['Time In']).dt.strftime('%Y-%m-%d %H:%M:%S')
+    df['Time Out'] = pd.to_datetime(df['Time Out']).dt.strftime('%Y-%m-%d %H:%M:%S')
+
+    # 🎯 Prepare the response as an Excel file
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = f'attachment; filename="{file_name}.xlsx"'
+
+    # 🚀 Write DataFrame to Excel using XlsxWriter
+    with pd.ExcelWriter(response, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Time Entries')
+
+        # 🌟 Optional: Enhance Excel formatting
+        workbook = writer.book
+        worksheet = writer.sheets['Time Entries']
+        
+        # Auto-size columns based on content
+        for i, col in enumerate(df.columns):
+            max_length = max(df[col].astype(str).map(len).max(), len(col))
+            worksheet.set_column(i, i, max_length + 2)
+
+        # Add header format
+        header_format = workbook.add_format({'bold': True, 'bg_color': '#D9EAD3'})
+        for col_num, value in enumerate(df.columns.values):
+            worksheet.write(0, col_num, value, header_format)
+
+    return response
+
+def export_time_entries_by_employee(request):
+    employee_id = request.GET.get('employee_id')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    file_name = request.GET.get('file_name', 'time_entries_employee')
+
+    if not employee_id or not start_date or not end_date:
+        return HttpResponse("Invalid parameters", status=400)
+
+    try:
+        start_date = make_aware(datetime.datetime.strptime(start_date, "%Y-%m-%d"))
+        end_date = make_aware(datetime.datetime.strptime(end_date, "%Y-%m-%d"))
+    except ValueError:
+        return HttpResponse("Invalid date format. Use YYYY-MM-DD.", status=400)
+
+    records = TimeEntry.objects.filter(user__id=employee_id, time_in__range=[start_date, end_date])
+
+    if not records.exists():
+        return HttpResponse("No records found", status=404)
+
+    df = pd.DataFrame.from_records(records.values(
+        'user__id', 'user__first_name', 'user__surname', 
+        'time_in', 'time_out', 'hours_worked', 'is_late'
+    ))
+
+    df.rename(columns={
+        'user__id': 'Employee ID',
+        'user__first_name': 'First Name',
+        'user__surname': 'Last Name',
+        'time_in': 'Time In',
+        'time_out': 'Time Out',
+        'hours_worked': 'Hours Worked',
+        'is_late': 'Late'
+    }, inplace=True)
+
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = f'attachment; filename="{file_name}.xlsx"'
+
+    with pd.ExcelWriter(response, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False)
+
+    return response
+
+def export_time_entries_to_excel(request):
+    # 📅 Get request parameters
+    employee_id = request.GET.get('employee_id')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    is_late = request.GET.get('is_late')
+    file_name = request.GET.get('file_name', 'time_entries_export')
+
+    # 🛡️ Validate input
+    try:
+        if start_date:
+            start_date = make_aware(datetime.datetime.strptime(start_date, "%Y-%m-%d"))
+        if end_date:
+            end_date = make_aware(datetime.datetime.strptime(end_date, "%Y-%m-%d"))
+        is_late = bool(int(is_late)) if is_late is not None else None
+    except ValueError:
+        return HttpResponse("Invalid input format", status=400)
+
+    # 🔍 Build query using Q objects
+    query = Q()
+    if start_date and end_date:
+        query &= Q(time_in__range=[start_date, end_date])
+    if employee_id:
+        query &= Q(user__id=employee_id)
+    if is_late is not None:
+        query &= Q(is_late=is_late)
+
+    # 🧠 Fetch and optimize query
+    records = (TimeEntry.objects
+        .filter(query)
+        .select_related('user')
+        .values(
+            'user__id', 'user__first_name', 'user__last_name',
+            'time_in', 'time_out', 'hours_worked', 'is_late'
+        )
+    )
+
+    if not records.exists():
+        return HttpResponse("No records found", status=404)
+
+    # 📊 Create a DataFrame from QuerySet
+    df = pd.DataFrame.from_records(records)
+
+    # 📝 Rename columns for better presentation
+    df.rename(columns={
+        'user__id': 'Employee ID',
+        'user__first_name': 'First Name',
+        'user__last_name': 'Last Name',
+        'time_in': 'Time In',
+        'time_out': 'Time Out',
+        'hours_worked': 'Hours Worked',
+        'is_late': 'Late'
+    }, inplace=True)
+
+    # ⏰ Format datetime columns
+    df['Time In'] = pd.to_datetime(df['Time In']).dt.strftime('%Y-%m-%d %H:%M:%S')
+    df['Time Out'] = pd.to_datetime(df['Time Out']).dt.strftime('%Y-%m-%d %H:%M:%S')
+
+    # 🎯 Prepare the response as an Excel file
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = f'attachment; filename="{file_name}.xlsx"'
+
+    # 🚀 Write DataFrame to Excel using XlsxWriter
+    with pd.ExcelWriter(response, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Time Entries')
+
+    return response
