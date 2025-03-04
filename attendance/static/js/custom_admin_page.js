@@ -611,17 +611,6 @@ document.getElementById('modal_export_close').addEventListener('click', function
   document.getElementById('modal_export_excel').style.display = 'none';
 });
 
-// Toggle sections based on modal button clicks inside the modal
-document.getElementById('modal_export_by_date_btn').addEventListener('click', function () {
-  document.getElementById('modal_export_by_date_section').style.display = 'block';
-  document.getElementById('modal_export_by_employee_section').style.display = 'none';
-});
-
-document.getElementById('modal_export_by_employee_btn').addEventListener('click', function () {
-  document.getElementById('modal_export_by_employee_section').style.display = 'block';
-  document.getElementById('modal_export_by_date_section').style.display = 'none';
-});
-
 // Optional: Close modal if user clicks outside the modal content
 window.addEventListener('click', function (event) {
   const modal = document.getElementById('modal_export_excel');
@@ -630,38 +619,37 @@ window.addEventListener('click', function (event) {
   }
 });
 
-// Bind export screen buttons to open the modal and auto-select the section
-document.getElementById('export_date_button').addEventListener('click', function () {
-  openModalExportExcel();
-  // Automatically display the "Export by Date" section
-  document.getElementById('modal_export_by_date_section').style.display = 'block';
-  document.getElementById('modal_export_by_employee_section').style.display = 'none';
-});
+// Ensure that DOM elements are loaded before binding event listeners
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('export_date_button').addEventListener('click', function () {
+    openModalExportExcel();
+    document.getElementById('modal_export_by_date_section').style.display = 'block';
+    document.getElementById('modal_export_by_employee_section').style.display = 'none';
+  });
 
-document.getElementById('export_employee_button').addEventListener('click', function () {
-  openModalExportExcel();
-  // Automatically display the "Export by Employee ID" section
-  document.getElementById('modal_export_by_employee_section').style.display = 'block';
-  document.getElementById('modal_export_by_date_section').style.display = 'none';
-});
+  document.getElementById('export_employee_button').addEventListener('click', function () {
+    openModalExportExcel();
+    document.getElementById('modal_export_by_employee_section').style.display = 'block';
+    document.getElementById('modal_export_by_date_section').style.display = 'none';
+  });
 
-// Instead, attach the export date check to the submit button inside the modal
-document.getElementById('modal_export_date_submit').addEventListener('click', function () {
-  const exportDate = document.getElementById('modal_export_date').value;
-  if (!exportDate) {
-    alert("Please select a date.");
-    return;
-  }
-  // Trigger your export functionality, e.g., redirect to export URL or call AJAX
-  window.location.href = `/export_time_entries_by_date/?export_date=${exportDate}`;
-});
+  // Export by Date submit handler
+  document.getElementById('modal_export_date_submit').addEventListener('click', function () {
+    const exportDate = document.getElementById('modal_export_date').value;
+    if (!exportDate) {
+      alert("Please select a date.");
+      return;
+    }
+    window.location.href = `/export_time_entries_by_date/?export_date=${exportDate}`;
+  });
 
-document.getElementById('modal_export_employee_submit').addEventListener('click', function () {
-  const employeeId = document.getElementById('modal_export_employee_id').value;
-  if (!employeeId) {
-    alert("Please enter an Employee ID.");
-    return;
-  }
-  // Construct the URL to trigger the export view
-  window.location.href = `/export_time_entries_by_employee/?employee_id=${employeeId}`;
+  // Export by Employee ID submit handler
+  document.getElementById('modal_export_employee_submit').addEventListener('click', function () {
+    const employeeId = document.getElementById('modal_export_employee_id').value;
+    if (!employeeId) {
+      alert("Please enter an Employee ID.");
+      return;
+    }
+    window.location.href = `/export_time_entries_by_employee/?employee_id=${employeeId}`;
+  });
 });
