@@ -606,50 +606,139 @@ function openModalExportExcel() {
   document.getElementById('modal_export_excel').style.display = 'block';
 }
 
-// Close modal when the user clicks on the close button
-document.getElementById('modal_export_close').addEventListener('click', function () {
-  document.getElementById('modal_export_excel').style.display = 'none';
-});
-
-// Optional: Close modal if user clicks outside the modal content
-window.addEventListener('click', function (event) {
-  const modal = document.getElementById('modal_export_excel');
-  if (event.target === modal) {
-    modal.style.display = 'none';
+// Function to reset Date Range fields
+function resetDateRangeFields() {
+  document.getElementById('modal_export_date_start').value = '';
+  document.getElementById('modal_export_date_end').value = '';
+  const excludedContainer = document.getElementById('modal_excluded_dates_container');
+  // Reset the excluded container to the initial state:
+  excludedContainer.innerHTML = `
+    <label>Excluded Dates:</label>
+    <div class="excluded-date">
+      <input type="date" class="modal_export_excluded_date">
+      <button class="remove_excluded_date" type="button">&times;</button>
+    </div>
+  `;
+  // Attach remove event for the new remove button
+  const removeBtn = excludedContainer.querySelector('.remove_excluded_date');
+  if (removeBtn) {
+    attachRemoveListener(removeBtn);
   }
-});
+}
 
-// Ensure that DOM elements are loaded before binding event listeners
+// Function to reset Employee ID field
+function resetEmployeeFields() {
+  document.getElementById('modal_export_employee_id').value = '';
+}
+
+// Function to attach remove event to a remove button
+function attachRemoveListener(button) {
+  button.addEventListener('click', function() {
+    this.parentElement.remove();
+  });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('export_date_button').addEventListener('click', function () {
-    openModalExportExcel();
-    document.getElementById('modal_export_by_date_section').style.display = 'block';
-    document.getElementById('modal_export_by_employee_section').style.display = 'none';
+  // Close modal when the user clicks on the close button
+  document.getElementById('modal_export_close').addEventListener('click', function () {
+    document.getElementById('modal_export_excel').style.display = 'none';
   });
 
-  document.getElementById('export_employee_button').addEventListener('click', function () {
-    openModalExportExcel();
-    document.getElementById('modal_export_by_employee_section').style.display = 'block';
-    document.getElementById('modal_export_by_date_section').style.display = 'none';
-  });
-
-  // Export by Date submit handler
-  document.getElementById('modal_export_date_submit').addEventListener('click', function () {
-    const exportDate = document.getElementById('modal_export_date').value;
-    if (!exportDate) {
-      alert("Please select a date.");
-      return;
+  // Optional: Close modal if user clicks outside the modal content
+  window.addEventListener('click', function (event) {
+    const modal = document.getElementById('modal_export_excel');
+    if (event.target === modal) {
+      modal.style.display = 'none';
     }
-    window.location.href = `/export_time_entries_by_date/?export_date=${exportDate}`;
   });
+
+  // --- Date Range Export Section ---
+  const exportDateButton = document.getElementById('export_date_button');
+  if (exportDateButton) {
+    exportDateButton.addEventListener('click', function () {
+      // Reset the Employee ID fields before switching
+      resetEmployeeFields();
+      openModalExportExcel();
+      // Show the date range section and hide the employee section
+      document.getElementById('modal_export_by_date_range_section').style.display = 'block';
+      document.getElementById('modal_export_by_employee_section').style.display = 'none';
+    });
+  }
+
+  // --- Employee ID Export Section ---
+  const exportEmployeeButton = document.getElementById('export_employee_button');
+  if (exportEmployeeButton) {
+    exportEmployeeButton.addEventListener('click', function () {
+      // Reset the date range fields before switching
+      resetDateRangeFields();
+      openModalExportExcel();
+      // Show the employee section and hide the date range section
+      document.getElementById('modal_export_by_employee_section').style.display = 'block';
+      document.getElementById('modal_export_by_date_range_section').style.display = 'none';
+    });
+  }
+
+  // Attach remove functionality to any existing remove buttons for excluded dates
+  document.querySelectorAll('.remove_excluded_date').forEach(button => {
+    attachRemoveListener(button);
+  });
+
+  // Add new excluded date input when the "Add Another Excluded Date" button is clicked
+  const addExcludedDateBtn = document.getElementById('add_excluded_date');
+  if (addExcludedDateBtn) {
+    addExcludedDateBtn.addEventListener('click', function() {
+      const container = document.getElementById('modal_excluded_dates_container');
+      const newInputDiv = document.createElement('div');
+      newInputDiv.className = 'excluded-date';
+      newInputDiv.innerHTML = `
+        <input type="date" class="modal_export_excluded_date">
+        <button class="remove_excluded_date" type="button">&times;</button>
+      `;
+      container.appendChild(newInputDiv);
+      attachRemoveListener(newInputDiv.querySelector('.remove_excluded_date'));
+    });
+  }
+
+  // Export by Date Range submit handler
+  const exportDateRangeSubmit = document.getElementById('modal_export_date_range_submit');
+  if (exportDateRangeSubmit) {
+    exportDateRangeSubmit.addEventListener('click', function () {
+      const startDate = document.getElementById('modal_export_date_start').value;
+      const endDate = document.getElementById('modal_export_date_end').value;
+      if (!startDate || !endDate) {
+        alert("Please select both start and end dates.");
+        return;
+      }
+      
+      // Gather excluded dates (if any)
+      const excludedInputs = document.getElementsByClassName('modal_export_excluded_date');
+      let excludedDates = [];
+      for (let input of excludedInputs) {
+        if (input.value) {
+          excludedDates.push(input.value);
+        }
+      }
+      
+      // Build URL with query parameters; multiple excluded dates are added as separate parameters
+      let url = `/export_time_entries_range/?date_start=${startDate}&date_end=${endDate}`;
+      excludedDates.forEach(date => {
+        url += `&exclude_date=${date}`;
+      });
+      
+      window.location.href = url;
+    });
+  }
 
   // Export by Employee ID submit handler
-  document.getElementById('modal_export_employee_submit').addEventListener('click', function () {
-    const employeeId = document.getElementById('modal_export_employee_id').value;
-    if (!employeeId) {
-      alert("Please enter an Employee ID.");
-      return;
-    }
-    window.location.href = `/export_time_entries_by_employee/?employee_id=${employeeId}`;
-  });
+  const exportEmployeeSubmit = document.getElementById('modal_export_employee_submit');
+  if (exportEmployeeSubmit) {
+    exportEmployeeSubmit.addEventListener('click', function () {
+      const employeeId = document.getElementById('modal_export_employee_id').value.trim();
+      if (!employeeId) {
+        alert("Please enter an Employee ID.");
+        return;
+      }
+      window.location.href = `/export_time_entries_by_employee/?employee_id=${employeeId}`;
+    });
+  }
 });

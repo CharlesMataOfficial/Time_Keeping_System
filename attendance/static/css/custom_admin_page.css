@@ -1354,7 +1354,6 @@ select option:checked {
   top: 0;
   z-index: 2;
 }
-
 /* Modal container */
 .modal_export_style {
   display: none; /* Hidden by default */
@@ -1409,7 +1408,7 @@ select option:checked {
 }
 .modal_export_section label {
   display: block;
-  margin-bottom: 10px;
+  margin-top: 20px;
   font-weight: bold;
 }
 .modal_export_section input {
@@ -1421,4 +1420,33 @@ select option:checked {
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
+  margin-bottom: 10px;
+}
+
+/* Excluded date styles */
+.excluded-date {
+  /* Display input and "x" button side by side */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.excluded-date input[type="date"] {
+  /* Let the browser handle the built-in icon without overlap */
+  padding: 8px;
+  /* Optional: remove or set a fixed width if desired
+     width: 200px; 
+  */
+}
+
+/* Small "x" button styling */
+.remove_excluded_date {
+  background: none;
+  border: none;
+  color: red;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
 }

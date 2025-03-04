@@ -261,19 +261,34 @@
 <div id="modal_export_excel" class="modal_export_style">
   <div class="modal_export_content">
     <span class="modal_export_close" id="modal_export_close">&times;</span>
-    <h2>Export Excel Options</h2>
-    <!-- Section for Export by Date -->
-    <div id="modal_export_by_date_section" class="modal_export_section" style="display: none;">
-      <label for="modal_export_date">Select Date:</label>
-      <input type="date" id="modal_export_date">
-      <button id="modal_export_date_submit">Export</button>
+ <!-- Section for Export by Date Range with Exclusions -->
+<div id="modal_export_by_date_range_section" class="modal_export_section" style="display: none;">
+  <div>
+    <h2>Export Excel Date Range</h2>
+    <label for="modal_export_date_start">Start Date:</label>
+    <input type="date" id="modal_export_date_start">
+  </div>
+  <div>
+    <label for="modal_export_date_end">End Date:</label>
+    <input type="date" id="modal_export_date_end">
+  </div>
+  <div id="modal_excluded_dates_container">
+    <label>Excluded Dates:</label>
+    <div class="excluded-date">
+      <input type="date" class="modal_export_excluded_date">
+      <button class="remove_excluded_date" type="button">&times;</button>
     </div>
-    <!-- Section for Export by Employee ID -->
-    <div id="modal_export_by_employee_section" class="modal_export_section" style="display: none;">
-      <label for="modal_export_employee_id">Employee ID:</label>
-      <input type="text" id="modal_export_employee_id" placeholder="Enter Employee ID">
-      <button id="modal_export_employee_submit">Export</button>
-    </div>
+  </div>
+  <button id="add_excluded_date" type="button">Add Another Excluded Date</button>
+  <button id="modal_export_date_range_submit" type="button">Export Excel</button>
+</div>
+<!-- Section for Export by Employee ID -->
+<div id="modal_export_by_employee_section" class="modal_export_section" style="display: none;">
+  <h2>Export Employee ID</h2>
+  <input type="text" id="modal_export_employee_id" placeholder="Enter Employee ID">
+  <button id="modal_export_employee_submit" type="button">Export Excel</button>
+</div>
+    <!-- Other sections for export by a single date or employee ID can remain here -->
   </div>
 </div>
 
