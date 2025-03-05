@@ -15,6 +15,8 @@ from .models import (
     DayOverride,
     ScheduleGroup,
     AdminLog,
+    Leave,
+    LeaveType,  # Add this import
 )
 from .forms import CustomUserCreationForm, TimeEntryForm
 from .utils import log_admin_action, get_day_code
@@ -63,7 +65,7 @@ class CustomUserAdmin(UserAdmin):
         ),
     )
 
-    # Updated fieldsets - removed 'status' field and added is_active instead
+    # Updated fieldsets - add manager field to Other Info
     fieldsets = (
         (None, {"fields": ("employee_id", "password", "pin")}),
         ("Personal Info", {"fields": ("first_name", "surname", "birth_date")}),
@@ -76,12 +78,14 @@ class CustomUserAdmin(UserAdmin):
                     "department",
                     "date_hired",
                     "schedule_group",
+                    "manager",  # Add manager field here
+                    "leave_credits",  # Also add leave_credits to make it editable
                 )
             },
         ),
         (
             "Permissions",
-            {"fields": ("is_active", "is_staff", "is_superuser", "is_guard")},
+            {"fields": ("is_active", "is_staff", "is_superuser", "is_guard", "is_hr")},  # Add is_hr here
         ),
     )
 
@@ -93,6 +97,7 @@ class CustomUserAdmin(UserAdmin):
         "position",
         "is_active",
         "schedule_group",  # Update list_display too
+        "manager",  # Add manager field here
     )
     search_fields = (
         "employee_id",
@@ -105,7 +110,7 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ("is_active", "is_staff", "is_superuser", "is_guard")
 
     # Add autocomplete fields
-    autocomplete_fields = ["company", "position", "department","schedule_group"]
+    autocomplete_fields = ["company", "position", "department", "schedule_group", "manager"]
 
     def save_model(self, request, obj, form, change):
         if not change and not obj.employee_id:
@@ -373,6 +378,27 @@ class AdminLogAdmin(admin.ModelAdmin):
         return super().changeform_view(request, object_id, form_url, extra_context)
 
 
+# Add this class
+class LeaveTypeAdmin(admin.ModelAdmin):
+    search_fields = ["name"]
+    list_display = ("name",)
+
+
+class LeaveAdmin(admin.ModelAdmin):
+    list_display = ('employee', 'leave_type', 'start_date', 'end_date', 'status', 'created_at')
+    list_filter = ('status', 'leave_type', 'start_date')
+    search_fields = ('employee__first_name', 'employee__surname', 'employee__employee_id', 'reason')
+    date_hierarchy = 'start_date'
+    readonly_fields = ('created_at', 'updated_at')
+
+    fieldsets = (
+        ('Employee Information', {'fields': ('employee',)}),
+        ('Leave Details', {'fields': ('leave_type', 'start_date', 'end_date', 'reason')}),
+        ('Status', {'fields': ('status', 'rejection_reason')}),
+        ('Timestamps', {'fields': ('created_at', 'updated_at')}),
+    )
+
+
 # Unregister the group model
 admin.site.unregister(Group)
 
@@ -385,3 +411,5 @@ admin.site.register(Position, PositionAdmin)
 admin.site.register(ScheduleGroup, ScheduleGroupAdmin)
 admin.site.register(Department, DepartmentAdmin)
 admin.site.register(AdminLog, AdminLogAdmin)
+admin.site.register(LeaveType, LeaveTypeAdmin)  # Register the model at the bottom with other admin registrations
+admin.site.register(Leave, LeaveAdmin)  # Register the Leave model with LeaveAdmin

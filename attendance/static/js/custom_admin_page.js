@@ -720,3 +720,101 @@ document.getElementById('modal_export_employee_submit').addEventListener('click'
   // Construct the URL to trigger the export view
   window.location.href = `/export_time_entries_by_employee/?employee_id=${employeeId}`;
 });
+
+// Function to load pending leaves
+function loadPendingLeaves() {
+    fetch('/leaves/pending/')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('leave-approval_rectangle');
+
+            if (!data.leaves || data.leaves.length === 0) {
+                container.innerHTML = '<p>No pending leave requests</p>';
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.classList.add('leave-table');
+
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Duration</th>
+                        <th>Type</th>
+                        <th>Reason</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.leaves.map(leave => `
+                        <tr>
+                            <td>${leave.employee_name}</td>
+                            <td>${leave.start_date} to ${leave.end_date} (${leave.duration} days)</td>
+                            <td>${leave.leave_type}</td>
+                            <td>${leave.reason}</td>
+                            <td>
+                                <button onclick="processLeave(${leave.id}, 'approve')" class="approve-btn">
+                                    Approve
+                                </button>
+                                <button onclick="showRejectDialog(${leave.id})" class="reject-btn">
+                                    Reject
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            `;
+
+            container.innerHTML = '';
+            container.appendChild(table);
+        })
+        .catch(error => {
+            console.error('Error loading leaves:', error);
+        });
+}
+
+function processLeave(leaveId, action, rejectionReason = '') {
+    const formData = new FormData();
+    formData.append('leave_id', leaveId);
+    formData.append('action', action);
+
+    if (rejectionReason) {
+        formData.append('rejection_reason', rejectionReason);
+    }
+
+    fetch('/leaves/process/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Refresh the list
+            loadPendingLeaves();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error processing leave:', error);
+    });
+}
+
+function showRejectDialog(leaveId) {
+    const reason = prompt('Please enter rejection reason:');
+    if (reason !== null) {
+        processLeave(leaveId, 'reject', reason);
+    }
+}
+
+// Load pending leaves when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if we're on the admin page with the leave approval section
+    if (document.getElementById('leave-approval_rectangle')) {
+        loadPendingLeaves();
+    }
+});

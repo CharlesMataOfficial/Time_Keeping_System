@@ -128,12 +128,15 @@ class CustomUser(AbstractUser):
         related_name="users",
         verbose_name="Time Schedule",
     )
+    manager = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='subordinates')
+    leave_credits = models.IntegerField(default=16)
     # Remove other redundant fields
     email = None
     last_name = None  # Since you're using 'surname'
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_guard = models.BooleanField(default=False)
+    is_hr = models.BooleanField(default=False)
     if_first_login = models.BooleanField(default=True)
 
     USERNAME_FIELD = "employee_id"
@@ -425,3 +428,45 @@ class AdminLog(models.Model):
 
     def delete(self, *args, **kwargs):
         raise PermissionError("Admin logs cannot be deleted")
+
+
+class LeaveType(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    is_paid = models.BooleanField(default=True, help_text="Whether this leave type uses leave credits")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Leave Types"
+        ordering = ["name"]
+        db_table = "django_leave_types"
+
+
+class Leave(models.Model):
+    STATUS_CHOICES = (
+        ('PENDING', 'Pending Manager Approval'),
+        ('APPROVED_BY_MANAGER', 'Approved by Manager'),
+        ('REJECTED_BY_MANAGER', 'Rejected by Manager'),
+        ('APPROVED_BY_HR', 'Approved by HR'),
+        ('REJECTED_BY_HR', 'Rejected by HR')
+    )
+
+    employee = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='leaves')
+    leave_type = models.ForeignKey(LeaveType, on_delete=models.PROTECT, null=True, blank=True)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    reason = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    rejection_reason = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def get_duration(self):
+        return (self.end_date - self.start_date).days + 1
+
+    def __str__(self):
+        return f"{self.employee}'s leave request from {self.start_date} to {self.end_date}"
+
+    class Meta:
+        ordering = ['-created_at']

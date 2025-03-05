@@ -27,6 +27,7 @@ from .utils import (
 from io import BytesIO
 from django.utils.dateparse import parse_date
 from openpyxl import Workbook
+from .models import Leave
 
 @never_cache
 def login_view(request):
@@ -940,3 +941,64 @@ def export_time_entries_by_employee(request):
     )
     response["Content-Disposition"] = f"attachment; filename=time_entries_{employee_id}.xlsx"
     return response
+
+@login_required
+def get_pending_leaves(request):
+    user = request.user
+
+    if user.is_hr:
+        # HR only sees manager-approved leaves
+        leaves = Leave.objects.filter(status='APPROVED_BY_MANAGER')
+    else:
+        # Managers see pending leaves from their subordinates
+        leaves = Leave.objects.filter(
+            employee__manager=user,
+            status='PENDING'
+        )
+
+    return JsonResponse({
+        'leaves': [{
+            'id': leave.id,
+            'employee_name': f"{leave.employee.first_name} {leave.employee.surname}",
+            'start_date': leave.start_date.strftime('%Y-%m-%d'),
+            'end_date': leave.end_date.strftime('%Y-%m-%d'),
+            'duration': leave.get_duration(),
+            'reason': leave.reason,
+            'leave_type': leave.leave_type.name if leave.leave_type else "Not specified"
+        } for leave in leaves]
+    })
+
+@login_required
+@require_POST
+def process_leave(request):
+    leave_id = request.POST.get('leave_id')
+    action = request.POST.get('action')  # 'approve' or 'reject'
+    rejection_reason = request.POST.get('rejection_reason', '')
+
+    leave = get_object_or_404(Leave, id=leave_id)
+    user = request.user
+
+    # Verify permission to process this leave
+    if user.is_hr and leave.status == 'APPROVED_BY_MANAGER':
+        if action == 'approve':
+            leave.status = 'APPROVED_BY_HR'
+            # We'll leave credits tracking for later
+        else:
+            leave.status = 'REJECTED_BY_HR'
+            leave.rejection_reason = rejection_reason
+
+    elif leave.employee.manager == user and leave.status == 'PENDING':
+        if action == 'approve':
+            leave.status = 'APPROVED_BY_MANAGER'
+        else:
+            leave.status = 'REJECTED_BY_MANAGER'
+            leave.rejection_reason = rejection_reason
+    else:
+        return JsonResponse({'success': False, 'message': 'Not authorized to process this leave'})
+
+    leave.save()
+
+    # Log the action
+    log_admin_action(request, 'leave_approval', f"Leave request {action}d for {leave.employee.employee_id}")
+
+    return JsonResponse({'success': True})
