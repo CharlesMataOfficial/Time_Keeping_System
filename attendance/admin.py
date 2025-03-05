@@ -1,25 +1,18 @@
 import datetime
+
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
-from django.utils.html import format_html
 from django.utils import timezone
-from django.conf import settings
-from .models import (
-    CustomUser,
-    TimeEntry,
-    Company,
-    Department,
-    Position,
-    TimePreset,
-    DayOverride,
-    ScheduleGroup,
-    AdminLog,
-    Leave,
-    LeaveType,  # Add this import
-)
+from django.utils.html import format_html
+
 from .forms import CustomUserCreationForm, TimeEntryForm
-from .utils import log_admin_action, get_day_code
+from .models import LeaveType
+from .models import (AdminLog, Company, CustomUser, DayOverride, Department,
+                     Leave, Position, ScheduleGroup, TimeEntry, TimePreset)
+from .utils import get_day_code, log_admin_action
+
 
 class TimeEntryInline(admin.TabularInline):
     model = TimeEntry

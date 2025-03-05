@@ -1,13 +1,14 @@
 import datetime
+
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import Max
-from django.conf import settings
-from django.core.validators import MinLengthValidator
 from django.forms import ValidationError
 from django.utils import timezone
-from django.utils.html import format_html
-from .utils import get_day_code, format_minutes, create_default_time_preset  # Import from utils.py
+
+from .utils import (create_default_time_preset, get_day_code)
 
 
 class CustomUserManager(BaseUserManager):

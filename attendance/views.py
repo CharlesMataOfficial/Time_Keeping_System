@@ -1,33 +1,28 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout
-from django.urls import reverse
-from .models import CustomUser, TimeEntry, Announcement, AdminLog
-from django.views.decorators.cache import never_cache
-from django.contrib.auth.decorators import login_required
 import json
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
-from django.views.decorators.http import require_POST, require_GET
-from django.utils import timezone
+import os
+from datetime import date, datetime, time, timedelta
+from io import BytesIO
+
+from django.contrib import messages
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-import os
-from datetime import datetime, timedelta, date, time
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib import messages
 from django.db.models import Q
-from .utils import (
-    COMPANY_CHOICES,
-    DEPARTMENT_CHOICES,
-    get_day_code,
-    format_minutes,
-    COMPANY_LOGO_MAPPING,
-    get_company_logo,
-    log_admin_action,
-)
-from io import BytesIO
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils import timezone
 from django.utils.dateparse import parse_date
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST
 from openpyxl import Workbook
-from .models import Leave
+
+from .models import AdminLog, Announcement, CustomUser, TimeEntry
+from .utils import (COMPANY_CHOICES, DEPARTMENT_CHOICES, get_company_logo,
+                    log_admin_action)
+
 
 @never_cache
 def login_view(request):
@@ -941,6 +936,7 @@ def export_time_entries_by_employee(request):
     )
     response["Content-Disposition"] = f"attachment; filename=time_entries_{employee_id}.xlsx"
     return response
+
 
 @login_required
 def get_pending_leaves(request):
