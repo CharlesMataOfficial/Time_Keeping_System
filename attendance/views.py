@@ -19,7 +19,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 from openpyxl import Workbook
 
-from .models import AdminLog, Announcement, CustomUser, TimeEntry
+from .models import AdminLog, Announcement, CustomUser, Leave, TimeEntry
 from .utils import (COMPANY_CHOICES, DEPARTMENT_CHOICES, get_company_logo,
                     log_admin_action)
 
@@ -722,10 +722,10 @@ def dashboard_data(request):
         reverse=True,
     )[:5]
 
-    # Sort entries - early ones by how early they are (ascending)
+    # Sort entries - early ones by how early they are (most early first)
     early_entries = sorted(
-        [e for e in processed_entries if not e["is_late"]],
-        key=lambda x: x["minutes_diff"],
+        [e for e in processed_entries if e["minutes_diff"] < 0],  # Only include truly early entries
+        key=lambda x: x["minutes_diff"],  # Ascending order for negative numbers puts most negative (most early) first
     )[:5]
 
     return JsonResponse(
@@ -942,27 +942,36 @@ def export_time_entries_by_employee(request):
 def get_pending_leaves(request):
     user = request.user
 
-    if user.is_hr:
-        # HR only sees manager-approved leaves
-        leaves = Leave.objects.filter(status='APPROVED_BY_MANAGER')
-    else:
-        # Managers see pending leaves from their subordinates
-        leaves = Leave.objects.filter(
-            employee__manager=user,
-            status='PENDING'
-        )
+    try:
+        # Determine which leaves to show based on user role
+        if user.is_hr:
+            # HR sees leaves that managers have approved
+            leaves = Leave.objects.filter(status='APPROVED_BY_MANAGER')
+        else:
+            # Regular users (managers) see pending leaves from their team
+            leaves = Leave.objects.filter(employee__manager=user, status='PENDING')
 
-    return JsonResponse({
-        'leaves': [{
-            'id': leave.id,
-            'employee_name': f"{leave.employee.first_name} {leave.employee.surname}",
-            'start_date': leave.start_date.strftime('%Y-%m-%d'),
-            'end_date': leave.end_date.strftime('%Y-%m-%d'),
-            'duration': leave.get_duration(),
-            'reason': leave.reason,
-            'leave_type': leave.leave_type.name if leave.leave_type else "Not specified"
-        } for leave in leaves]
-    })
+        # Format the leave data
+        leave_data = []
+        for leave in leaves:
+            leave_data.append({
+                'id': leave.id,
+                'employee_name': f"{leave.employee.first_name} {leave.employee.surname}",
+                'start_date': leave.start_date.strftime('%Y-%m-%d'),
+                'end_date': leave.end_date.strftime('%Y-%m-%d'),
+                'duration': leave.get_duration(),
+                'leave_type': leave.leave_type.name if leave.leave_type else 'N/A',
+                'reason': leave.reason
+            })
+
+        return JsonResponse({'leaves': leave_data})
+    except Exception as e:
+        # Log the error
+        import traceback
+        print(f"Error in get_pending_leaves: {e}")
+        print(traceback.format_exc())
+        # Return empty leaves array with error status
+        return JsonResponse({'leaves': [], 'error': str(e)})
 
 @login_required
 @require_POST

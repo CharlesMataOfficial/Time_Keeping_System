@@ -87,7 +87,7 @@ function loadDashboardData() {
             <tr>
               <td>${employee.name}</td>
               <td class="minutes late" data-minutes="${minutes}" data-formatted="${formattedTime}">
-                ${formattedTime} late
+                ${formattedTime}
               </td>
             </tr>
           `;
@@ -108,7 +108,7 @@ function loadDashboardData() {
             <tr>
               <td>${employee.name}</td>
               <td class="minutes early" data-minutes="${minutes}" data-formatted="${formattedTime}">
-                ${formattedTime} early
+                ${formattedTime}
               </td>
             </tr>
           `;
@@ -136,17 +136,15 @@ function addTimeFormatToggleHandlers() {
     cell.addEventListener("click", function() {
       const minutes = this.dataset.minutes;
       const formatted = this.dataset.formatted;
-      const isLate = this.classList.contains("late");
-      const status = isLate ? "late" : "early";
 
       // Check the current toggle state
       if (this.dataset.showingRawMinutes === "false") {
         // Currently showing formatted time, switch to raw minutes
-        this.textContent = `${minutes} mins ${status}`;
+        this.textContent = `${minutes} mins`;
         this.dataset.showingRawMinutes = "true";
       } else {
         // Currently showing raw minutes, switch to formatted time
-        this.textContent = `${formatted} ${status}`;
+        this.textContent = `${formatted}`;
         this.dataset.showingRawMinutes = "false";
       }
     });

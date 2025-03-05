@@ -287,6 +287,45 @@ class TimeEntry(models.Model):
 
         return new_entry
 
+    def clean(self):
+        """Validate entry and calculate derived values."""
+        super().clean()
+
+        # Always calculate minutes_late if time_in exists
+        if self.time_in and hasattr(self, 'user') and self.user:
+            try:
+                time_in_local = self.time_in
+                day_code = get_day_code(time_in_local)
+
+                # Get schedule using get_schedule_for_day
+                preset = self.user.get_schedule_for_day(day_code)
+                if preset:
+                    expected_start = preset.start_time
+
+                    # Create datetime with schedule time
+                    naive_expected_time = datetime.datetime.combine(
+                        time_in_local.date(), expected_start
+                    )
+
+                    # Make timezone-aware
+                    expected_start_dt = timezone.make_aware(naive_expected_time)
+
+                    # Compare times and calculate minutes_late
+                    time_diff = time_in_local - expected_start_dt
+                    self.minutes_late = round(time_diff.total_seconds() / 60)
+
+                    # Calculate if late considering grace period
+                    grace_period = datetime.timedelta(minutes=preset.grace_period_minutes)
+                    expected_with_grace = expected_start_dt + grace_period
+                    self.is_late = time_in_local > expected_with_grace
+            except Exception as e:
+                print(f"Error calculating lateness in clean(): {e}")
+
+    def save(self, *args, **kwargs):
+        # Call clean() to ensure validation and calculations happen
+        self.clean()
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.user.employee_id} - {self.user.first_name} {self.user.surname} - {self.time_in.strftime('%Y-%m-%d %H:%M:%S')}"
 
