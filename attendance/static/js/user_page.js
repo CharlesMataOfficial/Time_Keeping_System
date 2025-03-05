@@ -343,15 +343,33 @@ function updatePartnerLogo(newLogo) {
   partnerLogo.src = `/static/images/logos/${newLogo}`;
 }
 
-// Fetch today's entries when the page loads
-document.addEventListener("DOMContentLoaded", function () {
-  fetch("/get_todays_entries/") // You'll need to create this endpoint
+// Extract fetch logic into a reusable function
+function fetchAndUpdateEntries() {
+  fetch("/get_todays_entries/")
     .then((response) => response.json())
     .then((data) => {
+      // Clear existing entries and update with new data
+      const tbody = document.getElementById("attendance-items");
+      tbody.innerHTML = ""; // Clear existing rows
       data.entries.forEach((entry) => addAttendanceItem(entry));
+
+      console.log("Time entries refreshed at", new Date().toLocaleTimeString());
     })
     .catch((error) => console.error("Error loading entries:", error));
+}
 
+// Fetch today's entries when the page loads
+document.addEventListener("DOMContentLoaded", function () {
+  // Initial fetch
+  fetchAndUpdateEntries();
+
+  // Set up auto-refresh every 30 seconds (30000 milliseconds)
+  const refreshInterval = setInterval(fetchAndUpdateEntries, 30000);
+
+  // Store the interval ID in case you need to stop it later
+  window.entriesRefreshInterval = refreshInterval;
+
+  // Rest of your existing code...
   fetch("/announcements/posted/")
     .then((response) => response.json())
     .then((data) => {
