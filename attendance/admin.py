@@ -219,37 +219,45 @@ class TimeEntryAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
     def formatted_minutes_late(self, obj):
-        if obj.minutes_late > 0:
-            # Format late time in hours and minutes
-            hours = obj.minutes_late // 60
-            mins = obj.minutes_late % 60
-
-            if hours > 0:
-                if mins > 0:
-                    time_str = f"{hours} hr {mins} min late"
-                else:
-                    time_str = f"{hours} hr late"
-            else:
-                time_str = f"{mins} min late"
-
-            return format_html('<span style="color: red;">{}</span>', time_str)
-        elif obj.minutes_late < 0:
-            # Format early time in hours and minutes (use absolute value)
-            abs_mins = abs(obj.minutes_late)
-            hours = abs_mins // 60
-            mins = abs_mins % 60
-
-            if hours > 0:
-                if mins > 0:
-                    time_str = f"{hours} hr {mins} min early"
-                else:
-                    time_str = f"{hours} hr early"
-            else:
-                time_str = f"{mins} min early"
-
-            return format_html('<span style="color: green;">{}</span>', time_str)
-        else:
+        if obj.minutes_late == 0:
             return ""
+
+        # Format for display - either hours/minutes or raw minutes
+        is_late = obj.minutes_late > 0
+        abs_mins = abs(obj.minutes_late)
+
+        # Format in hours and minutes
+        hours = abs_mins // 60
+        mins = abs_mins % 60
+
+        if hours > 0:
+            if mins > 0:
+                formatted_time = f"{hours} hr {mins} min"
+            else:
+                formatted_time = f"{hours} hr"
+        else:
+            formatted_time = f"{mins} min"
+
+        # Format in raw minutes
+        raw_minutes = f"{abs_mins} min"
+
+        # Determine status text
+        status = "late" if is_late else "early"
+
+        # Create HTML with data attributes for toggling
+        color = "red" if is_late else "green"
+        return format_html(
+            '<span style="color: {color}; cursor: pointer;" '
+            'class="toggle-time-format" '
+            'data-formatted="{formatted} {status}" '
+            'data-raw="{raw} {status}" '
+            'onclick="toggleTimeFormat(this)">'
+            '{formatted} {status}</span>',
+            color=color,
+            formatted=formatted_time,
+            raw=raw_minutes,
+            status=status
+        )
 
     formatted_minutes_late.short_description = "Arrival Status"
     formatted_minutes_late.admin_order_field = "minutes_late"
@@ -275,6 +283,9 @@ class TimeEntryAdmin(admin.ModelAdmin):
         return "No Image"
 
     view_image_path.short_description = "View Image"
+
+    class Media:
+        js = ("admin/js/toggle_time_format.js",)
 
 
 class CompanyAdmin(admin.ModelAdmin):
