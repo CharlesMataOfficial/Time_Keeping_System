@@ -107,13 +107,13 @@ class CustomUser(AbstractUser):
     first_name = models.CharField(max_length=100, null=True, blank=True)
     surname = models.CharField(max_length=100, null=True, blank=True)
     company = models.ForeignKey(
-        Company, on_delete=models.SET_NULL, null=True, blank=True
+        'Company', on_delete=models.SET_NULL, null=True, blank=True
     )
     position = models.ForeignKey(
-        Position, on_delete=models.SET_NULL, null=True, blank=True
+        'Position', on_delete=models.SET_NULL, null=True, blank=True
     )
     department = models.ForeignKey(
-        Department, on_delete=models.SET_NULL, null=True, blank=True
+        'Department', on_delete=models.SET_NULL, null=True, blank=True
     )
     birth_date = models.DateField(null=True, blank=True)
     date_hired = models.DateField(null=True, blank=True)
