@@ -62,7 +62,7 @@ function loadDashboardData() {
       lateEmployeesList.innerHTML = "";
 
       if (data.top_late.length === 0) {
-        lateEmployeesList.innerHTML = "<tr><td colspan='2'>No late employees today</td></tr>";
+        lateEmployeesList.innerHTML = "<tr><td colspan='2'></td></tr>";
       } else {
         data.top_late.forEach((employee) => {
           const minutes = Math.abs(Math.round(employee.minutes_diff || 0));
@@ -80,7 +80,7 @@ function loadDashboardData() {
       earlyBirdsList.innerHTML = "";
 
       if (data.top_early.length === 0) {
-        earlyBirdsList.innerHTML = "<tr><td colspan='2'>No early birds today</td></tr>";
+        earlyBirdsList.innerHTML = "<tr><td colspan='2'></td></tr>";
       } else {
         data.top_early.forEach((employee) => {
           const minutes = Math.abs(Math.round(employee.minutes_diff || 0));
