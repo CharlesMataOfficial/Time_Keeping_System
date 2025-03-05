@@ -1,17 +1,16 @@
-import datetime
-
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core.validators import MinLengthValidator
 from django.db import models 
 from django.db.models import Max, Q
+
 from django.forms import ValidationError
 from django.utils import timezone
 
 from .utils import (create_default_time_preset, get_day_code, format_minutes)
 
 from django.utils.timezone import make_aware
-from datetime import datetime
+import datetime as dt
 from django.http import HttpResponse
 
 
@@ -213,10 +212,10 @@ class TimeEntry(models.Model):
                 preset = self.user.get_schedule_for_day(day_code)
                 if preset:
                     expected_start = preset.start_time
-                    grace_period = datetime.timedelta(minutes=preset.grace_period_minutes)
+                    grace_period = dt.datetime.timedelta(minutes=preset.grace_period_minutes)
 
                     # Create datetime with schedule time
-                    naive_expected_time = datetime.datetime.combine(
+                    naive_expected_time = dt.datetime.combine(
                         time_in_local.date(), expected_start
                     )
 
@@ -258,7 +257,7 @@ class TimeEntry(models.Model):
             preset = user.get_schedule_for_day(day_code)
             if preset:
                 # Create a datetime object with schedule time
-                naive_expected_time = datetime.datetime.combine(
+                naive_expected_time = dt.datetime.combine(
                     time_in_local.date(), preset.start_time
                 )
 
@@ -270,7 +269,7 @@ class TimeEntry(models.Model):
                     time_in_local = timezone.make_aware(time_in_local)
 
                 # Calculate grace period
-                grace_period = datetime.timedelta(minutes=preset.grace_period_minutes)
+                grace_period = dt.timedelta(minutes=preset.grace_period_minutes)
                 expected_time_with_grace = expected_time + grace_period
 
                 # Both datetimes are now timezone-aware for safe comparison
@@ -297,6 +296,11 @@ class TimeEntry(models.Model):
         if self.time_in and hasattr(self, 'user') and self.user:
             try:
                 time_in_local = self.time_in
+
+                # Ensure time_in_local is timezone-aware
+                if not timezone.is_aware(time_in_local):
+                    time_in_local = timezone.make_aware(time_in_local)
+
                 day_code = get_day_code(time_in_local)
 
                 # Get schedule using get_schedule_for_day
@@ -305,19 +309,20 @@ class TimeEntry(models.Model):
                     expected_start = preset.start_time
 
                     # Create datetime with schedule time
-                    naive_expected_time = datetime.datetime.combine(
+                    naive_expected_time = dt.datetime.combine(
                         time_in_local.date(), expected_start
                     )
 
-                    # Make timezone-aware
+                    # Make timezone-aware - this is crucial
                     expected_start_dt = timezone.make_aware(naive_expected_time)
 
                     # Compare times and calculate minutes_late
+                    # Now both times are timezone-aware
                     time_diff = time_in_local - expected_start_dt
                     self.minutes_late = round(time_diff.total_seconds() / 60)
 
                     # Calculate if late considering grace period
-                    grace_period = datetime.timedelta(minutes=preset.grace_period_minutes)
+                    grace_period = dt.timedelta(minutes=preset.grace_period_minutes)
                     expected_with_grace = expected_start_dt + grace_period
                     self.is_late = time_in_local > expected_with_grace
             except Exception as e:

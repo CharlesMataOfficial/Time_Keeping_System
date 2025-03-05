@@ -834,34 +834,34 @@ def export_time_entries_range(request):
     date_end_str = request.GET.get("date_end")
     if not date_start_str or not date_end_str:
         return HttpResponse("Start date and End date parameters are required.", status=400)
-    
+
     date_start = parse_date(date_start_str)
     date_end = parse_date(date_end_str)
     if not date_start or not date_end:
         return HttpResponse("Invalid date format.", status=400)
-    
+
     # Create datetime range for the selected period
     start_datetime = datetime.combine(date_start, time.min)
     end_datetime = datetime.combine(date_end, time.max)
-    
+
     # Fetch time entries in the date range
     qs = TimeEntry.objects.filter(
         time_in__gte=start_datetime,
         time_in__lte=end_datetime
     )
-    
+
     # Exclude entries with time_in dates in the excluded list
     excluded_dates = request.GET.getlist("exclude_date")
     if excluded_dates:
         qs = qs.exclude(time_in__date__in=excluded_dates)
-    
+
     qs = qs.order_by("time_in")
-    
+
     # Create an Excel workbook and worksheet
     wb = Workbook()
     ws = wb.active
     ws.title = "Time Entries"
-    
+
     headers = [
         "ID",
         "Employee ID",
@@ -875,7 +875,7 @@ def export_time_entries_range(request):
         "Is Late"
     ]
     ws.append(headers)
-    
+
     for entry in qs:
         row = [
             entry.id,
@@ -890,18 +890,18 @@ def export_time_entries_range(request):
             "Yes" if entry.is_late else "No",
         ]
         ws.append(row)
-    
+
     output = BytesIO()
     wb.save(output)
     output.seek(0)
-    
+
     filename = f"time_entries_range_{date_start_str}_to_{date_end_str}.xlsx"
     response = HttpResponse(
         output,
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
     response["Content-Disposition"] = f"attachment; filename={filename}"
-    
+
     log_admin_action(request, "excel_export", f"Exported {filename}")
     return response
 
@@ -1035,6 +1035,7 @@ def process_leave(request):
     log_admin_action(request, 'leave_approval', f"Leave request {action}d for {leave.employee.employee_id}")
 
     return JsonResponse({'success': True})
+
 @require_GET
 def export_time_entries_by_date(request):
     # Get the date parameter from the request (e.g. from your date picker)

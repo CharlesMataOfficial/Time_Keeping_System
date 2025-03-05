@@ -1440,7 +1440,7 @@ select option:checked {
   /* Let the browser handle the built-in icon without overlap */
   padding: 8px;
   /* Optional: remove or set a fixed width if desired
-     width: 200px; 
+     width: 200px;
   */
 }
 
