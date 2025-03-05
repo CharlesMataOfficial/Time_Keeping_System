@@ -469,6 +469,7 @@ class AdminLog(models.Model):
     def delete(self, *args, **kwargs):
         raise PermissionError("Admin logs cannot be deleted")
 
+
 class LeaveType(models.Model):
     name = models.CharField(max_length=100, unique=True)
     is_paid = models.BooleanField(default=True, help_text="Whether this leave type uses leave credits")
