@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.urls import reverse
-from .models import CustomUser, TimeEntry, Announcement, AdminLog, Company, Position, Department
+from .models import CustomUser, TimeEntry, Announcement, AdminLog, Company, Position, Department, Q
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
 import json
@@ -14,7 +14,6 @@ import os
 from datetime import datetime, timedelta, date, time
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
-from django.db.models import Q
 from .utils import (
     COMPANY_CHOICES,
     DEPARTMENT_CHOICES,
@@ -24,6 +23,7 @@ from .utils import (
     get_company_logo,
     log_admin_action,
 )
+from django.utils.timezone import make_aware
 from io import BytesIO
 from django.utils.dateparse import parse_date
 from openpyxl import Workbook, load_workbook
@@ -813,7 +813,6 @@ def get_logs(request):
     ]
 
     return JsonResponse({"logs": log_data, "total": logs_query.count()})
-
 @require_GET
 def export_time_entries_range(request):
     date_start_str = request.GET.get("date_start")

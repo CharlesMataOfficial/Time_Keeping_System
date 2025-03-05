@@ -1,13 +1,17 @@
 import datetime
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.db import models
-from django.db.models import Max
+from django.db import models 
+from django.db.models import Max, Q
 from django.conf import settings
 from django.core.validators import MinLengthValidator
 from django.forms import ValidationError
 from django.utils import timezone
 from django.utils.html import format_html
 from .utils import get_day_code, format_minutes, create_default_time_preset  # Import from utils.py
+
+from django.utils.timezone import make_aware
+from datetime import datetime
+from django.http import HttpResponse
 
 
 class CustomUserManager(BaseUserManager):
@@ -84,9 +88,7 @@ class Department(models.Model):
     class Meta:
         verbose_name_plural = "User Departments"
         ordering = ["name"]
-        db_table = "django_departments"
-
-
+        db_table = "django_departments" # Changed From 'departments'
 
 class Position(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -395,8 +397,6 @@ class AdminLog(models.Model):
         ('announcement_create', 'Announcement Created'),
         ('announcement_post', 'Announcement Posted'),
         ('announcement_delete', 'Announcement Deleted'),
-        ('excel_import', 'Excel Import'),
-        ('excel_export', 'Excel Export'),
         ('leave_approval', 'Leave Approval'),
         ('login', 'User Login'),
         ('logout', 'User Logout'),
@@ -425,3 +425,6 @@ class AdminLog(models.Model):
 
     def delete(self, *args, **kwargs):
         raise PermissionError("Admin logs cannot be deleted")
+
+
+

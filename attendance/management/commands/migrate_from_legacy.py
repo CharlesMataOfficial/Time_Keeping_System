@@ -3,7 +3,7 @@ from django.utils import timezone
 from datetime import datetime, time
 from attendance.models import (
     CustomUser, Company, Position, TimeEntry,
-    Announcement, TimePreset, ScheduleGroup
+    Announcement, TimePreset, ScheduleGroup, Department
 )
 from attendance.database_legacy import (
     UsersLegacy, EntriesLegacy, PresetsLegacy
@@ -15,26 +15,80 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         self.stdout.write('Starting migration...')
-
-        self.stdout.write('Clearing existing data...')
         Company.objects.all().delete()
         Position.objects.all().delete()
         TimeEntry.objects.all().delete()
         Announcement.objects.all().delete()
         TimePreset.objects.all().delete()
         ScheduleGroup.objects.all().delete()
+        Department.objects.all().delete()
 
         # First create companies and positions
         companies = {}
         positions = {}
-
+        
         # Create all standard departments first
         self.stdout.write('Creating standard departments...')
-        for dept in STANDARD_DEPARTMENTS:
-            positions[dept] = Position.objects.get_or_create(name=dept)[0]
-            self.stdout.write(f'- Created department: {dept}')
+        departments = {}
+        
+        for dept_name in STANDARD_DEPARTMENTS:
+            department, created = Department.objects.get_or_create(name=dept_name)
+            departments[dept_name] = department
 
-        # Now proceed with legacy data
+        if created:
+            self.stdout.write(self.style.SUCCESS(f'Created department: {dept_name}'))
+        else:
+            self.stdout.write(self.style.WARNING(f'Department "{dept_name}" already exists, skipping.'))
+
+        # Manual department assignments based on provided list
+        manual_departments = {
+        '000003': 'Sales',
+        '000302': 'Operations - Mindanao',
+        '000310': 'Sales - Mindanao',
+        '777777': 'Support - Supply Management',
+        '000265': 'Sales - Mindanao',
+        '000327': 'Sales - Mindanao',
+        '000360': 'Sales - Mindanao',
+        '000086': 'Academy',
+        '000166': 'Academy',
+        '000001': 'Office of the CEO',
+        '000002': 'Office of the COO',
+        '000005': 'Support - General Services',
+        '000042': 'Technical SFGC',
+        '000006': 'Support - ICT',
+        '000011': 'Support - ICT',
+        '000029': 'Support - Admin',
+        '000030': 'Support - Admin',
+        '000064': 'Support - Finance',
+        '000087': 'Support - Finance',
+        '666666': 'Support - Admin - Luzon',
+        '000149': 'Support - Supply Management',
+        '000151': 'Support - Admin',
+        '000164': 'Support - Supply Management',
+        '000182': 'Support - Finance',
+        '000195': 'Support - Finance',
+        '000216': 'Support - Finance',
+        '000252': 'Support - Supply Management',
+        '000258': 'Support - Finance',
+        '000259': 'Support - ICT',
+        '000298': 'Support - HR',
+        '000300': 'Support - HR',
+        '000314': 'Support - Finance',
+        '000331': 'Support - Finance',
+        '000332': 'Support - Supply',
+        '000338': 'Support - Admin',
+        '000343': 'Support - Finance',
+        '000373': 'Support - Finance',
+        '000379': 'Support - Supply Management',
+        }
+        
+        # Ensure all manual departments exist in the departments dictionary
+        for dept_name in manual_departments.values():
+            if dept_name not in departments:
+                department, created = Department.objects.get_or_create(name=dept_name)
+                departments[dept_name] = department
+
+        # Get legacy users data
         legacy_users = UsersLegacy.objects.all()
         for legacy_user in legacy_users:
             if legacy_user.company:
@@ -45,8 +99,12 @@ class Command(BaseCommand):
                 # This will only create positions not already created above
                 positions[legacy_user.position] = Position.objects.get_or_create(
                     name=legacy_user.position
-                )[0]
-
+                )[0]              
+            
+            # Assign manually if user ID exists in the mapping dictionary
+            if legacy_user.employee_id in manual_departments:
+                department_instance = departments.get(manual_departments[legacy_user.employee_id], None)            
+            
         # Create TimePresets and ScheduleGroups
         presets = {}
         legacy_presets = PresetsLegacy.objects.all()
@@ -77,6 +135,13 @@ class Command(BaseCommand):
             schedule_group = None
             if legacy_user.preset_name:
                 schedule_group = ScheduleGroup.objects.get(name=legacy_user.preset_name)
+            
+            # Default to None (blank) if not manually assigned
+            department_instance = None
+
+            # Assign manually if user ID exists in the mapping dictionary
+            if legacy_user.employee_id in manual_departments:
+                department_instance = departments.get(manual_departments[legacy_user.employee_id], None)
 
             new_user = CustomUser.objects.create(
                 employee_id=legacy_user.employee_id,
@@ -84,6 +149,7 @@ class Command(BaseCommand):
                 surname=legacy_user.surname,
                 company=companies.get(legacy_user.company),
                 position=positions.get(legacy_user.position),
+                department=department_instance,  # Now defaults to None if not found
                 birth_date=legacy_user.birth_date,
                 date_hired=legacy_user.date_hired,
                 pin=legacy_user.pin,
@@ -92,6 +158,7 @@ class Command(BaseCommand):
                 if_first_login=False,
                 schedule_group=schedule_group
             )
+
             user_mapping[legacy_user.employee_id] = new_user  # Map by employee_id instead of id
         self.stdout.write(self.style.SUCCESS('Users migrated successfully'))
 
