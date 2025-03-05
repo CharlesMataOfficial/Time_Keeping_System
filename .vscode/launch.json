@@ -1,13 +1,19 @@
 {
-    "configurations": [
-        
-      {
-        "type": "debugpy",
-        "request": "launch",
-        "name": "Launch Django App",
-        "program": "${workspaceFolder}/manage.py",
-        "args": ["runserver"],
-        "django": true
-      }
-    ]
-  }
+  "configurations": [
+    {
+      "type": "debugpy",
+      "request": "launch",
+      "name": "Launch Django App",
+      "program": "${workspaceFolder}/manage.py",
+      "args": [
+        "runsslserver",
+        "0.0.0.0:8000",
+        "--certificate",
+        ".\\localhost+3.pem",
+        "--key",
+        ".\\localhost+3-key.pem"
+      ],
+      "django": true
+    }
+  ]
+}
