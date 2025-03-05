@@ -88,6 +88,7 @@ class CustomUserAdmin(UserAdmin):
         "surname",
         "company",
         "position",
+        "department",
         "is_active",
         "schedule_group",  # Update list_display too
         "manager",  # Add manager field here
@@ -98,6 +99,7 @@ class CustomUserAdmin(UserAdmin):
         "surname",
         "company__name",
         "position__name",
+        "department__name",
     )
     ordering = ("-employee_id",)
     list_filter = ("is_active", "is_staff", "is_superuser", "is_guard")

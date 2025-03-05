@@ -654,165 +654,161 @@ function superadmin_redirect() {
   window.location.href = "{% url 'superadmin_redirect' %}";
 }
 
-// Function to open the export Excel modal
-function openModalExportExcel() {
-  document.getElementById('modal_export_excel').style.display = 'block';
-}
-
-// Close modal when the user clicks on the close button
-document.getElementById('modal_export_close').addEventListener('click', function () {
-  document.getElementById('modal_export_excel').style.display = 'none';
-});
-
-// Toggle sections based on modal button clicks inside the modal
-document.getElementById('modal_export_by_date_btn').addEventListener('click', function () {
-  document.getElementById('modal_export_by_date_section').style.display = 'block';
-  document.getElementById('modal_export_by_employee_section').style.display = 'none';
-});
-
-document.getElementById('modal_export_by_employee_btn').addEventListener('click', function () {
-  document.getElementById('modal_export_by_employee_section').style.display = 'block';
-  document.getElementById('modal_export_by_date_section').style.display = 'none';
-});
-
-// Optional: Close modal if user clicks outside the modal content
-window.addEventListener('click', function (event) {
-  const modal = document.getElementById('modal_export_excel');
-  if (event.target === modal) {
-    modal.style.display = 'none';
-  }
-});
-
-// Bind export screen buttons to open the modal and auto-select the section
-document.getElementById('export_date_button').addEventListener('click', function () {
-  openModalExportExcel();
-  // Automatically display the "Export by Date" section
-  document.getElementById('modal_export_by_date_section').style.display = 'block';
-  document.getElementById('modal_export_by_employee_section').style.display = 'none';
-});
-
-document.getElementById('export_employee_button').addEventListener('click', function () {
-  openModalExportExcel();
-  // Automatically display the "Export by Employee ID" section
-  document.getElementById('modal_export_by_employee_section').style.display = 'block';
-  document.getElementById('modal_export_by_date_section').style.display = 'none';
-});
-
-// Instead, attach the export date check to the submit button inside the modal
-document.getElementById('modal_export_date_submit').addEventListener('click', function () {
-  const exportDate = document.getElementById('modal_export_date').value;
-  if (!exportDate) {
-    alert("Please select a date.");
-    return;
-  }
-  // Trigger your export functionality, e.g., redirect to export URL or call AJAX
-  window.location.href = `/export_time_entries_by_date/?export_date=${exportDate}`;
-});
-
-document.getElementById('modal_export_employee_submit').addEventListener('click', function () {
-  const employeeId = document.getElementById('modal_export_employee_id').value;
-  if (!employeeId) {
-    alert("Please enter an Employee ID.");
-    return;
-  }
-  // Construct the URL to trigger the export view
-  window.location.href = `/export_time_entries_by_employee/?employee_id=${employeeId}`;
-});
-
-// Function to load pending leaves
-function loadPendingLeaves() {
-    fetch('/leaves/pending/')
-        .then(response => response.json())
-        .then(data => {
-            const container = document.getElementById('leave-approval_rectangle');
-
-            if (!data.leaves || data.leaves.length === 0) {
-                container.innerHTML = '<p>No pending leave requests</p>';
-                return;
-            }
-
-            const table = document.createElement('table');
-            table.classList.add('leave-table');
-
-            table.innerHTML = `
-                <thead>
-                    <tr>
-                        <th>Employee</th>
-                        <th>Duration</th>
-                        <th>Type</th>
-                        <th>Reason</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${data.leaves.map(leave => `
-                        <tr>
-                            <td>${leave.employee_name}</td>
-                            <td>${leave.start_date} to ${leave.end_date} (${leave.duration} days)</td>
-                            <td>${leave.leave_type}</td>
-                            <td>${leave.reason}</td>
-                            <td>
-                                <button onclick="processLeave(${leave.id}, 'approve')" class="approve-btn">
-                                    Approve
-                                </button>
-                                <button onclick="showRejectDialog(${leave.id})" class="reject-btn">
-                                    Reject
-                                </button>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            `;
-
-            container.innerHTML = '';
-            container.appendChild(table);
-        })
-        .catch(error => {
-            console.error('Error loading leaves:', error);
-        });
-}
-
-function processLeave(leaveId, action, rejectionReason = '') {
-    const formData = new FormData();
-    formData.append('leave_id', leaveId);
-    formData.append('action', action);
-
-    if (rejectionReason) {
-        formData.append('rejection_reason', rejectionReason);
-    }
-
-    fetch('/leaves/process/', {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Refresh the list
-            loadPendingLeaves();
-        } else {
-            alert('Error: ' + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error processing leave:', error);
-    });
-}
-
-function showRejectDialog(leaveId) {
-    const reason = prompt('Please enter rejection reason:');
-    if (reason !== null) {
-        processLeave(leaveId, 'reject', reason);
-    }
-}
-
-// Load pending leaves when the page loads
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if we're on the admin page with the leave approval section
-    if (document.getElementById('leave-approval_rectangle')) {
-        loadPendingLeaves();
+  // Close modal for Export Excel (Date Range and Employee ID)
+  document.getElementById('modal_export_close').addEventListener('click', function () {
+    document.getElementById('modal_export_excel').style.display = 'none';
+  });
+
+  // Close modal for Single Date Export
+  document.getElementById('modal_export_single_date_close').addEventListener('click', function () {
+    document.getElementById('modal_export_single_date').style.display = 'none';
+  });
+
+  // Close modals if user clicks outside of them
+  window.addEventListener('click', function (event) {
+    const modalExportExcel = document.getElementById('modal_export_excel');
+    const modalSingleDate = document.getElementById('modal_export_single_date');
+    if (event.target === modalExportExcel) {
+      modalExportExcel.style.display = 'none';
     }
+    if (event.target === modalSingleDate) {
+      modalSingleDate.style.display = 'none';
+    }
+  });
+
+  // Reset functions
+  function resetDateRangeFields() {
+    document.getElementById('modal_export_date_start').value = '';
+    document.getElementById('modal_export_date_end').value = '';
+    const excludedContainer = document.getElementById('modal_excluded_dates_container');
+    excludedContainer.innerHTML = `
+      <label>Excluded Dates:</label>
+      <div class="excluded-date">
+        <input type="date" class="modal_export_excluded_date">
+        <button class="remove_excluded_date" type="button">&times;</button>
+      </div>
+    `;
+    const removeBtn = excludedContainer.querySelector('.remove_excluded_date');
+    if (removeBtn) {
+      attachRemoveListener(removeBtn);
+    }
+  }
+
+  function resetEmployeeFields() {
+    document.getElementById('modal_export_employee_id').value = '';
+  }
+
+  // Attach remove event for excluded date buttons
+  function attachRemoveListener(button) {
+    button.addEventListener('click', function() {
+      this.parentElement.remove();
+    });
+  }
+
+  document.querySelectorAll('.remove_excluded_date').forEach(button => {
+    attachRemoveListener(button);
+  });
+
+  // --- Date Range Export Section ---
+  const exportDateRangeButton = document.getElementById('export_date_range_button');
+  if (exportDateRangeButton) {
+    exportDateRangeButton.addEventListener('click', function () {
+      resetEmployeeFields();
+      document.getElementById('modal_export_excel').style.display = 'block';
+      document.getElementById('modal_export_by_date_range_section').style.display = 'block';
+      document.getElementById('modal_export_by_employee_section').style.display = 'none';
+    });
+  }
+
+  // --- Employee ID Export Section ---
+  const exportEmployeeButton = document.getElementById('export_employee_button');
+  if (exportEmployeeButton) {
+    exportEmployeeButton.addEventListener('click', function () {
+      resetDateRangeFields();
+      document.getElementById('modal_export_excel').style.display = 'block';
+      document.getElementById('modal_export_by_employee_section').style.display = 'block';
+      document.getElementById('modal_export_by_date_range_section').style.display = 'none';
+    });
+  }
+
+  // --- Single Date Export Section ---
+  const exportDateButton = document.getElementById('export_date_button');
+  if (exportDateButton) {
+    exportDateButton.addEventListener('click', function () {
+      resetDateRangeFields();
+      resetEmployeeFields();
+      document.getElementById('modal_export_single_date').style.display = 'block';
+    });
+  }
+
+  // Export by Date Range submit handler
+  const exportDateRangeSubmit = document.getElementById('modal_export_date_range_submit');
+  if (exportDateRangeSubmit) {
+    exportDateRangeSubmit.addEventListener('click', function () {
+      const startDate = document.getElementById('modal_export_date_start').value;
+      const endDate = document.getElementById('modal_export_date_end').value;
+      if (!startDate || !endDate) {
+        alert("Please select both start and end dates.");
+        return;
+      }
+
+      const excludedInputs = document.getElementsByClassName('modal_export_excluded_date');
+      let excludedDates = [];
+      for (let input of excludedInputs) {
+        if (input.value) {
+          excludedDates.push(input.value);
+        }
+      }
+
+      let url = `/export_time_entries_range/?date_start=${startDate}&date_end=${endDate}`;
+      excludedDates.forEach(date => {
+        url += `&exclude_date=${date}`;
+      });
+
+      window.location.href = url;
+    });
+  }
+
+  // Export by Employee ID submit handler
+  const exportEmployeeSubmit = document.getElementById('modal_export_employee_submit');
+  if (exportEmployeeSubmit) {
+    exportEmployeeSubmit.addEventListener('click', function () {
+      const employeeId = document.getElementById('modal_export_employee_id').value.trim();
+      if (!employeeId) {
+        alert("Please enter an Employee ID.");
+        return;
+      }
+      window.location.href = `/export_time_entries_by_employee/?employee_id=${employeeId}`;
+    });
+  }
+
+  // Single Date Export submit handler
+  const exportDateSubmit = document.getElementById('modal_export_date_submit');
+  if (exportDateSubmit) {
+    exportDateSubmit.addEventListener('click', function () {
+      const dateValue = document.getElementById('modal_export_date').value;
+      if (!dateValue) {
+        alert("Please select a date.");
+        return;
+      }
+      window.location.href = `/export_time_entries_by_date/?date=${encodeURIComponent(dateValue)}`;
+    });
+  }
+
+  // Add new excluded date input for date range modal
+  const addExcludedDateBtn = document.getElementById('add_excluded_date');
+  if (addExcludedDateBtn) {
+    addExcludedDateBtn.addEventListener('click', function() {
+      const container = document.getElementById('modal_excluded_dates_container');
+      const newInputDiv = document.createElement('div');
+      newInputDiv.className = 'excluded-date';
+      newInputDiv.innerHTML = `
+        <input type="date" class="modal_export_excluded_date">
+        <button class="remove_excluded_date" type="button">&times;</button>
+      `;
+      container.appendChild(newInputDiv);
+      attachRemoveListener(newInputDiv.querySelector('.remove_excluded_date'));
+    });
+  }
 });

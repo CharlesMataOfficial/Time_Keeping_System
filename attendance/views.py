@@ -14,6 +14,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
+from openpyxl import Workbook, load_workbook
+from django.contrib.auth.hashers import make_password
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
@@ -808,34 +810,40 @@ def get_logs(request):
     ]
 
     return JsonResponse({"logs": log_data, "total": logs_query.count()})
-
 @require_GET
-def export_time_entries_by_date(request):
-    export_date = request.GET.get("export_date")
-    if not export_date:
-        return HttpResponse("Date parameter is required.", status=400)
+def export_time_entries_range(request):
+    date_start_str = request.GET.get("date_start")
+    date_end_str = request.GET.get("date_end")
+    if not date_start_str or not date_end_str:
+        return HttpResponse("Start date and End date parameters are required.", status=400)
 
-    # Parse the date string (expects format "YYYY-MM-DD")
-    date_obj = parse_date(export_date)
-    if not date_obj:
+    date_start = parse_date(date_start_str)
+    date_end = parse_date(date_end_str)
+    if not date_start or not date_end:
         return HttpResponse("Invalid date format.", status=400)
 
-    # Build datetime range for the day using naive datetimes
-    today_start = datetime.combine(date_obj, time.min)
-    today_end = datetime.combine(date_obj, time.max)
+    # Create datetime range for the selected period
+    start_datetime = datetime.combine(date_start, time.min)
+    end_datetime = datetime.combine(date_end, time.max)
 
-    # Fetch time entries for the specified day (using naive datetimes)
+    # Fetch time entries in the date range
     qs = TimeEntry.objects.filter(
-        time_in__gte=today_start,
-        time_in__lte=today_end
-    ).order_by("time_in")
+        time_in__gte=start_datetime,
+        time_in__lte=end_datetime
+    )
+
+    # Exclude entries with time_in dates in the excluded list
+    excluded_dates = request.GET.getlist("exclude_date")
+    if excluded_dates:
+        qs = qs.exclude(time_in__date__in=excluded_dates)
+
+    qs = qs.order_by("time_in")
 
     # Create an Excel workbook and worksheet
     wb = Workbook()
     ws = wb.active
     ws.title = "Time Entries"
 
-    # Write header row with 10 fields:
     headers = [
         "ID",
         "Employee ID",
@@ -850,7 +858,6 @@ def export_time_entries_by_date(request):
     ]
     ws.append(headers)
 
-    # Write each time entry as a row
     for entry in qs:
         row = [
             entry.id,
@@ -858,27 +865,26 @@ def export_time_entries_by_date(request):
             entry.user.first_name,
             entry.user.surname,
             entry.user.company.name if entry.user.company else "",
-            entry.time_in.strftime("%Y-%m-%d"),      # Date portion
-            entry.time_in.strftime("%H:%M:%S"),       # Only time for Time In
+            entry.time_in.strftime("%Y-%m-%d"),
+            entry.time_in.strftime("%H:%M:%S"),
             entry.time_out.strftime("%H:%M:%S") if entry.time_out else "",
             entry.hours_worked,
             "Yes" if entry.is_late else "No",
         ]
         ws.append(row)
 
-    # Save the workbook to an in-memory buffer
     output = BytesIO()
     wb.save(output)
     output.seek(0)
 
-    # Return the Excel file as an HTTP response
+    filename = f"time_entries_range_{date_start_str}_to_{date_end_str}.xlsx"
     response = HttpResponse(
         output,
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-    response["Content-Disposition"] = f"attachment; filename=time_entries_{export_date}.xlsx"
+    response["Content-Disposition"] = f"attachment; filename={filename}"
 
-    log_admin_action(request, "excel_export", f"Exported time_entries_{export_date}.xlsx")
+    log_admin_action(request, "excel_export", f"Exported {filename}")
     return response
 
 
@@ -1011,3 +1017,148 @@ def process_leave(request):
     log_admin_action(request, 'leave_approval', f"Leave request {action}d for {leave.employee.employee_id}")
 
     return JsonResponse({'success': True})
+
+
+@login_required
+def get_pending_leaves(request):
+    user = request.user
+
+    try:
+        # Determine which leaves to show based on user role
+        if user.is_hr:
+            # HR sees leaves that managers have approved
+            leaves = Leave.objects.filter(status='APPROVED_BY_MANAGER')
+        else:
+            # Regular users (managers) see pending leaves from their team
+            leaves = Leave.objects.filter(employee__manager=user, status='PENDING')
+
+        # Format the leave data
+        leave_data = []
+        for leave in leaves:
+            leave_data.append({
+                'id': leave.id,
+                'employee_name': f"{leave.employee.first_name} {leave.employee.surname}",
+                'start_date': leave.start_date.strftime('%Y-%m-%d'),
+                'end_date': leave.end_date.strftime('%Y-%m-%d'),
+                'duration': leave.get_duration(),
+                'leave_type': leave.leave_type.name if leave.leave_type else 'N/A',
+                'reason': leave.reason
+            })
+
+        return JsonResponse({'leaves': leave_data})
+    except Exception as e:
+        # Log the error
+        import traceback
+        print(f"Error in get_pending_leaves: {e}")
+        print(traceback.format_exc())
+        # Return empty leaves array with error status
+        return JsonResponse({'leaves': [], 'error': str(e)})
+
+@login_required
+@require_POST
+def process_leave(request):
+    leave_id = request.POST.get('leave_id')
+    action = request.POST.get('action')  # 'approve' or 'reject'
+    rejection_reason = request.POST.get('rejection_reason', '')
+
+    leave = get_object_or_404(Leave, id=leave_id)
+    user = request.user
+
+    # Verify permission to process this leave
+    if user.is_hr and leave.status == 'APPROVED_BY_MANAGER':
+        if action == 'approve':
+            leave.status = 'APPROVED_BY_HR'
+            # We'll leave credits tracking for later
+        else:
+            leave.status = 'REJECTED_BY_HR'
+            leave.rejection_reason = rejection_reason
+
+    elif leave.employee.manager == user and leave.status == 'PENDING':
+        if action == 'approve':
+            leave.status = 'APPROVED_BY_MANAGER'
+        else:
+            leave.status = 'REJECTED_BY_MANAGER'
+            leave.rejection_reason = rejection_reason
+    else:
+        return JsonResponse({'success': False, 'message': 'Not authorized to process this leave'})
+
+    leave.save()
+
+    # Log the action
+    log_admin_action(request, 'leave_approval', f"Leave request {action}d for {leave.employee.employee_id}")
+
+    return JsonResponse({'success': True})
+
+@require_GET
+def export_time_entries_by_date(request):
+    # Get the date parameter from the request (e.g. from your date picker)
+    date_str = request.GET.get("date")
+    if not date_str:
+        return HttpResponse("Date parameter is required.", status=400)
+
+    selected_date = parse_date(date_str)
+    if not selected_date:
+        return HttpResponse("Invalid date format.", status=400)
+
+    # Create datetime range for the selected date
+    start_datetime = datetime.combine(selected_date, time.min)
+    end_datetime = datetime.combine(selected_date, time.max)
+
+    # Filter time entries that fall within the selected date
+    qs = TimeEntry.objects.filter(
+        time_in__gte=start_datetime,
+        time_in__lte=end_datetime
+    ).order_by("time_in")
+
+    # Create an Excel workbook and worksheet
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Time Entries"
+
+    # Define headers for the Excel sheet
+    headers = [
+        "ID",
+        "Employee ID",
+        "First Name",
+        "Surname",
+        "Company",
+        "Date",
+        "Time In",
+        "Time Out",
+        "Hours Worked",
+        "Is Late"
+    ]
+    ws.append(headers)
+
+    # Populate rows with time entry data
+    for entry in qs:
+        row = [
+            entry.id,
+            entry.user.employee_id,
+            entry.user.first_name,
+            entry.user.surname,
+            entry.user.company.name if entry.user.company else "",
+            entry.time_in.strftime("%Y-%m-%d"),
+            entry.time_in.strftime("%H:%M:%S"),
+            entry.time_out.strftime("%H:%M:%S") if entry.time_out else "",
+            entry.hours_worked,
+            "Yes" if entry.is_late else "No"
+        ]
+        ws.append(row)
+
+    # Save the workbook to an in-memory output buffer
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    # Create the response with a dynamic filename
+    filename = f"time_entries_{date_str}.xlsx"
+    response = HttpResponse(
+        output,
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f"attachment; filename={filename}"
+
+    # Log the export action
+    log_admin_action(request, "excel_export", f"Exported {filename}")
+    return response

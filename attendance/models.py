@@ -4,11 +4,15 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core.validators import MinLengthValidator
 from django.db import models
-from django.db.models import Max
+from django.db.models import Max, Q
 from django.forms import ValidationError
 from django.utils import timezone
 
 from .utils import (create_default_time_preset, get_day_code)
+
+from django.utils.timezone import make_aware
+from datetime import datetime
+from django.http import HttpResponse
 
 
 class CustomUserManager(BaseUserManager):
@@ -85,9 +89,7 @@ class Department(models.Model):
     class Meta:
         verbose_name_plural = "User Departments"
         ordering = ["name"]
-        db_table = "django_departments"
-
-
+        db_table = "django_departments" # Changed From 'departments'
 
 class Position(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -108,13 +110,13 @@ class CustomUser(AbstractUser):
     first_name = models.CharField(max_length=100, null=True, blank=True)
     surname = models.CharField(max_length=100, null=True, blank=True)
     company = models.ForeignKey(
-        Company, on_delete=models.SET_NULL, null=True, blank=True
+        'Company', on_delete=models.SET_NULL, null=True, blank=True
     )
     position = models.ForeignKey(
-        Position, on_delete=models.SET_NULL, null=True, blank=True
+        'Position', on_delete=models.SET_NULL, null=True, blank=True
     )
     department = models.ForeignKey(
-        Department, on_delete=models.SET_NULL, null=True, blank=True
+        'Department', on_delete=models.SET_NULL, null=True, blank=True
     )
     birth_date = models.DateField(null=True, blank=True)
     date_hired = models.DateField(null=True, blank=True)
@@ -438,8 +440,6 @@ class AdminLog(models.Model):
         ('announcement_create', 'Announcement Created'),
         ('announcement_post', 'Announcement Posted'),
         ('announcement_delete', 'Announcement Deleted'),
-        ('excel_import', 'Excel Import'),
-        ('excel_export', 'Excel Export'),
         ('leave_approval', 'Leave Approval'),
         ('login', 'User Login'),
         ('logout', 'User Logout'),
@@ -468,7 +468,6 @@ class AdminLog(models.Model):
 
     def delete(self, *args, **kwargs):
         raise PermissionError("Admin logs cannot be deleted")
-
 
 class LeaveType(models.Model):
     name = models.CharField(max_length=100, unique=True)
