@@ -1,13 +1,14 @@
 import datetime
+
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import Max
-from django.conf import settings
-from django.core.validators import MinLengthValidator
 from django.forms import ValidationError
 from django.utils import timezone
-from django.utils.html import format_html
-from .utils import get_day_code, format_minutes, create_default_time_preset  # Import from utils.py
+
+from .utils import (create_default_time_preset, get_day_code)
 
 
 class CustomUserManager(BaseUserManager):
@@ -128,12 +129,15 @@ class CustomUser(AbstractUser):
         related_name="users",
         verbose_name="Time Schedule",
     )
+    manager = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='subordinates')
+    leave_credits = models.IntegerField(default=16)
     # Remove other redundant fields
     email = None
     last_name = None  # Since you're using 'surname'
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_guard = models.BooleanField(default=False)
+    is_hr = models.BooleanField(default=False)
     if_first_login = models.BooleanField(default=True)
 
     USERNAME_FIELD = "employee_id"
@@ -283,6 +287,45 @@ class TimeEntry(models.Model):
 
         return new_entry
 
+    def clean(self):
+        """Validate entry and calculate derived values."""
+        super().clean()
+
+        # Always calculate minutes_late if time_in exists
+        if self.time_in and hasattr(self, 'user') and self.user:
+            try:
+                time_in_local = self.time_in
+                day_code = get_day_code(time_in_local)
+
+                # Get schedule using get_schedule_for_day
+                preset = self.user.get_schedule_for_day(day_code)
+                if preset:
+                    expected_start = preset.start_time
+
+                    # Create datetime with schedule time
+                    naive_expected_time = datetime.datetime.combine(
+                        time_in_local.date(), expected_start
+                    )
+
+                    # Make timezone-aware
+                    expected_start_dt = timezone.make_aware(naive_expected_time)
+
+                    # Compare times and calculate minutes_late
+                    time_diff = time_in_local - expected_start_dt
+                    self.minutes_late = round(time_diff.total_seconds() / 60)
+
+                    # Calculate if late considering grace period
+                    grace_period = datetime.timedelta(minutes=preset.grace_period_minutes)
+                    expected_with_grace = expected_start_dt + grace_period
+                    self.is_late = time_in_local > expected_with_grace
+            except Exception as e:
+                print(f"Error calculating lateness in clean(): {e}")
+
+    def save(self, *args, **kwargs):
+        # Call clean() to ensure validation and calculations happen
+        self.clean()
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.user.employee_id} - {self.user.first_name} {self.user.surname} - {self.time_in.strftime('%Y-%m-%d %H:%M:%S')}"
 
@@ -425,3 +468,45 @@ class AdminLog(models.Model):
 
     def delete(self, *args, **kwargs):
         raise PermissionError("Admin logs cannot be deleted")
+
+
+class LeaveType(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    is_paid = models.BooleanField(default=True, help_text="Whether this leave type uses leave credits")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Leave Types"
+        ordering = ["name"]
+        db_table = "django_leave_types"
+
+
+class Leave(models.Model):
+    STATUS_CHOICES = (
+        ('PENDING', 'Pending Manager Approval'),
+        ('APPROVED_BY_MANAGER', 'Approved by Manager'),
+        ('REJECTED_BY_MANAGER', 'Rejected by Manager'),
+        ('APPROVED_BY_HR', 'Approved by HR'),
+        ('REJECTED_BY_HR', 'Rejected by HR')
+    )
+
+    employee = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='leaves')
+    leave_type = models.ForeignKey(LeaveType, on_delete=models.PROTECT, null=True, blank=True)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    reason = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    rejection_reason = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def get_duration(self):
+        return (self.end_date - self.start_date).days + 1
+
+    def __str__(self):
+        return f"{self.employee}'s leave request from {self.start_date} to {self.end_date}"
+
+    class Meta:
+        ordering = ['-created_at']

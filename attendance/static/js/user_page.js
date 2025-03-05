@@ -343,15 +343,33 @@ function updatePartnerLogo(newLogo) {
   partnerLogo.src = `/static/images/logos/${newLogo}`;
 }
 
-// Fetch today's entries when the page loads
-document.addEventListener("DOMContentLoaded", function () {
-  fetch("/get_todays_entries/") // You'll need to create this endpoint
+// Extract fetch logic into a reusable function
+function fetchAndUpdateEntries() {
+  fetch("/get_todays_entries/")
     .then((response) => response.json())
     .then((data) => {
+      // Clear existing entries and update with new data
+      const tbody = document.getElementById("attendance-items");
+      tbody.innerHTML = ""; // Clear existing rows
       data.entries.forEach((entry) => addAttendanceItem(entry));
+
+      console.log("Time entries refreshed at", new Date().toLocaleTimeString());
     })
     .catch((error) => console.error("Error loading entries:", error));
+}
 
+// Fetch today's entries when the page loads
+document.addEventListener("DOMContentLoaded", function () {
+  // Initial fetch
+  fetchAndUpdateEntries();
+
+  // Set up auto-refresh every 30 seconds (30000 milliseconds)
+  const refreshInterval = setInterval(fetchAndUpdateEntries, 30000);
+
+  // Store the interval ID in case you need to stop it later
+  window.entriesRefreshInterval = refreshInterval;
+
+  // Rest of your existing code...
   fetch("/announcements/posted/")
     .then((response) => response.json())
     .then((data) => {
@@ -359,7 +377,7 @@ document.addEventListener("DOMContentLoaded", function () {
       container.innerHTML = "";
 
       if (data.length === 0) {
-        container.innerHTML = "<p>No posted announcements at this time.</p>";
+        container.innerHTML = "<p></p>";
         return;
       }
 
@@ -443,6 +461,54 @@ document.addEventListener("DOMContentLoaded", function () {
   // Time Out button click handler
   timeOutBtn.addEventListener("click", function () {
     clockOutModal.style.display = "block";
+  });
+
+  // Add keyboard navigation for employee ID and PIN fields
+  const employeeIdIn = document.getElementById("employeeIdIn");
+  const pinIn = document.getElementById("pinIn");
+  const employeeIdOut = document.getElementById("employeeIdOut");
+  const pinOut = document.getElementById("pinOut");
+
+  // When employee ID is filled and Enter is pressed, move to PIN field
+  employeeIdIn.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      pinIn.focus();
+    }
+  });
+
+  employeeIdOut.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      pinOut.focus();
+    }
+  });
+
+  // Add similar handling for newPinModal if needed
+  if (document.getElementById("newPin")) {
+    const newPinField = document.getElementById("newPin");
+    newPinField.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        document.getElementById("newPinForm").dispatchEvent(new Event("submit"));
+      }
+    });
+  }
+
+  timeInBtn.setAttribute("tabindex", "0");
+  timeOutBtn.setAttribute("tabindex", "0");
+
+  // Allow activation with Enter key
+  timeInBtn.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      openClockInModal();
+    }
+  });
+
+  timeOutBtn.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      openClockOutModal();
+    }
   });
 });
 
@@ -601,12 +667,16 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-// Function to open the clock-in modal
+// Update your openClockInModal function
 function openClockInModal() {
   clockInModal.style.display = "block";
+  // Auto-focus on employee ID field when modal opens
+  setTimeout(() => document.getElementById("employeeIdIn").focus(), 100);
 }
 
-// Function to open the clock-out modal
+// Update your openClockOutModal function
 function openClockOutModal() {
   clockOutModal.style.display = "block";
+  // Auto-focus on employee ID field when modal opens
+  setTimeout(() => document.getElementById("employeeIdOut").focus(), 100);
 }

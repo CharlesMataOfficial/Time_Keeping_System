@@ -1,22 +1,18 @@
-# attendance/admin.py
+import datetime
+
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
+from django.utils import timezone
 from django.utils.html import format_html
-from django.conf import settings
-from .models import (
-    CustomUser,
-    TimeEntry,
-    Company,
-    Department,
-    Position,
-    TimePreset,
-    DayOverride,
-    ScheduleGroup,
-    AdminLog,
-)
+
 from .forms import CustomUserCreationForm, TimeEntryForm
-from .utils import log_admin_action
+from .models import LeaveType
+from .models import (AdminLog, Company, CustomUser, DayOverride, Department,
+                     Leave, Position, ScheduleGroup, TimeEntry, TimePreset)
+from .utils import get_day_code, log_admin_action
+
 
 class TimeEntryInline(admin.TabularInline):
     model = TimeEntry
@@ -62,7 +58,7 @@ class CustomUserAdmin(UserAdmin):
         ),
     )
 
-    # Updated fieldsets - removed 'status' field and added is_active instead
+    # Updated fieldsets - add manager field to Other Info
     fieldsets = (
         (None, {"fields": ("employee_id", "password", "pin")}),
         ("Personal Info", {"fields": ("first_name", "surname", "birth_date")}),
@@ -75,12 +71,14 @@ class CustomUserAdmin(UserAdmin):
                     "department",
                     "date_hired",
                     "schedule_group",
+                    "manager",  # Add manager field here
+                    "leave_credits",  # Also add leave_credits to make it editable
                 )
             },
         ),
         (
             "Permissions",
-            {"fields": ("is_active", "is_staff", "is_superuser", "is_guard")},
+            {"fields": ("is_active", "is_staff", "is_superuser", "is_guard", "is_hr")},  # Add is_hr here
         ),
     )
 
@@ -92,6 +90,7 @@ class CustomUserAdmin(UserAdmin):
         "position",
         "is_active",
         "schedule_group",  # Update list_display too
+        "manager",  # Add manager field here
     )
     search_fields = (
         "employee_id",
@@ -104,7 +103,7 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ("is_active", "is_staff", "is_superuser", "is_guard")
 
     # Add autocomplete fields
-    autocomplete_fields = ["company", "position", "department","schedule_group"]
+    autocomplete_fields = ["company", "position", "department", "schedule_group", "manager"]
 
     def save_model(self, request, obj, form, change):
         if not change and not obj.employee_id:
@@ -158,32 +157,108 @@ class TimeEntryAdmin(admin.ModelAdmin):
     ]
 
     autocomplete_fields = ["user"]
-    readonly_fields = (
-        "hours_worked",
-        "view_image_path",
-    )
 
-    def formatted_minutes_late(self, obj):
-        if obj.minutes_late > 0:
-            return format_html(
-                '<span style="color: red;">{} mins late</span>', obj.minutes_late
-            )
-        elif obj.minutes_late < 0:
-            return format_html(
-                '<span style="color: green;">{} mins early</span>',
-                abs(obj.minutes_late),
-            )
-        else:
-            return "On time"
+    # Make these fields read-only
+    readonly_fields = ("hours_worked", "is_late", "minutes_late", "view_image_path")
 
-    formatted_minutes_late.short_description = "Arrival Status"
-    formatted_minutes_late.admin_order_field = "minutes_late"
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+
+        # Check if fields exist in base_fields before setting help_text
+        if 'hours_worked' in form.base_fields:
+            form.base_fields['hours_worked'].help_text = "Automatically calculated based on time in and time out."
+        if 'is_late' in form.base_fields:
+            form.base_fields['is_late'].help_text = "Automatically calculated based on time in and user's schedule."
+        if 'minutes_late' in form.base_fields:
+            form.base_fields['minutes_late'].help_text = "Automatically calculated based on time in and user's schedule."
+
+        return form
 
     def save_model(self, request, obj, form, change):
+        # Always calculate hours worked if time_in and time_out exist
         if obj.time_in and obj.time_out:
             delta = obj.time_out - obj.time_in
             obj.hours_worked = round(delta.total_seconds() / 3600, 2)
+
+        # Always calculate lateness if time_in exists
+        if obj.time_in:
+            try:
+                time_in_local = obj.time_in
+                day_code = get_day_code(time_in_local)
+
+                # Get schedule using get_schedule_for_day
+                preset = obj.user.get_schedule_for_day(day_code)
+                if preset:
+                    expected_start = preset.start_time
+                    grace_period = datetime.timedelta(minutes=preset.grace_period_minutes)
+
+                    naive_expected_time = datetime.datetime.combine(
+                        time_in_local.date(), expected_start
+                    )
+
+                    expected_start_dt = timezone.make_aware(naive_expected_time)
+                    expected_with_grace = expected_start_dt + grace_period
+
+                    if not timezone.is_aware(time_in_local):
+                        time_in_local = timezone.make_aware(time_in_local)
+
+                    obj.is_late = time_in_local > expected_with_grace
+
+                    time_diff = time_in_local - expected_start_dt
+                    obj.minutes_late = round(time_diff.total_seconds() / 60)
+                else:
+                    obj.is_late = False
+                    obj.minutes_late = 0
+            except Exception as e:
+                obj.is_late = False
+                obj.minutes_late = 0
+                print(f"Error calculating lateness: {e}")
+
         super().save_model(request, obj, form, change)
+
+    def formatted_minutes_late(self, obj):
+        if obj.minutes_late == 0:
+            return ""
+
+        # Format for display - either hours/minutes or raw minutes
+        is_late = obj.minutes_late > 0
+        abs_mins = abs(obj.minutes_late)
+
+        # Format in hours and minutes
+        hours = abs_mins // 60
+        mins = abs_mins % 60
+
+        if hours > 0:
+            if mins > 0:
+                formatted_time = f"{hours} hr {mins} min"
+            else:
+                formatted_time = f"{hours} hr"
+        else:
+            formatted_time = f"{mins} min"
+
+        # Format in raw minutes
+        raw_minutes = f"{abs_mins} min"
+
+        # Determine status text
+        status = "late" if is_late else "early"
+
+        # Create HTML with data attributes for toggling
+        color = "red" if is_late else "green"
+        return format_html(
+            '<span style="color: {color}; cursor: pointer;" '
+            'class="toggle-time-format" '
+            'data-formatted="{formatted} {status}" '
+            'data-raw="{raw} {status}" '
+            'onclick="toggleTimeFormat(this)">'
+            '{formatted} {status}</span>',
+            color=color,
+            formatted=formatted_time,
+            raw=raw_minutes,
+            status=status
+        )
+
+    formatted_minutes_late.short_description = "Arrival Status"
+    formatted_minutes_late.admin_order_field = "minutes_late"
 
     def user__first_name(self, obj):
         return obj.user.first_name
@@ -206,6 +281,9 @@ class TimeEntryAdmin(admin.ModelAdmin):
         return "No Image"
 
     view_image_path.short_description = "View Image"
+
+    class Media:
+        js = ("admin/js/toggle_time_format.js",)
 
 
 class CompanyAdmin(admin.ModelAdmin):
@@ -293,6 +371,27 @@ class AdminLogAdmin(admin.ModelAdmin):
         return super().changeform_view(request, object_id, form_url, extra_context)
 
 
+# Add this class
+class LeaveTypeAdmin(admin.ModelAdmin):
+    search_fields = ["name"]
+    list_display = ("name",)
+
+
+class LeaveAdmin(admin.ModelAdmin):
+    list_display = ('employee', 'leave_type', 'start_date', 'end_date', 'status', 'created_at')
+    list_filter = ('status', 'leave_type', 'start_date')
+    search_fields = ('employee__first_name', 'employee__surname', 'employee__employee_id', 'reason')
+    date_hierarchy = 'start_date'
+    readonly_fields = ('created_at', 'updated_at')
+
+    fieldsets = (
+        ('Employee Information', {'fields': ('employee',)}),
+        ('Leave Details', {'fields': ('leave_type', 'start_date', 'end_date', 'reason')}),
+        ('Status', {'fields': ('status', 'rejection_reason')}),
+        ('Timestamps', {'fields': ('created_at', 'updated_at')}),
+    )
+
+
 # Unregister the group model
 admin.site.unregister(Group)
 
@@ -305,3 +404,5 @@ admin.site.register(Position, PositionAdmin)
 admin.site.register(ScheduleGroup, ScheduleGroupAdmin)
 admin.site.register(Department, DepartmentAdmin)
 admin.site.register(AdminLog, AdminLogAdmin)
+admin.site.register(LeaveType, LeaveTypeAdmin)  # Register the model at the bottom with other admin registrations
+admin.site.register(Leave, LeaveAdmin)  # Register the Leave model with LeaveAdmin

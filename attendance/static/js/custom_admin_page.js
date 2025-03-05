@@ -1,4 +1,3 @@
-// Toggle Menu
 function toggleMenu() {
   const menu = document.getElementById("menu");
   menu.style.left = menu.style.left === "0px" ? "-300px" : "0px";
@@ -43,6 +42,23 @@ function navigateTo(screenId) {
   }
 }
 
+// Add this helper function at the beginning of your file
+function formatMinutesToHoursMinutes(totalMinutes) {
+  const minutes = Math.abs(Math.round(totalMinutes || 0));
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+
+  if (hours > 0) {
+    if (mins > 0) {
+      return `${hours} hr ${mins} min`;
+    } else {
+      return `${hours} hr`;
+    }
+  } else {
+    return `${mins} min`;
+  }
+}
+
 // Add this function to load dashboard data
 function loadDashboardData() {
   fetch("/dashboard-data/")
@@ -62,14 +78,17 @@ function loadDashboardData() {
       lateEmployeesList.innerHTML = "";
 
       if (data.top_late.length === 0) {
-        lateEmployeesList.innerHTML = "<tr><td colspan='2'>No late employees today</td></tr>";
+        lateEmployeesList.innerHTML = "<tr><td colspan='2'></td></tr>";
       } else {
         data.top_late.forEach((employee) => {
           const minutes = Math.abs(Math.round(employee.minutes_diff || 0));
+          const formattedTime = formatMinutesToHoursMinutes(minutes);
           lateEmployeesList.innerHTML += `
             <tr>
               <td>${employee.name}</td>
-              <td class="minutes late">${minutes} mins</td>
+              <td class="minutes late" data-minutes="${minutes}" data-formatted="${formattedTime}">
+                ${formattedTime}
+              </td>
             </tr>
           `;
         });
@@ -80,22 +99,56 @@ function loadDashboardData() {
       earlyBirdsList.innerHTML = "";
 
       if (data.top_early.length === 0) {
-        earlyBirdsList.innerHTML = "<tr><td colspan='2'>No early birds today</td></tr>";
+        earlyBirdsList.innerHTML = "<tr><td colspan='2'></td></tr>";
       } else {
         data.top_early.forEach((employee) => {
           const minutes = Math.abs(Math.round(employee.minutes_diff || 0));
+          const formattedTime = formatMinutesToHoursMinutes(minutes);
           earlyBirdsList.innerHTML += `
             <tr>
               <td>${employee.name}</td>
-              <td class="minutes early">${minutes} mins</td>
+              <td class="minutes early" data-minutes="${minutes}" data-formatted="${formattedTime}">
+                ${formattedTime}
+              </td>
             </tr>
           `;
         });
       }
+
+      // Add click handlers after the tables are populated
+      addTimeFormatToggleHandlers();
     })
     .catch((error) => {
       console.error("Error loading dashboard data:", error);
     });
+}
+
+// Add this function to handle the toggle functionality
+function addTimeFormatToggleHandlers() {
+  // Add click handlers to all time display cells
+  document.querySelectorAll(".minutes").forEach(cell => {
+    cell.style.cursor = "pointer"; // Show as clickable
+    cell.title = "Click to toggle format"; // Add tooltip
+
+    // Track toggle state with a custom data attribute
+    cell.dataset.showingRawMinutes = "false";
+
+    cell.addEventListener("click", function() {
+      const minutes = this.dataset.minutes;
+      const formatted = this.dataset.formatted;
+
+      // Check the current toggle state
+      if (this.dataset.showingRawMinutes === "false") {
+        // Currently showing formatted time, switch to raw minutes
+        this.textContent = `${minutes} mins`;
+        this.dataset.showingRawMinutes = "true";
+      } else {
+        // Currently showing raw minutes, switch to formatted time
+        this.textContent = `${formatted}`;
+        this.dataset.showingRawMinutes = "false";
+      }
+    });
+  });
 }
 
 // Function to load and filter log data
@@ -664,4 +717,102 @@ document.getElementById('modal_export_employee_submit').addEventListener('click'
   }
   // Construct the URL to trigger the export view
   window.location.href = `/export_time_entries_by_employee/?employee_id=${employeeId}`;
+});
+
+// Function to load pending leaves
+function loadPendingLeaves() {
+    fetch('/leaves/pending/')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('leave-approval_rectangle');
+
+            if (!data.leaves || data.leaves.length === 0) {
+                container.innerHTML = '<p>No pending leave requests</p>';
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.classList.add('leave-table');
+
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Duration</th>
+                        <th>Type</th>
+                        <th>Reason</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.leaves.map(leave => `
+                        <tr>
+                            <td>${leave.employee_name}</td>
+                            <td>${leave.start_date} to ${leave.end_date} (${leave.duration} days)</td>
+                            <td>${leave.leave_type}</td>
+                            <td>${leave.reason}</td>
+                            <td>
+                                <button onclick="processLeave(${leave.id}, 'approve')" class="approve-btn">
+                                    Approve
+                                </button>
+                                <button onclick="showRejectDialog(${leave.id})" class="reject-btn">
+                                    Reject
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            `;
+
+            container.innerHTML = '';
+            container.appendChild(table);
+        })
+        .catch(error => {
+            console.error('Error loading leaves:', error);
+        });
+}
+
+function processLeave(leaveId, action, rejectionReason = '') {
+    const formData = new FormData();
+    formData.append('leave_id', leaveId);
+    formData.append('action', action);
+
+    if (rejectionReason) {
+        formData.append('rejection_reason', rejectionReason);
+    }
+
+    fetch('/leaves/process/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Refresh the list
+            loadPendingLeaves();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error processing leave:', error);
+    });
+}
+
+function showRejectDialog(leaveId) {
+    const reason = prompt('Please enter rejection reason:');
+    if (reason !== null) {
+        processLeave(leaveId, 'reject', reason);
+    }
+}
+
+// Load pending leaves when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if we're on the admin page with the leave approval section
+    if (document.getElementById('leave-approval_rectangle')) {
+        loadPendingLeaves();
+    }
 });

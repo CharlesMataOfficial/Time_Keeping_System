@@ -1,33 +1,28 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout
-from django.urls import reverse
-from .models import CustomUser, TimeEntry, Announcement, AdminLog
-from django.views.decorators.cache import never_cache
-from django.contrib.auth.decorators import login_required
 import json
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
-from django.views.decorators.http import require_POST, require_GET
-from django.utils import timezone
+import os
+from datetime import date, datetime, time, timedelta
+from io import BytesIO
+
+from django.contrib import messages
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-import os
-from datetime import datetime, timedelta, date, time
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib import messages
 from django.db.models import Q
-from .utils import (
-    COMPANY_CHOICES,
-    DEPARTMENT_CHOICES,
-    get_day_code,
-    format_minutes,
-    COMPANY_LOGO_MAPPING,
-    get_company_logo,
-    log_admin_action
-)
-
-from io import BytesIO
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils import timezone
 from django.utils.dateparse import parse_date
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST
 from openpyxl import Workbook
+
+from .models import AdminLog, Announcement, CustomUser, Leave, TimeEntry
+from .utils import (COMPANY_CHOICES, DEPARTMENT_CHOICES, get_company_logo,
+                    log_admin_action)
+
 
 @never_cache
 def login_view(request):
@@ -165,7 +160,7 @@ def clock_in_view(request):
         except CustomUser.DoesNotExist:
             error_message = "Employee ID not found"
         return JsonResponse({"success": False, "error": error_message})
-    
+
 
     # If authentication passed, proceed with clock in
     user = auth_result
@@ -728,10 +723,10 @@ def dashboard_data(request):
         reverse=True,
     )[:5]
 
-    # Sort entries - early ones by how early they are (ascending)
+    # Sort entries - early ones by how early they are (most early first)
     early_entries = sorted(
-        [e for e in processed_entries if not e["is_late"]],
-        key=lambda x: x["minutes_diff"],
+        [e for e in processed_entries if e["minutes_diff"] < 0],  # Only include truly early entries
+        key=lambda x: x["minutes_diff"],  # Ascending order for negative numbers puts most negative (most early) first
     )[:5]
 
     return JsonResponse(
@@ -819,27 +814,27 @@ def export_time_entries_by_date(request):
     export_date = request.GET.get("export_date")
     if not export_date:
         return HttpResponse("Date parameter is required.", status=400)
-    
+
     # Parse the date string (expects format "YYYY-MM-DD")
     date_obj = parse_date(export_date)
     if not date_obj:
         return HttpResponse("Invalid date format.", status=400)
-    
+
     # Build datetime range for the day using naive datetimes
     today_start = datetime.combine(date_obj, time.min)
     today_end = datetime.combine(date_obj, time.max)
-    
+
     # Fetch time entries for the specified day (using naive datetimes)
     qs = TimeEntry.objects.filter(
         time_in__gte=today_start,
         time_in__lte=today_end
     ).order_by("time_in")
-    
+
     # Create an Excel workbook and worksheet
     wb = Workbook()
     ws = wb.active
     ws.title = "Time Entries"
-    
+
     # Write header row with 10 fields:
     headers = [
         "ID",
@@ -854,7 +849,7 @@ def export_time_entries_by_date(request):
         "Is Late"
     ]
     ws.append(headers)
-    
+
     # Write each time entry as a row
     for entry in qs:
         row = [
@@ -870,12 +865,12 @@ def export_time_entries_by_date(request):
             "Yes" if entry.is_late else "No",
         ]
         ws.append(row)
-    
+
     # Save the workbook to an in-memory buffer
     output = BytesIO()
     wb.save(output)
     output.seek(0)
-    
+
     # Return the Excel file as an HTTP response
     response = HttpResponse(
         output,
@@ -892,15 +887,15 @@ def export_time_entries_by_employee(request):
     employee_id = request.GET.get("employee_id")
     if not employee_id:
         return HttpResponse("Employee ID parameter is required.", status=400)
-    
+
     # Filter time entries by the provided employee id
     qs = TimeEntry.objects.filter(user__employee_id=employee_id).order_by("time_in")
-    
+
     # Create an Excel workbook and worksheet
     wb = Workbook()
     ws = wb.active
     ws.title = "Time Entries"
-    
+
     # Write header row with 10 fields:
     headers = [
         "ID",
@@ -915,7 +910,7 @@ def export_time_entries_by_employee(request):
         "Is Late"
     ]
     ws.append(headers)
-    
+
     # Write each time entry as a row
     for entry in qs:
         row = [
@@ -931,12 +926,12 @@ def export_time_entries_by_employee(request):
             "Yes" if entry.is_late else "No",
         ]
         ws.append(row)
-    
+
     # Save the workbook to an in-memory buffer
     output = BytesIO()
     wb.save(output)
     output.seek(0)
-    
+
     # Return the Excel file as an HTTP response
     response = HttpResponse(
         output,
@@ -945,3 +940,74 @@ def export_time_entries_by_employee(request):
     response["Content-Disposition"] = f"attachment; filename=time_entries_{employee_id}.xlsx"
     log_admin_action(request, "excel_export", f"Exported time_entries_{employee_id}.xlsx")
     return response
+
+
+@login_required
+def get_pending_leaves(request):
+    user = request.user
+
+    try:
+        # Determine which leaves to show based on user role
+        if user.is_hr:
+            # HR sees leaves that managers have approved
+            leaves = Leave.objects.filter(status='APPROVED_BY_MANAGER')
+        else:
+            # Regular users (managers) see pending leaves from their team
+            leaves = Leave.objects.filter(employee__manager=user, status='PENDING')
+
+        # Format the leave data
+        leave_data = []
+        for leave in leaves:
+            leave_data.append({
+                'id': leave.id,
+                'employee_name': f"{leave.employee.first_name} {leave.employee.surname}",
+                'start_date': leave.start_date.strftime('%Y-%m-%d'),
+                'end_date': leave.end_date.strftime('%Y-%m-%d'),
+                'duration': leave.get_duration(),
+                'leave_type': leave.leave_type.name if leave.leave_type else 'N/A',
+                'reason': leave.reason
+            })
+
+        return JsonResponse({'leaves': leave_data})
+    except Exception as e:
+        # Log the error
+        import traceback
+        print(f"Error in get_pending_leaves: {e}")
+        print(traceback.format_exc())
+        # Return empty leaves array with error status
+        return JsonResponse({'leaves': [], 'error': str(e)})
+
+@login_required
+@require_POST
+def process_leave(request):
+    leave_id = request.POST.get('leave_id')
+    action = request.POST.get('action')  # 'approve' or 'reject'
+    rejection_reason = request.POST.get('rejection_reason', '')
+
+    leave = get_object_or_404(Leave, id=leave_id)
+    user = request.user
+
+    # Verify permission to process this leave
+    if user.is_hr and leave.status == 'APPROVED_BY_MANAGER':
+        if action == 'approve':
+            leave.status = 'APPROVED_BY_HR'
+            # We'll leave credits tracking for later
+        else:
+            leave.status = 'REJECTED_BY_HR'
+            leave.rejection_reason = rejection_reason
+
+    elif leave.employee.manager == user and leave.status == 'PENDING':
+        if action == 'approve':
+            leave.status = 'APPROVED_BY_MANAGER'
+        else:
+            leave.status = 'REJECTED_BY_MANAGER'
+            leave.rejection_reason = rejection_reason
+    else:
+        return JsonResponse({'success': False, 'message': 'Not authorized to process this leave'})
+
+    leave.save()
+
+    # Log the action
+    log_admin_action(request, 'leave_approval', f"Leave request {action}d for {leave.employee.employee_id}")
+
+    return JsonResponse({'success': True})

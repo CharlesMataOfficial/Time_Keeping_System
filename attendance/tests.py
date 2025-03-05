@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 import datetime
-import json  # Add json import
+import json
 
 from .models import (
     Company, Department, Position, TimeEntry,
