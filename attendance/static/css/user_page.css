@@ -100,7 +100,7 @@ header {
 
 .clock h1 {
   /* Real clock time styling */
-  font-size: 130px;
+  font-size: 120px;
   color: #621c1c;
   margin-top: 80px;
   margin-bottom: 0; /* Remove bottom margin to align neatly */

@@ -208,7 +208,6 @@ function addWorkHours() {
     sundayStart: sundayStart,
     sundayEnd: sundayEnd,
   };
-
   // You can now send WorkHoursData via AJAX or further process it
 }
 
@@ -232,7 +231,7 @@ function closeModal() {
 
 function editWorkHours() {
   alert("Edit Work Hours functionality goes here.");
-}
+}A
 
 function deleteWorkHours() {
   alert("Delete Work Hours functionality goes here.");
