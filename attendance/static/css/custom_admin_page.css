@@ -1798,3 +1798,101 @@ tr:hover {
 .read-more-link:hover {
   text-decoration: underline;
 }
+
+/* Update leave approval table styling to be consistent */
+.leave-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  margin-top: 0;
+}
+
+/* Match header styling with other tables */
+.leave-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #f2f2f2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: table-header-group;
+}
+
+/* Table header styling to match other tables */
+.leave-table th {
+  background-color: #f2f2f2;
+  color: #333;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 12px 8px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+
+/* Table cell styling to match other tables */
+.leave-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+  color: #333;
+}
+
+/* Make table body display correctly */
+.leave-table tbody {
+  display: table-row-group;
+}
+
+/* Make table rows display correctly */
+.leave-table tr {
+  display: table-row;
+}
+
+/* Zebra striping for leave table rows */
+.leave-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Hover effect for leave table rows */
+.leave-table tbody tr:hover {
+  background-color: #f0f0f0;
+}
+
+/* Adjust leave-approval_rectangle to match other rectangles */
+#leave-approval_rectangle {
+  height: 500px;
+  max-height: 70vh;
+  overflow: auto !important;
+  border-radius: 10px;
+  background-color: #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 0;
+  margin-top: 20px;
+  width: 1000px; /* Match log_rectangle width */
+}
+
+/* Style buttons consistently with other action buttons */
+.approve-btn,
+.reject-btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin: 0 4px;
+}
+
+.approve-btn {
+  background-color: #27ae60;
+  color: white;
+}
+
+.reject-btn {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.approve-btn:hover,
+.reject-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
