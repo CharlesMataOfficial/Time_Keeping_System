@@ -52,7 +52,10 @@ class CustomUserAdmin(UserAdmin):
                     "birth_date",
                     "company",
                     "position",
+                    "department",  # Added department
                     "date_hired",
+                    "schedule_group",  # Added time schedule
+                    "manager",  # Added manager
                 ),
             },
         ),
