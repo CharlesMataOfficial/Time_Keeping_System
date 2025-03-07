@@ -212,27 +212,22 @@ function loadLogData(filtered = false, reset = false) {
       // Create or find existing table
       let table = container.querySelector(".log-table");
       if (!table && data.logs && data.logs.length > 0) {
-        // Create table and headers only the first time
+        // Create table with consistent structure
         table = document.createElement("table");
         table.className = "log-table";
-        table.style.width = "100%";
-        table.style.borderCollapse = "collapse";
 
-        // Create table header
+        // Create table header with sticky positioning
         const thead = document.createElement("thead");
         const headerRow = document.createElement("tr");
         ["Timestamp", "User", "Action", "Description", "IP Address"].forEach(headerText => {
           const th = document.createElement("th");
           th.textContent = headerText;
-          th.style.border = "1px solid #ddd";
-          th.style.padding = "8px";
-          th.style.backgroundColor = "#f2f2f2";
           headerRow.appendChild(th);
         });
         thead.appendChild(headerRow);
         table.appendChild(thead);
 
-        // Create empty tbody
+        // Create tbody for scrollable content
         const tbody = document.createElement("tbody");
         table.appendChild(tbody);
 
@@ -253,13 +248,11 @@ function loadLogData(filtered = false, reset = false) {
         data.logs.forEach(log => {
           const row = document.createElement("tr");
 
-          // Add cells for each column
+          // Add cells for each column without inline styles
           [log.timestamp, `${log.user} (${log.employee_id})`, log.action,
            log.description, log.ip_address || "Unknown"].forEach(cellText => {
             const cell = document.createElement("td");
             cell.textContent = cellText;
-            cell.style.border = "1px solid #ddd";
-            cell.style.padding = "8px";
             row.appendChild(cell);
           });
 
@@ -907,13 +900,11 @@ function filterAttendance(reset = false) {
       let table = container.querySelector("table");
 
       if (!table && data.attendance_list && data.attendance_list.length > 0) {
-        // Create new table structure on first load
+        // Create table with consistent structure
         table = document.createElement("table");
-        table.style.width = "100%";
-        table.style.borderCollapse = "collapse";
-        table.style.marginTop = "10px";
+        table.classList.add("attendance-table");
 
-        // Create table header based on attendance type
+        // Create table header with sticky positioning
         const thead = document.createElement("thead");
         const headerRow = document.createElement("tr");
         let headers = [];
@@ -927,17 +918,13 @@ function filterAttendance(reset = false) {
         headers.forEach(headerText => {
           const th = document.createElement("th");
           th.textContent = headerText;
-          th.style.border = "1px solid #ddd";
-          th.style.padding = "8px";
-          th.style.backgroundColor = "#f2f2f2";
-          th.style.textAlign = "center";
           headerRow.appendChild(th);
         });
 
         thead.appendChild(headerRow);
         table.appendChild(thead);
 
-        // Create empty tbody
+        // Create tbody for scrollable content
         const tbody = document.createElement("tbody");
         table.appendChild(tbody);
 
@@ -964,45 +951,31 @@ function filterAttendance(reset = false) {
             // Create cells for time log entries
             const cellEmployee = document.createElement("td");
             cellEmployee.textContent = item.employee_id;
-            cellEmployee.style.border = "1px solid #ddd";
-            cellEmployee.style.padding = "8px";
             row.appendChild(cellEmployee);
 
             const cellName = document.createElement("td");
             cellName.textContent = item.name;
-            cellName.style.border = "1px solid #ddd";
-            cellName.style.padding = "8px";
             row.appendChild(cellName);
 
             const cellTimeIn = document.createElement("td");
             cellTimeIn.textContent = item.time_in;
-            cellTimeIn.style.border = "1px solid #ddd";
-            cellTimeIn.style.padding = "8px";
             row.appendChild(cellTimeIn);
 
             const cellTimeOut = document.createElement("td");
             cellTimeOut.textContent = item.time_out;
-            cellTimeOut.style.border = "1px solid #ddd";
-            cellTimeOut.style.padding = "8px";
             row.appendChild(cellTimeOut);
 
             const cellHours = document.createElement("td");
             cellHours.textContent = item.hours_worked;
-            cellHours.style.border = "1px solid #ddd";
-            cellHours.style.padding = "8px";
             row.appendChild(cellHours);
           } else {
             // Create cells for user entries
             const cellEmployee = document.createElement("td");
             cellEmployee.textContent = item.employee_id;
-            cellEmployee.style.border = "1px solid #ddd";
-            cellEmployee.style.padding = "8px";
             row.appendChild(cellEmployee);
 
             const cellName = document.createElement("td");
             cellName.textContent = item.name;
-            cellName.style.border = "1px solid #ddd";
-            cellName.style.padding = "8px";
             row.appendChild(cellName);
           }
 

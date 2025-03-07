@@ -1511,3 +1511,102 @@ select option:checked {
 .loading-spinner.visible {
   display: block;
 }
+
+/* Common Table Styling for Logs and Attendance */
+.log-table,
+#attendance_rectangle table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* Sticky Header Styling */
+.log-table thead,
+#attendance_rectangle table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #f2f2f2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Make the table body scrollable */
+.log-table tbody,
+#attendance_rectangle table tbody {
+  display: block;
+  overflow-y: auto;
+  max-height: 60vh; /* Adjust as needed */
+  width: 100%;
+}
+
+/* Keep rows properly sized */
+.log-table thead tr,
+.log-table tbody tr,
+#attendance_rectangle table thead tr,
+#attendance_rectangle table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* Header cell styling */
+.log-table th,
+#attendance_rectangle table th {
+  background-color: #f2f2f2;
+  color: #333;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 12px 8px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+
+/* Table cell styling */
+.log-table td,
+#attendance_rectangle table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+  color: #333;
+}
+
+/* Zebra striping for rows */
+.log-table tbody tr:nth-child(even),
+#attendance_rectangle table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Hover effect */
+.log-table tbody tr:hover,
+#attendance_rectangle table tbody tr:hover {
+  background-color: #f0f0f0;
+}
+
+/* Container height adjustment */
+#log_rectangle,
+#attendance_rectangle {
+  height: 500px;
+  max-height: 70vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  background-color: #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  padding: 0;
+}
+
+/* Loading indicator at the bottom */
+.loading-spinner {
+  padding: 12px;
+  text-align: center;
+  border-top: 1px solid #eee;
+  color: #666;
+  display: none;
+}
+
+.loading-spinner.visible {
+  display: block;
+  margin-top: auto; /* Push to bottom */
+}
