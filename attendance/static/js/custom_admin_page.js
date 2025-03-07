@@ -375,14 +375,103 @@ function fetchAnnouncements() {
     .then((data) => {
       const announcementList = document.getElementById("announcement-list");
       announcementList.innerHTML = ""; // Clear current list
-      data.forEach((announcement) => {
+
+      // Add each announcement with zebra striping
+      data.forEach((announcement, index) => {
         const li = document.createElement("li");
+        li.style.backgroundColor = index % 2 === 0 ? "#ffffff" : "#f9f9f9";
+        li.className = "announcement-item";
+        li.setAttribute("data-id", announcement.id);
+
+        // Format the announcement content
+        const fullText = announcement.content;
+        const truncatedText = fullText.length > 60 ? fullText.substring(0, 60) + "..." : fullText;
+
         li.innerHTML = `
           <input type="checkbox" class="announcement-checkbox" data-id="${announcement.id}">
-          <span>${announcement.content}</span>
+          <div class="announcement-content-wrapper">
+            <span class="announcement-text" title="${fullText}" data-full-text="${fullText}" data-truncated-text="${truncatedText}">${truncatedText}</span>
+            ${fullText.length > 60 ?
+              '<a href="#" class="read-more-link">[Read more]</a>' : ''}
+          </div>
         `;
+
+        // Make the entire row clickable for checkbox toggle
+        li.addEventListener("click", function(e) {
+          // Avoid toggling if clicking on the read more link
+          if (e.target.classList.contains("read-more-link")) {
+            return;
+          }
+
+          const checkbox = this.querySelector(".announcement-checkbox");
+          checkbox.checked = !checkbox.checked;
+
+          // Visual feedback for selection
+          if (checkbox.checked) {
+            this.classList.add("selected");
+          } else {
+            this.classList.remove("selected");
+          }
+        });
+
+        // Prevent clicks on the checkbox from triggering the li's click handler
+        const checkbox = li.querySelector(".announcement-checkbox");
+        checkbox.addEventListener("click", function(e) {
+          e.stopPropagation();
+
+          // Visual feedback for selection
+          if (this.checked) {
+            li.classList.add("selected");
+          } else {
+            li.classList.remove("selected");
+          }
+        });
+
+        // Add click handler for read more link
+        const readMoreLink = li.querySelector(".read-more-link");
+        if (readMoreLink) {
+          readMoreLink.addEventListener("click", function(e) {
+            e.preventDefault();
+            e.stopPropagation(); // Prevent triggering the li click handler
+
+            const textSpan = li.querySelector(".announcement-text");
+            const fullText = textSpan.getAttribute("data-full-text");
+            const truncatedText = textSpan.getAttribute("data-truncated-text");
+
+            if (this.textContent === "[Read more]") {
+              textSpan.textContent = fullText;
+              this.textContent = "[Read less]";
+            } else {
+              textSpan.textContent = truncatedText;
+              this.textContent = "[Read more]";
+            }
+          });
+        }
+
+        // Add hover effect
+        li.addEventListener("mouseenter", function() {
+          this.style.backgroundColor = "#f0f0f0";
+        });
+
+        li.addEventListener("mouseleave", function() {
+          this.style.backgroundColor = index % 2 === 0 ? "#ffffff" : "#f9f9f9";
+          // Keep selected items highlighted
+          if (this.classList.contains("selected")) {
+            this.style.backgroundColor = "#e3f2fd";
+          }
+        });
+
         announcementList.appendChild(li);
       });
+
+      // If no announcements, show a message
+      if (data.length === 0) {
+        const emptyLi = document.createElement("li");
+        emptyLi.style.textAlign = "center";
+        emptyLi.style.padding = "20px";
+        emptyLi.textContent = "No announcements available";
+        announcementList.appendChild(emptyLi);
+      }
     })
     .catch((error) => console.error("Error fetching announcements:", error));
 }

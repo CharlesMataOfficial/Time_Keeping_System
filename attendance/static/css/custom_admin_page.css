@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;600&display=swap");
 
 * {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
 }
 
 body {
@@ -430,7 +430,7 @@ button:hover {
   box-sizing: border-box;
   position: relative;
   max-height: 70vh; /* 70% of viewport height */
-  overflow-y: auto;  /* Enables vertical scrolling */
+  overflow-y: auto; /* Enables vertical scrolling */
 }
 
 #attendance-list h1 {
@@ -563,7 +563,7 @@ button:hover {
 .announcement-container {
   width: 100%;
   max-width: 460px;
-  background-size: cover;
+  background-color: #fff;
   padding: 15px;
   margin-top: 90px;
   border-radius: 10px;
@@ -581,12 +581,13 @@ button:hover {
 /* Textarea Styling */
 .announcement-container textarea {
   width: 440px;
-  height: 146px;
+  height: 160px;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 14px;
   resize: none;
+  margin-bottom: 16px;
 }
 
 /* Ensure dropdown and buttons are aligned in one row */
@@ -818,8 +819,6 @@ button:hover {
   right: 40px;
   z-index: 1000; /* Ensure it's above all elements */
 }
-
-
 
 /* Default option (By company, By department) should always be black */
 #attendance-company option.default-option,
@@ -1122,7 +1121,7 @@ button:hover {
   border-radius: 10px;
   height: auto;
   line-height: 1.2;
-  margin-top:7px;
+  margin-top: 7px;
   margin-bottom: 1px;
 }
 
@@ -1158,20 +1157,17 @@ button:hover {
   padding: 0;
 }
 
-
 select option {
   color: gray;
 }
-
 
 select:focus option:checked,
 select option:checked {
   color: black !important;
 }
 
-
- /* Remove default anchor styles in the menu */
- .menu a {
+/* Remove default anchor styles in the menu */
+.menu a {
   text-decoration: none;
   color: inherit;
   border: none;
@@ -1182,48 +1178,49 @@ select option:checked {
 .menu a {
   display: block;
 }
- /* Container styling */
-    #attendance_rectangle {
-      padding: 20px;
-      margin-top: 20px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      background-color: #fff;
-      font-family: Roboto, sans-serif;
-    }
-    /* Table styling */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 0 auto;
-    }
-    th, td {
-      /* border: 1px solid #ccc; */
-      padding: 10px;
-      text-align: left;
-    }
-    tr:hover {
-      background-color: #f1f1f1;
-    }
-    /* Dropdown and button styling */
-    .attendance-dropdown-container select,
-    .attendance-dropdown-container button {
-      padding: 8px 10px;
-      margin-right: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-    .attendance-dropdown-container button {
-      cursor: pointer;
-      background-color: #007BFF;
-      color: #fff;
-      border: none;
-    }
-    .attendance-dropdown-container button:hover {
-      background-color: #0056b3;
-    }
+/* Container styling */
+#attendance_rectangle {
+  padding: 20px;
+  margin-top: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  font-family: Roboto, sans-serif;
+}
+/* Table styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 auto;
+}
+th,
+td {
+  /* border: 1px solid #ccc; */
+  padding: 10px;
+  text-align: left;
+}
+tr:hover {
+  background-color: #f1f1f1;
+}
+/* Dropdown and button styling */
+.attendance-dropdown-container select,
+.attendance-dropdown-container button {
+  padding: 8px 10px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+.attendance-dropdown-container button {
+  cursor: pointer;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+}
+.attendance-dropdown-container button:hover {
+  background-color: #0056b3;
+}
 
 /* Add these styles at the end of your file */
 
@@ -1455,40 +1452,40 @@ select option:checked {
   padding: 0;
 }
 .leave-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 0;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0;
 }
 
 .leave-table th,
 .leave-table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
 }
 
 .leave-table th {
-    background-color: #f5f5f5;
-    font-weight: bold;
+  background-color: #f5f5f5;
+  font-weight: bold;
 }
 
 .approve-btn,
 .reject-btn {
-    padding: 6px 12px;
-    margin: 0 4px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+  padding: 6px 12px;
+  margin: 0 4px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .approve-btn {
-    background-color: #4CAF50;
-    color: white;
+  background-color: #4caf50;
+  color: white;
 }
 
 .reject-btn {
-    background-color: #f44336;
-    color: white;
+  background-color: #f44336;
+  color: white;
 }
 
 /* Styling for lazy loading containers and indicators */
@@ -1512,9 +1509,10 @@ select option:checked {
   display: block;
 }
 
-/* Common Table Styling for Logs and Attendance */
+/* Common Table Styling for All Tables (Logs, Attendance, Announcements) */
 .log-table,
-#attendance_rectangle table {
+#attendance_rectangle table,
+#announcement-list {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
@@ -1527,29 +1525,10 @@ select option:checked {
   top: 0;
   z-index: 10;
   background-color: #f2f2f2;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Make the table body scrollable */
-.log-table tbody,
-#attendance_rectangle table tbody {
-  display: block;
-  overflow-y: auto;
-  max-height: 60vh; /* Adjust as needed */
-  width: 100%;
-}
-
-/* Keep rows properly sized */
-.log-table thead tr,
-.log-table tbody tr,
-#attendance_rectangle table thead tr,
-#attendance_rectangle table tbody tr {
-  display: table;
-  width: 100%;
-  table-layout: fixed;
-}
-
-/* Header cell styling */
+/* Table header styling */
 .log-table th,
 #attendance_rectangle table th {
   background-color: #f2f2f2;
@@ -1572,17 +1551,63 @@ select option:checked {
 
 /* Zebra striping for rows */
 .log-table tbody tr:nth-child(even),
-#attendance_rectangle table tbody tr:nth-child(even) {
+#attendance_rectangle table tbody tr:nth-child(even),
+#announcement-list li:nth-child(even) {
   background-color: #f9f9f9;
 }
 
 /* Hover effect */
 .log-table tbody tr:hover,
-#attendance_rectangle table tbody tr:hover {
+#attendance_rectangle table tbody tr:hover,
+#announcement-list li:hover {
   background-color: #f0f0f0;
 }
 
-/* Container height adjustment */
+/* Announcement list styling to match tables */
+#announcement-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  max-height: 100%;
+  width: 100%;
+}
+
+#announcement-list li {
+  display: flex;
+  align-items: center;
+  padding: 10px 8px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+  color: #333;
+}
+
+/* Checkbox styling in announcement list */
+#announcement-list li input[type="checkbox"] {
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+/* Text in announcement list */
+#announcement-list li span {
+  flex: 1;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+/* Announcement list container - update to match other tables */
+.announcement-list-container {
+  overflow-y: auto;
+  background-color: #ffffff;
+  border-radius: 5px;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: 200px;
+  width: 440px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+/* Container styling for log and attendance */
 #log_rectangle,
 #attendance_rectangle {
   height: 500px;
@@ -1597,10 +1622,11 @@ select option:checked {
   padding: 0;
 }
 
-/* Loading indicator at the bottom */
+/* Loading indicator styling */
 .loading-spinner {
-  padding: 12px;
   text-align: center;
+  padding: 12px;
+  margin-top: 10px;
   border-top: 1px solid #eee;
   color: #666;
   display: none;
@@ -1608,5 +1634,167 @@ select option:checked {
 
 .loading-spinner.visible {
   display: block;
-  margin-top: auto; /* Push to bottom */
+}
+
+/* Add a title for the announcement container */
+.announcement-container h2 {
+  color: #333;
+  font-size: 18px;
+  margin-bottom: 10px;
+  text-align: center;
+  width: 100%;
+}
+
+/* Button styling for announcements */
+.save-button,
+.post-button,
+.delete-button,
+.view-button {
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.save-button {
+  background-color: #2980b9;
+  color: white;
+}
+
+.post-button {
+  background-color: #27ae60;
+  color: white;
+}
+
+.delete-button {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.save-button:hover,
+.post-button:hover,
+.delete-button:hover,
+.view-button:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+/* Ensure smooth scrolling for announcement list */
+.announcement-list-container {
+  scroll-behavior: smooth;
+}
+
+/* Animation for newly added announcements */
+@keyframes highlightNew {
+  0% {
+    background-color: #fffde7;
+  }
+  100% {
+    background-color: inherit;
+  }
+}
+
+/* Apply animation to new announcements */
+.highlight-new {
+  animation: highlightNew 2s ease-out;
+}
+
+/* Fix scrolling in log and attendance rectangles */
+#log_rectangle,
+#attendance_rectangle {
+  /* Keep the flex layout but allow scrolling */
+  overflow: auto !important; /* Force overflow to be auto */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Make sure tables take full width */
+.log-table,
+#attendance_rectangle table {
+  width: 100%;
+}
+
+/* Fix table display */
+.log-table tbody,
+#attendance_rectangle table tbody {
+  display: table-row-group; /* Reset to standard table display */
+  width: 100%;
+}
+
+/* Reset table row display */
+.log-table tr,
+#attendance_rectangle table tr {
+  display: table-row; /* Reset to standard table display */
+  width: 100%;
+}
+
+/* Remove fixed max-height that might be causing scrolling issues */
+.log-table tbody,
+#attendance_rectangle table tbody {
+  max-height: none;
+}
+
+/* Make sticky headers work properly */
+.log-table thead,
+#attendance_rectangle table thead {
+  display: table-header-group;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #f2f2f2;
+}
+
+/* Announcement item styling */
+#announcement-list li.announcement-item {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 10px 8px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+  color: #333;
+  transition: background-color 0.2s ease;
+}
+
+/* Selected announcement styling */
+#announcement-list li.selected {
+  background-color: #e3f2fd !important; /* Light blue highlight */
+  border-left: 3px solid #2196f3;
+}
+
+/* Hide actual checkbox (we'll use the whole row instead) */
+#announcement-list li .announcement-checkbox {
+  margin-right: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Content wrapper to hold text and read more link */
+.announcement-content-wrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  word-break: break-word;
+}
+
+/* Text styling */
+.announcement-text {
+  line-height: 1.4;
+  max-width: 100%;
+}
+
+/* Read more link styling */
+.read-more-link {
+  color: #ff5252;
+  text-decoration: none;
+  margin-top: 4px;
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.read-more-link:hover {
+  text-decoration: underline;
 }
