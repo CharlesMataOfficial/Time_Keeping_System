@@ -1,3 +1,14 @@
+let logPage = 1;
+const logsPerPage = 50;
+let isLoadingLogs = false;
+let hasMoreLogs = true;
+
+// Add these at the top of your custom_admin_page.js file
+let attendancePage = 1;
+const attendancePerPage = 50;
+let isLoadingAttendance = false;
+let hasMoreAttendance = true;
+
 function toggleMenu() {
   const menu = document.getElementById("menu");
   menu.style.left = menu.style.left === "0px" ? "-300px" : "0px";
@@ -151,11 +162,34 @@ function addTimeFormatToggleHandlers() {
   });
 }
 
-// Function to load and filter log data
-function loadLogData(filtered = false) {
-  let url = "/get_logs/";
+// Function to load and filter log data with pagination
+function loadLogData(filtered = false, reset = false) {
+  if (isLoadingLogs && !reset) return;
 
-  // Add filter parameters if filtering is requested
+  // Reset pagination if requested or if filtering
+  if (reset || filtered) {
+    logPage = 1;
+    hasMoreLogs = true;
+    document.getElementById("log_rectangle").innerHTML = "";
+  }
+
+  if (!hasMoreLogs) return;
+
+  isLoadingLogs = true;
+
+  // Show loading indicator
+  let loadingSpinner = document.getElementById("log-loading-spinner");
+  if (!loadingSpinner) {
+    loadingSpinner = document.createElement("div");
+    loadingSpinner.id = "log-loading-spinner";
+    loadingSpinner.className = "loading-spinner";
+    loadingSpinner.innerHTML = "Loading more data...";
+    document.getElementById("log_rectangle").appendChild(loadingSpinner);
+  }
+  loadingSpinner.classList.add("visible");
+
+  let url = `/get_logs/?page=${logPage}&limit=${logsPerPage}`;
+
   if (filtered) {
     const searchQuery = document.getElementById("log-search").value;
     const actionType = document.getElementById("log-action").value;
@@ -166,7 +200,7 @@ function loadLogData(filtered = false) {
     if (actionType && actionType !== "all") params.append("action", actionType);
     if (dateRange && dateRange !== "all") params.append("date_range", dateRange);
 
-    url += "?" + params.toString();
+    url += "&" + params.toString();
   }
 
   fetch(url)
@@ -175,62 +209,81 @@ function loadLogData(filtered = false) {
       const container = document.getElementById("log_rectangle");
       if (!container) return;
 
-      container.innerHTML = ""; // Clear previous content
+      // Create or find existing table
+      let table = container.querySelector(".log-table");
+      if (!table && data.logs && data.logs.length > 0) {
+        // Create table with consistent structure
+        table = document.createElement("table");
+        table.className = "log-table";
 
-      if (!data.logs || data.logs.length === 0) {
+        // Create table header with sticky positioning
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        ["Timestamp", "User", "Action", "Description", "IP Address"].forEach(headerText => {
+          const th = document.createElement("th");
+          th.textContent = headerText;
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // Create tbody for scrollable content
+        const tbody = document.createElement("tbody");
+        table.appendChild(tbody);
+
+        container.appendChild(table);
+      }
+
+      // If no logs found on first load
+      if (logPage === 1 && (!data.logs || data.logs.length === 0)) {
         container.innerHTML = "<p>No logs found.</p>";
+        hasMoreLogs = false;
+        isLoadingLogs = false;
         return;
       }
 
-      // Create a table to display the logs
-      const table = document.createElement("table");
-      table.className = "log-table";
-      table.style.width = "100%";
-      table.style.borderCollapse = "collapse";
+      // Append new logs to existing tbody
+      if (data.logs && data.logs.length > 0) {
+        const tbody = table.querySelector("tbody");
+        data.logs.forEach(log => {
+          const row = document.createElement("tr");
 
-      // Create table header
-      const thead = document.createElement("thead");
-      const headerRow = document.createElement("tr");
-      ["Timestamp", "User", "Action", "Description", "IP Address"].forEach(headerText => {
-        const th = document.createElement("th");
-        th.textContent = headerText;
-        th.style.border = "1px solid #ddd";
-        th.style.padding = "8px";
-        th.style.backgroundColor = "#f2f2f2";
-        headerRow.appendChild(th);
-      });
-      thead.appendChild(headerRow);
-      table.appendChild(thead);
+          // Add cells for each column without inline styles
+          [log.timestamp, `${log.user} (${log.employee_id})`, log.action,
+           log.description, log.ip_address || "Unknown"].forEach(cellText => {
+            const cell = document.createElement("td");
+            cell.textContent = cellText;
+            row.appendChild(cell);
+          });
 
-      // Create table body
-      const tbody = document.createElement("tbody");
-      data.logs.forEach(log => {
-        const row = document.createElement("tr");
-
-        // Add cells for each column
-        [log.timestamp, `${log.user} (${log.employee_id})`, log.action,
-         log.description, log.ip_address || "Unknown"].forEach(cellText => {
-          const cell = document.createElement("td");
-          cell.textContent = cellText;
-          cell.style.border = "1px solid #ddd";
-          cell.style.padding = "8px";
-          row.appendChild(cell);
+          tbody.appendChild(row);
         });
 
-        tbody.appendChild(row);
-      });
+        // Check if there's more data to load
+        hasMoreLogs = data.logs.length === logsPerPage;
 
-      table.appendChild(tbody);
-      container.appendChild(table);
+        // Increment page for next load
+        logPage++;
+      } else {
+        hasMoreLogs = false;
+      }
+
+      // Hide loading indicator
+      loadingSpinner.classList.remove("visible");
+      isLoadingLogs = false;
     })
     .catch((error) => {
       console.error("Error loading log data:", error);
+      isLoadingLogs = false;
+      // Hide loading indicator
+      const loadingSpinner = document.getElementById("log-loading-spinner");
+      if (loadingSpinner) loadingSpinner.classList.remove("visible");
     });
 }
 
 // Function to apply filters to logs
 function filterLogs() {
-  loadLogData(true);
+  loadLogData(true, true); // true for filtered, true for reset
 }
 
 // Keyboard Shortcut: Left Arrow (`←`) and Right Arrow (`→`) to navigate
@@ -322,14 +375,103 @@ function fetchAnnouncements() {
     .then((data) => {
       const announcementList = document.getElementById("announcement-list");
       announcementList.innerHTML = ""; // Clear current list
-      data.forEach((announcement) => {
+
+      // Add each announcement with zebra striping
+      data.forEach((announcement, index) => {
         const li = document.createElement("li");
+        li.style.backgroundColor = index % 2 === 0 ? "#ffffff" : "#f9f9f9";
+        li.className = "announcement-item";
+        li.setAttribute("data-id", announcement.id);
+
+        // Format the announcement content
+        const fullText = announcement.content;
+        const truncatedText = fullText.length > 60 ? fullText.substring(0, 60) + "..." : fullText;
+
         li.innerHTML = `
           <input type="checkbox" class="announcement-checkbox" data-id="${announcement.id}">
-          <span>${announcement.content}</span>
+          <div class="announcement-content-wrapper">
+            <span class="announcement-text" title="${fullText}" data-full-text="${fullText}" data-truncated-text="${truncatedText}">${truncatedText}</span>
+            ${fullText.length > 60 ?
+              '<a href="#" class="read-more-link">[Read more]</a>' : ''}
+          </div>
         `;
+
+        // Make the entire row clickable for checkbox toggle
+        li.addEventListener("click", function(e) {
+          // Avoid toggling if clicking on the read more link
+          if (e.target.classList.contains("read-more-link")) {
+            return;
+          }
+
+          const checkbox = this.querySelector(".announcement-checkbox");
+          checkbox.checked = !checkbox.checked;
+
+          // Visual feedback for selection
+          if (checkbox.checked) {
+            this.classList.add("selected");
+          } else {
+            this.classList.remove("selected");
+          }
+        });
+
+        // Prevent clicks on the checkbox from triggering the li's click handler
+        const checkbox = li.querySelector(".announcement-checkbox");
+        checkbox.addEventListener("click", function(e) {
+          e.stopPropagation();
+
+          // Visual feedback for selection
+          if (this.checked) {
+            li.classList.add("selected");
+          } else {
+            li.classList.remove("selected");
+          }
+        });
+
+        // Add click handler for read more link
+        const readMoreLink = li.querySelector(".read-more-link");
+        if (readMoreLink) {
+          readMoreLink.addEventListener("click", function(e) {
+            e.preventDefault();
+            e.stopPropagation(); // Prevent triggering the li click handler
+
+            const textSpan = li.querySelector(".announcement-text");
+            const fullText = textSpan.getAttribute("data-full-text");
+            const truncatedText = textSpan.getAttribute("data-truncated-text");
+
+            if (this.textContent === "[Read more]") {
+              textSpan.textContent = fullText;
+              this.textContent = "[Read less]";
+            } else {
+              textSpan.textContent = truncatedText;
+              this.textContent = "[Read more]";
+            }
+          });
+        }
+
+        // Add hover effect
+        li.addEventListener("mouseenter", function() {
+          this.style.backgroundColor = "#f0f0f0";
+        });
+
+        li.addEventListener("mouseleave", function() {
+          this.style.backgroundColor = index % 2 === 0 ? "#ffffff" : "#f9f9f9";
+          // Keep selected items highlighted
+          if (this.classList.contains("selected")) {
+            this.style.backgroundColor = "#e3f2fd";
+          }
+        });
+
         announcementList.appendChild(li);
       });
+
+      // If no announcements, show a message
+      if (data.length === 0) {
+        const emptyLi = document.createElement("li");
+        emptyLi.style.textAlign = "center";
+        emptyLi.style.padding = "20px";
+        emptyLi.textContent = "No announcements available";
+        announcementList.appendChild(emptyLi);
+      }
     })
     .catch((error) => console.error("Error fetching announcements:", error));
 }
@@ -476,147 +618,6 @@ function viewAnnouncements() {
       li.style.display = "flex";
     });
   }
-}
-
-// Fix for filterAttendance function in custom_admin_page.js
-function filterAttendance() {
-  // Get filter values from dropdowns and search field
-  const typeElem = document.getElementById("attendance-type");
-  const companyElem = document.getElementById("attendance-company");
-  const departmentElem = document.getElementById("attendance-department");
-  const searchElem = document.getElementById("attendance-search");
-
-  // Ensure these elements exist
-  if (!typeElem || !companyElem || !departmentElem || !searchElem) {
-    console.error("One or more filter elements not found.");
-    return;
-  }
-
-  const type = typeElem.value;
-  const company = companyElem.value;
-  const department = departmentElem.value;
-  const search = searchElem.value;
-
-  // Build query parameters (including search)
-  const params = new URLSearchParams({
-    attendance_type: type,
-    attendance_company: company,
-    attendance_department: department,
-    search: search
-  });
-
-  // Log the request URL for debugging
-  const requestUrl = '/attendance_list_json/?' + params.toString();
-  console.log('Requesting:', requestUrl);
-
-  fetch(requestUrl)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error("Network response was not OK");
-      }
-      return response.json();
-    })
-    .then(data => {
-      console.log("Fetched data:", data);
-
-      // Get the container element for the table
-      const container = document.getElementById("attendance_rectangle");
-      if (!container) {
-        console.error("Container with ID 'attendance_rectangle' not found.");
-        return;
-      }
-      container.innerHTML = "";
-
-      // Check if data exists
-      if (!data.attendance_list || data.attendance_list.length === 0) {
-        container.innerHTML = "<p>No records found.</p>";
-        return;
-      }
-
-      // Create a table to display the attendance data
-      const table = document.createElement("table");
-      table.style.width = "100%";
-      table.style.borderCollapse = "collapse";
-      table.style.marginTop = "10px";
-
-      // Create table header based on attendance type
-      const thead = document.createElement("thead");
-      const headerRow = document.createElement("tr");
-      let headers = [];
-
-      if (data.attendance_type === "time-log") {
-        headers = ["Employee ID", "Name", "Time In", "Time Out", "Hours Worked"];
-      } else {
-        headers = ["Employee ID", "Name"];
-      }
-
-      headers.forEach(headerText => {
-        const th = document.createElement("th");
-        th.textContent = headerText;
-        th.style.border = "1px solid #ddd";
-        th.style.padding = "8px";
-        th.style.backgroundColor = "#f2f2f2";
-        th.style.textAlign = "center";
-        headerRow.appendChild(th);
-      });
-      thead.appendChild(headerRow);
-      table.appendChild(thead);
-
-      // Create table body with returned attendance data
-      const tbody = document.createElement("tbody");
-      data.attendance_list.forEach(item => {
-        const row = document.createElement("tr");
-
-        if (data.attendance_type === "time-log") {
-          const cellEmployee = document.createElement("td");
-          cellEmployee.textContent = item.employee_id;
-          cellEmployee.style.border = "1px solid #ddd";
-          cellEmployee.style.padding = "8px";
-          row.appendChild(cellEmployee);
-
-          const cellName = document.createElement("td");
-          cellName.textContent = item.name;
-          cellName.style.border = "1px solid #ddd";
-          cellName.style.padding = "8px";
-          row.appendChild(cellName);
-
-          const cellTimeIn = document.createElement("td");
-          cellTimeIn.textContent = item.time_in;
-          cellTimeIn.style.border = "1px solid #ddd";
-          cellTimeIn.style.padding = "8px";
-          row.appendChild(cellTimeIn);
-
-          const cellTimeOut = document.createElement("td");
-          cellTimeOut.textContent = item.time_out;
-          cellTimeOut.style.border = "1px solid #ddd";
-          cellTimeOut.style.padding = "8px";
-          row.appendChild(cellTimeOut);
-
-          const cellHours = document.createElement("td");
-          cellHours.textContent = item.hours_worked;
-          cellHours.style.border = "1px solid #ddd";
-          cellHours.style.padding = "8px";
-          row.appendChild(cellHours);
-        } else {
-          const cellEmployee = document.createElement("td");
-          cellEmployee.textContent = item.employee_id;
-          cellEmployee.style.border = "1px solid #ddd";
-          cellEmployee.style.padding = "8px";
-          row.appendChild(cellEmployee);
-
-          const cellName = document.createElement("td");
-          cellName.textContent = item.name;
-          cellName.style.border = "1px solid #ddd";
-          cellName.style.padding = "8px";
-          row.appendChild(cellName);
-        }
-        tbody.appendChild(row);
-      });
-
-      table.appendChild(tbody);
-      container.appendChild(table);
-    })
-    .catch(error => console.error("Error fetching attendance data:", error));
 }
 
 // Apply the gray styling for unselected options
@@ -868,4 +869,205 @@ document.addEventListener('DOMContentLoaded', function() {
   if (document.getElementById('leave-approval_rectangle')) {
       loadPendingLeaves();
   }
+});
+
+// Add scroll event listener for lazy loading logs
+document.addEventListener("DOMContentLoaded", function() {
+  const logContainer = document.getElementById("log_rectangle");
+  if (logContainer) {
+    logContainer.addEventListener("scroll", function() {
+      // Load more logs when scrolled near the bottom (within 200px)
+      if (this.scrollHeight - this.scrollTop - this.clientHeight < 200) {
+        loadLogData(false, false); // Continue with existing filters without resetting
+      }
+    });
+  }
+});
+
+// Function to filter and load attendance data with pagination
+function filterAttendance(reset = false) {
+  // Reset pagination if requested
+  if (reset) {
+    attendancePage = 1;
+    hasMoreAttendance = true;
+    document.getElementById("attendance_rectangle").innerHTML = "";
+  }
+
+  if (isLoadingAttendance || !hasMoreAttendance) return;
+
+  isLoadingAttendance = true;
+
+  // Show loading indicator
+  let loadingSpinner = document.getElementById("attendance-loading-spinner");
+  if (!loadingSpinner) {
+    loadingSpinner = document.createElement("div");
+    loadingSpinner.id = "attendance-loading-spinner";
+    loadingSpinner.className = "loading-spinner";
+    loadingSpinner.innerHTML = "Loading more data...";
+    document.getElementById("attendance_rectangle").appendChild(loadingSpinner);
+  }
+  loadingSpinner.classList.add("visible");
+
+  // Get filter values from dropdowns and search field
+  const typeElem = document.getElementById("attendance-type");
+  const companyElem = document.getElementById("attendance-company");
+  const departmentElem = document.getElementById("attendance-department");
+  const searchElem = document.getElementById("attendance-search");
+
+  // Ensure these elements exist
+  if (!typeElem || !companyElem || !departmentElem || !searchElem) {
+    console.error("One or more filter elements not found.");
+    return;
+  }
+
+  // Build query parameters
+  const params = new URLSearchParams({
+    attendance_type: typeElem.value,
+    attendance_company: companyElem.value,
+    attendance_department: departmentElem.value,
+    search: searchElem.value,
+    page: attendancePage,
+    limit: attendancePerPage
+  });
+
+  fetch(`/attendance_list_json/?${params}`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("Network response was not OK");
+      }
+      return response.json();
+    })
+    .then(data => {
+      const container = document.getElementById("attendance_rectangle");
+      if (!container) {
+        console.error("Container with ID 'attendance_rectangle' not found.");
+        return;
+      }
+
+      // Create table if it doesn't exist
+      let table = container.querySelector("table");
+
+      if (!table && data.attendance_list && data.attendance_list.length > 0) {
+        // Create table with consistent structure
+        table = document.createElement("table");
+        table.classList.add("attendance-table");
+
+        // Create table header with sticky positioning
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        let headers = [];
+
+        if (data.attendance_type === "time-log") {
+          headers = ["Employee ID", "Name", "Time In", "Time Out", "Hours Worked"];
+        } else {
+          headers = ["Employee ID", "Name"];
+        }
+
+        headers.forEach(headerText => {
+          const th = document.createElement("th");
+          th.textContent = headerText;
+          headerRow.appendChild(th);
+        });
+
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // Create tbody for scrollable content
+        const tbody = document.createElement("tbody");
+        table.appendChild(tbody);
+
+        container.appendChild(table);
+      }
+
+      // Show "no records" message on first load if empty
+      if (attendancePage === 1 && (!data.attendance_list || data.attendance_list.length === 0)) {
+        container.innerHTML = "<p>No records found.</p>";
+        isLoadingAttendance = false;
+        hasMoreAttendance = false;
+        loadingSpinner.classList.remove("visible");
+        return;
+      }
+
+      // Append data to existing table
+      if (data.attendance_list && data.attendance_list.length > 0) {
+        const tbody = table.querySelector("tbody");
+
+        data.attendance_list.forEach(item => {
+          const row = document.createElement("tr");
+
+          if (data.attendance_type === "time-log") {
+            // Create cells for time log entries
+            const cellEmployee = document.createElement("td");
+            cellEmployee.textContent = item.employee_id;
+            row.appendChild(cellEmployee);
+
+            const cellName = document.createElement("td");
+            cellName.textContent = item.name;
+            row.appendChild(cellName);
+
+            const cellTimeIn = document.createElement("td");
+            cellTimeIn.textContent = item.time_in;
+            row.appendChild(cellTimeIn);
+
+            const cellTimeOut = document.createElement("td");
+            cellTimeOut.textContent = item.time_out;
+            row.appendChild(cellTimeOut);
+
+            const cellHours = document.createElement("td");
+            cellHours.textContent = item.hours_worked;
+            row.appendChild(cellHours);
+          } else {
+            // Create cells for user entries
+            const cellEmployee = document.createElement("td");
+            cellEmployee.textContent = item.employee_id;
+            row.appendChild(cellEmployee);
+
+            const cellName = document.createElement("td");
+            cellName.textContent = item.name;
+            row.appendChild(cellName);
+          }
+
+          tbody.appendChild(row);
+        });
+
+        // Update pagination state
+        hasMoreAttendance = data.attendance_list.length === attendancePerPage;
+        attendancePage++;
+      } else {
+        hasMoreAttendance = false;
+      }
+
+      // Hide loading indicator
+      loadingSpinner.classList.remove("visible");
+      isLoadingAttendance = false;
+    })
+    .catch(error => {
+      console.error("Error fetching attendance data:", error);
+      isLoadingAttendance = false;
+      loadingSpinner.classList.remove("visible");
+    });
+}
+
+// Add scroll event listener for attendance lazy loading
+document.addEventListener("DOMContentLoaded", function() {
+  const attendanceContainer = document.getElementById("attendance_rectangle");
+  if (attendanceContainer) {
+    attendanceContainer.addEventListener("scroll", function() {
+      // Load more attendance records when scrolled near the bottom
+      if (this.scrollHeight - this.scrollTop - this.clientHeight < 200) {
+        filterAttendance(false); // Continue with existing filters without resetting
+      }
+    });
+  }
+
+  // Reset pagination when filters change
+  const filterElements = document.querySelectorAll(
+    "#attendance-type, #attendance-company, #attendance-department, #attendance-search"
+  );
+
+  filterElements.forEach(element => {
+    element.addEventListener("change", () => {
+      filterAttendance(true); // Reset and reload with new filters
+    });
+  });
 });

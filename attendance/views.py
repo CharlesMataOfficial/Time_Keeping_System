@@ -531,16 +531,23 @@ def get_special_dates(request):
     return JsonResponse({"birthdays": birthday_users, "milestones": milestone_users})
 
 
+@login_required
 def attendance_list_json(request):
+    # Get filter parameters
     attendance_type = request.GET.get("attendance_type", "time-log")
     company_code = request.GET.get("attendance_company", "all")
     department_code = request.GET.get("attendance_department", "all")
     search_query = request.GET.get("search", "").strip()
 
-    print(
-        f"Filtering: type={attendance_type}, company={company_code}, dept={department_code}, search={search_query}"
-    )
+    # Pagination parameters
+    try:
+        page = int(request.GET.get("page", 1))
+        limit = int(request.GET.get("limit", 50))
+    except ValueError:
+        page = 1
+        limit = 50
 
+    # Base queries with appropriate filtering
     if attendance_type == "time-log":
         # Only include time entries for today
         today = date.today()
@@ -550,6 +557,7 @@ def attendance_list_json(request):
             .order_by("-last_modified")
         )
 
+        # Apply company filter
         if company_code != "all":
             companies_to_filter = []
             # Check if company_code is directly in COMPANY_CHOICES
@@ -570,6 +578,7 @@ def attendance_list_json(request):
             else:
                 qs = qs.filter(user__company__name__iexact=company_code)
 
+        # Apply department filter
         if department_code != "all":
             if department_code in DEPARTMENT_CHOICES:
                 dept_name = DEPARTMENT_CHOICES[department_code]
@@ -577,9 +586,9 @@ def attendance_list_json(request):
             else:
                 qs = qs.filter(user__position__name=department_code)
 
+        # Apply search filter
         if search_query:
             # For more exact matching, try to match the complete name first
-            # This will prioritize exact or close matches
             complete_name_query = (
                 Q(user__first_name__icontains=search_query)
                 | Q(user__surname__icontains=search_query)
@@ -607,7 +616,16 @@ def attendance_list_json(request):
 
             qs = qs.filter(complete_name_query)
 
-        data = [
+        # Get total count before pagination
+        total_count = qs.count()
+
+        # Apply pagination
+        start = (page - 1) * limit
+        end = page * limit
+        paginated_qs = qs[start:end]
+
+        # Format time-log data
+        attendance_list = [
             {
                 "employee_id": entry.user.employee_id,
                 "name": f"{entry.user.first_name} {entry.user.surname}",
@@ -619,15 +637,16 @@ def attendance_list_json(request):
                 ),
                 "hours_worked": entry.hours_worked,
             }
-            for entry in qs
+            for entry in paginated_qs
         ]
+
     elif attendance_type in ["users-active", "users-inactive"]:
-        # ... (rest of your code for users-active/inactive)
         if attendance_type == "users-active":
             qs = CustomUser.objects.filter(is_active=True).distinct()
         else:  # users-inactive
             qs = CustomUser.objects.filter(is_active=False).distinct()
 
+        # Apply company filter
         if company_code != "all":
             companies_to_filter = []
             if company_code in COMPANY_CHOICES:
@@ -646,9 +665,11 @@ def attendance_list_json(request):
             else:
                 qs = qs.filter(company__name__iexact=company_code)
 
+        # Apply department filter
         if department_code != "all":
             qs = qs.filter(position__name=department_code)
 
+        # Apply search filter
         if search_query:
             # For more exact matching, try to match the complete name first
             complete_name_query = (
@@ -678,17 +699,31 @@ def attendance_list_json(request):
 
             qs = qs.filter(complete_name_query)
 
-        data = [
+        # Get total count before pagination
+        total_count = qs.count()
+
+        # Apply pagination
+        start = (page - 1) * limit
+        end = page * limit
+        paginated_qs = qs[start:end]
+
+        # Format user data
+        attendance_list = [
             {
                 "employee_id": user.employee_id,
                 "name": f"{user.first_name} {user.surname}",
             }
-            for user in qs
+            for user in paginated_qs
         ]
     else:
-        data = []
+        attendance_list = []
+        total_count = 0
 
-    return JsonResponse({"attendance_list": data, "attendance_type": attendance_type})
+    return JsonResponse({
+        "attendance_list": attendance_list,
+        "attendance_type": attendance_type,
+        "total": total_count
+    })
 
 
 @login_required
@@ -771,6 +806,14 @@ def get_logs(request):
     action_filter = request.GET.get("action", "")
     date_range = request.GET.get("date_range", "")
 
+    # Pagination parameters
+    try:
+        page = int(request.GET.get("page", 1))
+        limit = int(request.GET.get("limit", 50))
+    except ValueError:
+        page = 1
+        limit = 50
+
     # Base query
     logs_query = AdminLog.objects.all()
 
@@ -799,20 +842,11 @@ def get_logs(request):
         month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         logs_query = logs_query.filter(timestamp__gte=month_start)
 
-    # Get logs with pagination
-    page = request.GET.get("page", 1)
-    limit = request.GET.get("limit", 50)
-
-    try:
-        page = int(page)
-        limit = int(limit)
-    except ValueError:
-        page = 1
-        limit = 50
-
+    # Calculate pagination
     start = (page - 1) * limit
     end = page * limit
 
+    # Get paginated logs
     logs = logs_query[start:end]
 
     log_data = [
@@ -828,6 +862,8 @@ def get_logs(request):
     ]
 
     return JsonResponse({"logs": log_data, "total": logs_query.count()})
+
+
 @require_GET
 def export_time_entries_by_date(request):
     date_str = request.GET.get("date")
@@ -891,6 +927,8 @@ def export_time_entries_by_date(request):
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
     response["Content-Disposition"] = f"attachment; filename={filename}"
+
+    log_admin_action(request, "Excel Export", f"Exported {filename}")
     log_admin_action(request, "excel_export", f"Exported {filename}")
     return response
 
@@ -965,8 +1003,8 @@ def export_time_entries_range(request):
         output,
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-    response["Content-Disposition"] = f"attachment; filename={filename}"
-    log_admin_action(request, "excel_export", f"Exported {filename}")
+    response["Content-Disposition"] = f"attachment; filename=time_entries_{employee_id}.xlsx"
+    log_admin_action(request, "Excel Export", f"Exported time_entries_{employee_id}.xlsx")
     return response
 
 @login_required
@@ -1039,3 +1077,76 @@ def process_leave(request):
 
     return JsonResponse({'success': True})
 
+@require_GET
+def export_time_entries_by_date(request):
+    # Get the date parameter from the request (e.g. from your date picker)
+    date_str = request.GET.get("date")
+    if not date_str:
+        return HttpResponse("Date parameter is required.", status=400)
+
+    selected_date = parse_date(date_str)
+    if not selected_date:
+        return HttpResponse("Invalid date format.", status=400)
+
+    # Create datetime range for the selected date
+    start_datetime = datetime.combine(selected_date, time.min)
+    end_datetime = datetime.combine(selected_date, time.max)
+
+    # Filter time entries that fall within the selected date
+    qs = TimeEntry.objects.filter(
+        time_in__gte=start_datetime,
+        time_in__lte=end_datetime
+    ).order_by("time_in")
+
+    # Create an Excel workbook and worksheet
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Time Entries"
+
+    # Define headers for the Excel sheet
+    headers = [
+        "ID",
+        "Employee ID",
+        "First Name",
+        "Surname",
+        "Company",
+        "Date",
+        "Time In",
+        "Time Out",
+        "Hours Worked",
+        "Is Late"
+    ]
+    ws.append(headers)
+
+    # Populate rows with time entry data
+    for entry in qs:
+        row = [
+            entry.id,
+            entry.user.employee_id,
+            entry.user.first_name,
+            entry.user.surname,
+            entry.user.company.name if entry.user.company else "",
+            entry.time_in.strftime("%Y-%m-%d"),
+            entry.time_in.strftime("%H:%M:%S"),
+            entry.time_out.strftime("%H:%M:%S") if entry.time_out else "",
+            entry.hours_worked,
+            "Yes" if entry.is_late else "No"
+        ]
+        ws.append(row)
+
+    # Save the workbook to an in-memory output buffer
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+
+    # Create the response with a dynamic filename
+    filename = f"time_entries_{date_str}.xlsx"
+    response = HttpResponse(
+        output,
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f"attachment; filename={filename}"
+
+    # Log the export action
+    log_admin_action(request, "Excel Export", f"Exported {filename}")
+    return response
