@@ -6,10 +6,10 @@
 
 body {
   background: linear-gradient(
-      rgba(255, 255, 255, 0.6),
-      rgba(255, 255, 255, 0.6)
+      rgba(200, 200, 200, 0.2),
+      rgba(200, 200, 200, 0.2)
     ),
-    url("/static/images/bg/new_bg.png");
+    url("/static/images/bg/agritech_bg.png");
   background-size: cover;
   background-position: center;
 }
