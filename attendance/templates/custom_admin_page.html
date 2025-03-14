@@ -1,306 +1,502 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard</title>
-  {% load static %}
-  <!-- Use your updated CSS file -->
-  <link rel="stylesheet" href="{% static 'css/custom_admin_page.css' %}">
-  <!-- Original custom JS (if still needed) -->
-  <script src="{% static 'js/custom_admin_page.js' %}"></script>
-</head>
-<body>
-  <!-- Menu Icon -->
-  <div class="menu-icon" onclick="toggleMenu()">
-    <img src="{% static 'images/menu_icon.png' %}" alt="Menu Icon">
-  </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SFGC Admin Dashboard</title>
+    {% load static %}
+    <!-- Use your updated CSS file -->
+    <link rel="stylesheet" href="{% static 'css/custom_admin_page.css' %}" />
+  </head>
+  <body>
+    <!-- Menu Icon -->
+    <div class="menu-icon" onclick="toggleMenu()">
+      <img src="{% static 'images/icons/menu_icon.png' %}" alt="Menu Icon" />
+    </div>
 
-  <!-- Menu Pop-Up -->
-  <div class="menu" id="menu">
-    <ul>
-      <!-- New: Manage Users (for superadmin) -->
-      <li class="menu-item superadmin" onclick="redirectToSuperAdmin()">
-        <img src="{% static 'images/superadmin_icon.png' %}" alt="Superadmin">Manage Users
-      </li>
-      <li class="menu-item" onclick="navigateTo('dashboard')">
-        <img src="{% static 'images/dashboard_icon.png' %}" alt="Dashboard"> Dashboard
-      </li>
-      <li class="menu-item" onclick="navigateTo('log')">
-        <img src="{% static 'images/log_icon.png' %}" alt="Log"> Log
-      </li>
-      <li class="menu-item" onclick="navigateTo('attendance-list')">
-        <img src="{% static 'images/attendance_icon.png' %}" alt="Attendance List"> Attendance List
-      </li>
-      <li class="menu-item" onclick="navigateTo('work-hours')">
-        <img src="{% static 'images/clock_icon.png' %}" alt="Work Hours"> Work Hours Preset
-      </li>
-      <li class="menu-item" onclick="navigateTo('announcement')">
-        <img src="{% static 'images/announcement_icon.png' %}" alt="Announcement"> Announcement
-      </li>
-      <li class="menu-item" onclick="navigateTo('export-excel')">
-        <img src="{% static 'images/excel_icon.png' %}" alt="Export Excel"> Export Excel
-      </li>
-      <li class="menu-item" onclick="navigateTo('leave-approval')">
-        <img src="{% static 'images/leave_icon.png' %}" alt="Leave Approval"> Leave Approval
-      </li>
-      <li class="menu-item" onclick="navigateTo('about')">
-        <img src="{% static 'images/credits_icon.png' %}" alt="About"> About
-      </li>
-      <!-- New: Sign Out (triggers hidden logout form) -->
-      <li class="menu-item sign-out" onclick="document.getElementById('logout-form').submit();">
-        <img src="{% static 'images/signout_icon.png' %}" alt="Sign Out Icon"> Sign out
-      </li>
-      <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display: none;">
-        {% csrf_token %}
-      </form>
-    </ul>
-  </div>
+    <!-- Menu Pop-Up -->
+    <div class="menu" id="menu">
+      <ul>
+        <!-- New: Manage Users (for superadmin) -->
+        {% if user.is_superuser %}
+        <a href="{% url 'superadmin_redirect' %}">
+          <li class="menu-item superadmin">
+            <img src="{% static 'images/icons/superadmin_icon.png' %}" alt="Superadmin" />
+            Manage Users
+          </li>
+        </a>
+      {% else %}
+        <li class="menu-item superadmin" onclick="alert('You do not have permission to access the super admin page.');">
+          <img src="{% static 'images/icons/superadmin_icon.png' %}" alt="Superadmin" />
+          Manage Users
+        </li>
+      {% endif %}
+        <li class="menu-item" onclick="navigateTo('dashboard')">
+          <img
+            src="{% static 'images/icons/dashboard_icon.png' %}"
+            alt="Dashboard"
+          />
+          Dashboard
+        </li>
+        <li class="menu-item" onclick="navigateTo('log')">
+          <img src="{% static 'images/icons/log_icon.png' %}" alt="Log" /> Log
+        </li>
+        <li class="menu-item" onclick="navigateTo('attendance-list')">
+          <img
+            src="{% static 'images/icons/attendance_icon.png' %}"
+            alt="Attendance List"
+          />
+          Attendance List
+        </li>
+        <li class="menu-item" onclick="navigateTo('announcement')">
+          <img
+            src="{% static 'images/icons/announcement_icon.png' %}"
+            alt="Announcement"
+          />
+          Announcement
+        </li>
+        <li class="menu-item" onclick="navigateTo('export-excel')">
+          <img
+            src="{% static 'images/icons/excel_icon.png' %}"
+            alt="Export Excel"
+          />
+          Export Excel
+        </li>
+        <li class="menu-item" onclick="navigateTo('leave-approval')">
+          <img
+            src="{% static 'images/icons/leave_icon.png' %}"
+            alt="Leave Approval"
+          />
+          Leave Approval
+        </li>
+        <li class="menu-item" onclick="navigateTo('about')">
+          <img src="{% static 'images/icons/credits_icon.png' %}" alt="About" />
+          System Information
+        </li>
+        <!-- New: Sign Out (triggers hidden logout form) -->
+        <li
+          class="menu-item sign-out"
+          onclick="document.getElementById('logout-form').submit();"
+        >
+          <img
+            src="{% static 'images/icons/signout_icon.png' %}"
+            alt="Sign Out Icon"
+          />
+          Sign out
+        </li>
+        <form
+          id="logout-form"
+          action="{% url 'logout' %}"
+          method="POST"
+          style="display: none"
+        >
+          {% csrf_token %}
+        </form>
+      </ul>
+    </div>
 
-  <!-- Dashboard Shortcut (Back/Forward Arrows) -->
-  <div id="dashboard-shortcut" class="dashboard-icon-top-right" style="display: none;">
-    <img src="{% static 'images/leftarrow_icon.png' %}" alt="Back" id="left-arrow">
-    <img src="{% static 'images/rightarrow_icon.png' %}" alt="Forward" id="right-arrow">
-  </div>
+    <!-- Dashboard Shortcut (Back/Forward Arrows) -->
+    <div
+      id="dashboard-shortcut"
+      class="dashboard-icon-top-right"
+      style="display: none"
+    >
+      <img
+        src="{% static 'images/icons/leftarrow_icon.png' %}"
+        alt="Back"
+        id="left-arrow"
+      />
+      <img
+        src="{% static 'images/icons/rightarrow_icon.png' %}"
+        alt="Forward"
+        id="right-arrow"
+      />
+    </div>
 
-  <!-- Screens -->
-  <!-- Dashboard Screen (Updated with stats) -->
-  <div id="dashboard" class="screen" style="display: flex;">
-    <h1 id="dashboard_title">Dashboard</h1>
-    <div class="dashboard-stats-container">
-      <div class="total-user-time-wrapper">
-        <div class="total-user-time-container">
-          <h2>Total User Time In:</h2>
-          <p id="total-time-in">0</p>
+    <!-- Screens -->
+    <!-- Dashboard Screen (Updated with stats) -->
+    <div id="dashboard" class="screen" style="display: flex">
+      <h1 id="dashboard_title">Dashboard</h1>
+      <div class="dashboard-stats-container">
+        <div class="total-user-time-wrapper">
+          <div class="total-user-time-container">
+            <h2>Total User Time In:</h2>
+            <p id="total-time-in">0</p>
+          </div>
+          <div class="total-user-timeout-container">
+            <h2>Total User Time Out:</h2>
+            <p id="total-time-out">0</p>
+          </div>
         </div>
-        <div class="total-user-timeout-container">
-          <h2>Total User Time Out:</h2>
-          <p id="total-time-out">0</p>
+        <div class="top-late-employees-container">
+          <h2>Top 5 Late Employees</h2>
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Minutes Late</th>
+              </tr>
+            </thead>
+            <tbody class="late-employees-list">
+              <!-- Will be populated by JavaScript -->
+            </tbody>
+          </table>
+          <div class="total-late-employees">
+            <h2>Total Late Employees Today</h2>
+            <p id="total-late-count">0</p>
+          </div>
         </div>
-      </div>
-      <div class="top-late-employees-container">
-        <h2>Top 5 Late Employees:</h2>
-        <div class="late-employees-list">
-          <p></p>
-        </div>
-        <div class="total-late-employees">
-          <h2>Total Number of Late Employees:</h2>
-          <p id="total-late-count">0</p>
-        </div>
-        <button class="view-late-button" onclick="viewLateEmployees()">View Late Employees</button>
-      </div>
-      <div class="top-early-birds-container">
-        <h2>Top 5 Early Birds:</h2>
-        <div class="early-birds-list">
-          <p></p>
+        <div class="top-early-birds-container">
+          <h2>Top 5 Early Birds</h2>
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Minutes Early</th>
+              </tr>
+            </thead>
+            <tbody class="early-birds-list">
+              <!-- Will be populated by JavaScript -->
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Log Screen -->
-  <div id="log" class="screen" style="display: none;">
-    <h1>Log</h1>
-    <div id="log_rectangle"></div>
-  </div>
+    <!-- Log Screen -->
+    <div id="log" class="screen" style="display: none">
+      <h1>Log</h1>
+      <div class="log-filters-wrapper">
+        <div class="log-filters-container">
+          <input type="text" id="log-search" placeholder="Search by keyword">
 
-  <!-- Attendance List Screen -->
-  <div id="attendance-list" class="screen" style="display: none;">
-    <h1>Attendance List</h1>
-    <div class="attendance-dropdown-wrapper">
-      <div class="attendance-dropdown-container">
-        <select id="attendance-type" onchange="updateAttendanceHeader()">
-          <option value="time-log">Time Log</option>
-          <option value="users-active">Users Active</option>
-          <option value="users-inactive">Users Inactive</option>
-        </select>
-        <select id="attendance-company" onchange="updateAttendanceHeader()">
-          <option value="" disabled selected class="default-option">By Company:</option>
-          <option value="all">All companies</option>
-          <option value="agridom">Agridom Solutions Corp.</option>
-          <option value="farmtech">Farmtech Agriland Corporation</option>
-          <option value="subang">Subang Farm</option>
-          <option value="djas">DJAS Servitrade Corporation</option>
-          <option value="agri-online">AGRI Online</option>
-          <option value="sunfood">Sunfood Marketing Inc.</option>
-        </select>
-        <select id="attendance-department" onchange="updateAttendanceHeader()">
-          <option value="" disabled selected class="default-option">By Department:</option>
-          <option value="all">All departments</option>
-          <option value="hr">Human Resources</option>
-          <option value="it">IT Department</option>
-          <option value="finance">Finance</option>
-        </select>
-        <button class="go-button" onclick="filterAttendance()">Go</button>
+          <select id="log-action">
+            <option value="all" selected>All Actions</option>
+            <option value="navigation">Navigation</option>
+            <option value="announcement_create">Announcement Created</option>
+            <option value="announcement_post">Announcement Posted</option>
+            <option value="announcement_delete">Announcement Deleted</option>
+            <option value="admin_create">Admin Create</option>
+            <option value="admin_update">Admin Update</option>
+            <option value="admin_delete">Admin Delete</option>
+            <option value="login">User Login</option>
+            <option value="logout">User Logout</option>
+          </select>
+
+          <select id="log-date">
+            <option value="all" selected>All Time</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+          </select>
+
+          <button class="go-button" onclick="filterLogs()">Filter</button>
+        </div>
       </div>
+      <!-- Add this missing div -->
+      <div id="log_rectangle"></div>
     </div>
-    <div id="attendance_rectangle"></div>
+
+<!-- Attendance List Screen -->
+<div id="attendance-list" class="screen">
+  <h1>Attendance List</h1>
+  <div class="attendance-dropdown-wrapper">
+    <div class="attendance-dropdown-container">
+      <div class="attendance-search-wrapper">
+        <input type="text" id="attendance-search" placeholder="Search by name">
+      </div>
+      <select name="attendance_type" id="attendance-type">
+        <option value="time-log">Time Log</option>
+        <option value="users-active">Users Active</option>
+        <option value="users-inactive">Users Inactive</option>
+      </select>
+      <select name="attendance_company" id="attendance-company">
+        <option value="all">All companies</option>
+        <option value="ASC" data-alias="AgriDOM">Agridom Solutions Corp.</option>
+        <option value="SFGCI" data-alias="SFGC">SF Group of Companies</option>
+        <option value="DJAS" data-alias="DSC">DJAS Servicetrade Corporation</option>
+        <option value="FAC">Farmtech Agriland Corporation</option>
+        <option value="GTI">Genius Technologies Inc</option>
+        <option value="SMI">Sunfood Marketing Inc.</option>
+      </select>
+      <select name="attendance_department" id="attendance-department">
+        <option value="all">All departments</option>
+        <option value="SALES">Sales</option>
+        <option value="OM">Operations - Mindanao</option>
+        <option value="SM">Sales - Mindanao</option>
+        <option value="TS">Technical Services</option>
+        <option value="SSM">Support - Supply Management</option>
+        <option value="ACADEMY">Academy</option>
+        <option value="OCEO">Office of the CEO</option>
+        <option value="OCOO">Office of the COO</option>
+        <option value="SGS">Support - General Services</option>
+        <option value="TSFGC">Technical - SFGC</option>
+        <option value="SICT">Support - ICT</option>
+        <option value="SA">Support - Admin</option>
+        <option value="SF">Support - Finance</option>
+        <option value="SAL">Support - Admin - Luzon</option>
+        <option value="SH">Support - HR</option>
+        <option value="SS">Support - Supply</option>
+      </select>
+      <button type="button" class="go-button" onclick="filterAttendance()">Go</button>
+    </div>
   </div>
 
-  <!-- Export Excel Screen -->
-  <div id="export-excel" class="screen" style="display: none;">
-    <h1>Export to Excel</h1>
-    <div class="export-container">
-      <button class="export-button">Date</button>
-      <button class="export-button">Employee ID</button>
-    </div>
-  </div>
-
-  <!-- Announcement Screen -->
- <!-- Announcement Screen -->
-<div id="announcement" class="screen" style="display: none;">
-  <h1>Announcement</h1>
-  <div class="announcement-content">
-    <!-- Create Announcement Section -->
-    <div class="announcement-container">
-      <h2>Create Announcement</h2>
-      <textarea id="announcement-text" placeholder="Write announcement here..."></textarea>
-      <button class="save-button" onclick="saveAnnouncement()">Save</button>
-    </div>
-    <!-- Saved Announcements Section -->
-    <div class="announcement-container">
-      <h2>Saved Announcement Files</h2>
-      <!-- Container for the announcements list with scrollbar when needed -->
-      <div class="announcement-list-container">
-        <ul id="announcement-list"></ul>
-      </div>
-      <div class="announcement-actions">
-        <select id="post-options">
-          <option value="recent">Post Recent</option>
-          <option value="selected">Post Selected</option>
-          <option value="all">Post All</option>
-        </select>
-        <button class="post-button" onclick="postAnnouncement()">Post</button>
-        <button class="delete-button" onclick="deleteAnnouncement()">Delete</button>
-        <button class="view-button" onclick="viewAnnouncements()">View</button>
-      </div>
-    </div>
-  </div>
+  <!-- Fetched data will be rendered here -->
+  <div id="attendance_rectangle"></div>
 </div>
 
 
 
-    
-
-
-  <!-- Work Hours Preset Screen -->
-  <div id="work-hours" class="screen" style="display: none;">
-    <h1>Work Hours Preset</h1>
-    <div class="separator"></div>
-    <div class="work-hours-content">
-      <p>Additional work hours information can go here.</p>
+  <!-- Export Excel Screen -->
+  <div id="export-excel" class="screen">
+    <h1>Export Excel</h1>
+    <div class="export-container">
+      <!-- Single button to open the export modal -->
+      <button class="export-button" id="export_excel_button">Export</button>
     </div>
-    <div class="work-hours-container">
-      <div class="work-hours-actions">
-        <button onclick="addWorkHours()">Add</button>
-        <button onclick="editWorkHours()">Edit</button>
-        <button onclick="deleteWorkHours()">Delete</button>
+  </div>
+
+  <!-- Export Excel Modal -->
+  <div id="modal_export_excel" class="modal_export_style">
+    <div class="modal_export_content">
+      <span class="modal_export_close" id="modal_export_close">&times;</span>
+      
+      <!-- Option Toggler -->
+      <div class="modal_export_options">
+        <button id="option_single_date" class="modal_export_option active">Single Date</button>
+        <button id="option_date_range" class="modal_export_option">Date Range</button>
       </div>
-      <div class="separator"></div>
-      <div class="grace-period">
-        <label for="grace-period">Grace Period (minutes):</label>
-        <div class="grace-period-input-container">
-          <select id="grace-period" name="grace-period">
-            <option value="5">5 minutes</option>
-            <option value="10">10 minutes</option>
-            <option value="15">15 minutes</option>
-          </select>
-          <button class="save-button" onclick="saveWorkHours()">Save</button>
+      
+      <!-- Common Section: Optional Employee ID -->
+      <div class="modal_export_section">
+        <label for="modal_export_employee_id">Employee ID (Optional):</label>
+        <input type="text" id="modal_export_employee_id" placeholder="Enter Employee ID">
+      </div>
+      
+      <!-- Single Date Export Section -->
+      <div id="modal_export_by_date_section" class="modal_export_section">
+        <h2>Export by Single Date</h2>
+        <label for="modal_export_date">Select Date:</label>
+        <input type="date" id="modal_export_date">
+        <button id="modal_export_date_submit" type="button">Export</button>
+      </div>
+      
+      <!-- Date Range Export Section -->
+      <div id="modal_export_by_date_range_section" class="modal_export_section" style="display: none;">
+        <h2>Export by Date Range</h2>
+        <div>
+          <label for="modal_export_date_start">Start Date:</label>
+          <input type="date" id="modal_export_date_start">
+        </div>
+        <div>
+          <label for="modal_export_date_end">End Date:</label>
+          <input type="date" id="modal_export_date_end">
+        </div>
+        <!-- Excluded Dates (if needed) -->
+        <div id="modal_excluded_dates_container">
+          <label>Excluded Dates:</label>
+          <div class="excluded-date">
+            <input type="date" class="modal_export_excluded_date">
+            <button class="remove_excluded_date" type="button">&times;</button>
+          </div>
+        </div>
+        <button id="add_excluded_date" type="button">Add Another Excluded Date</button>
+        <button id="modal_export_date_range_submit" type="button">Export</button>
+      </div>
+      
+    </div>
+  </div>
+
+
+    <!-- Announcement Screen -->
+    <div id="announcement" class="screen" style="display: none">
+      <h1>Announcement</h1>
+      <div class="announcement-content">
+        <!-- Create Announcement Section -->
+        <div class="announcement-container">
+          <h2>Create Announcement</h2>
+          <textarea
+            id="announcement-text"
+            placeholder="Write announcement here..."
+          ></textarea>
+          <button class="save-button" onclick="saveAnnouncement()">Save</button>
+        </div>
+        <!-- Saved Announcements Section -->
+        <div class="announcement-container">
+          <h2>Saved Announcement Files</h2>
+          <!-- Container for the announcements list with scrollbar when needed -->
+          <div class="announcement-list-container">
+            <ul id="announcement-list"></ul>
+          </div>
+          <div class="announcement-actions">
+            <select id="post-options">
+              <option value="recent">View Recent</option>
+              <option value="selected">View Selected</option>
+              <option value="all">View All</option>
+            </select>
+            <button class="post-button" onclick="postAnnouncement()">
+              Post
+            </button>
+            <button class="delete-button" onclick="deleteAnnouncement()">
+              Delete
+            </button>
+            <button class="view-button" onclick="viewAnnouncements()">
+              View
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Leave Approval Screen (new) -->
-  <div id="leave-approval" class="screen" style="display: none;">
-    <h1>Leave Approval</h1>
-    <div id="leave-approval_rectangle"></div>
-  </div>
-
-  <!-- About Screen (new) -->
-  <div id="about" class="screen" style="display: none;">
-    <h1>About</h1>
-    <div class="about-container">
-      <!-- Logos -->
-      <div class="about-logo-container">
-        <img src="{% static 'images/mapualogo.png' %}" alt="Mapúa Logo" class="about-logo mapua-logo">
-        <img src="{% static 'images/ccis.png' %}" alt="CCIS Logo" class="about-logo ccis-logo">
-      </div>
-      <p>
-        This system was developed for SFGC's timekeeping and attendance tracking. It is designed to streamline employee check-ins, monitor work hours, 
-        and generate attendance reports efficiently. This project was designed and implemented by CCIS intern students from Mapúa Malayan Colleges Mindanao 
-        during their internship at Agridom Solutions Corp.
-      </p>
+    <!-- Leave Approval Screen (new) -->
+    <div id="leave-approval" class="screen" style="display: none">
+      <h1>Leave Approval</h1>
+      <div id="leave-approval_rectangle"></div>
     </div>
-  </div>
 
-  <!-- Schedule Modal (from original design) -->
-  <div id="setScheduleModal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal()">&times;</span>
-      <h2>Set Schedule</h2>
-      <!-- Preset Options -->
-      <div class="preset-options">
-        <button id="regularPresetBtn">Regular Preset</button>
-        <button id="customPresetBtn">Custom Preset</button>
-      </div>
-      <!-- Preset Name -->
-      <input type="text" id="presetName" placeholder="Preset Name">
-      <!-- Schedule Table -->
-      <table>
-        <tr>
-          <th>Day</th>
-          <th>Start Time</th>
-          <th>End Time</th>
-        </tr>
-        <tr>
-          <td><input type="checkbox" id="mondayCheck"> Monday</td>
-          <td><input type="time" id="mondayStart"></td>
-          <td><input type="time" id="mondayEnd"></td>
-        </tr>
-        <tr>
-          <td><input type="checkbox" id="tuesdayCheck"> Tuesday</td>
-          <td><input type="time" id="tuesdayStart"></td>
-          <td><input type="time" id="tuesdayEnd"></td>
-        </tr>
-        <tr>
-          <td><input type="checkbox" id="wednesdayCheck"> Wednesday</td>
-          <td><input type="time" id="wednesdayStart"></td>
-          <td><input type="time" id="wednesdayEnd"></td>
-        </tr>
-        <tr>
-          <td><input type="checkbox" id="thursdayCheck"> Thursday</td>
-          <td><input type="time" id="thursdayStart"></td>
-          <td><input type="time" id="thursdayEnd"></td>
-        </tr>
-        <tr>
-          <td><input type="checkbox" id="fridayCheck"> Friday</td>
-          <td><input type="time" id="fridayStart"></td>
-          <td><input type="time" id="fridayEnd"></td>
-        </tr>
-        <tr>
-          <td><input type="checkbox" id="saturdayCheck"> Saturday</td>
-          <td><input type="time" id="saturdayStart"></td>
-          <td><input type="time" id="saturdayEnd"></td>
-        </tr>
-        <tr>
-          <td><input type="checkbox" id="sundayCheck"> Sunday</td>
-          <td><input type="time" id="sundayStart"></td>
-          <td><input type="time" id="sundayEnd"></td>
-        </tr>
-      </table>
-      <!-- Modal Buttons -->
-      <button id="saveScheduleBtn">Save</button>
-      <button id="closeScheduleBtn" onclick="closeModal()">Close</button>
+    <!-- About Screen (new) -->
+    <div id="about" class="screen" style="display: none">
+      <h1>System Information</h1>
+      <div class="about-container">
+        <div class="about-logo-container">
+          <h2>A collaboration of:</h2> <!-- "COLLABORATION" text above the logos -->
+        </div>
+        <div class="about-logo-container">
+          <img src="{% static 'images/logos/mmcm.png' %}" alt="MMCM Logo"class="about-logo mapua-logo">
+          <img src="{% static 'images/logos/agridom4.png' %}" alt="Agridom Logo" class="about-logo agri-logo">
+          <img src="{% static 'images/logos/mmcm_ccis.png' %}" alt="CCIS Logo" class="about-logo ccis-logo">
+        </div>
+        <div class="collaboration-section">
+          <hr class="broken-line">
+        </div>
+
+        <!-- Intern Information (Left Side) -->
+        <div class="intern-info">
+          <!-- SirJong's Card -->
+          <div class="intern-card">
+            <img
+              src="{% static 'images/faces/patrick.png' %}"
+              alt="Jong Montilla"
+              class="intern-photo"
+            />
+            <p class="intern-name">Jong Montilla</p>
+            <p class="intern-role">Agridom - Manager</p>
+          </div>
+
+          <!-- SirPatrick's Card -->
+          <div class="intern-card">
+            <img
+              src="{% static 'images/faces/patrick.png' %}"
+              alt="Patrick Alpas"
+              class="intern-photo"
+            />
+            <p class="intern-name">Patrick Alpas</p>
+            <p class="intern-role">Agridom - Supervisor</p>
+          </div>
+
+          <!-- Shennah's Card -->
+          <div class="intern-card">
+            <img
+              src="{% static 'images/faces/shennah.png' %}"
+              alt="Shennah Dalogdog"
+              class="intern-photo"
+            />
+            <p class="intern-name">Shennah Dalogdog</p>
+            <p class="intern-role">CS - Frontend Developer</p>
+          </div>
+
+          <!-- Clent's Card -->
+          <div class="intern-card">
+            <img
+              src="{% static 'images/faces/clent.png' %}"
+              alt="Clent Padriquela"
+              class="intern-photo"
+            />
+            <p class="intern-name">Clent Padriquela</p>
+            <p class="intern-role">CS - Frontend Developer</p>
+          </div>
+
+          <!-- Roxannie's Card -->
+          <!-- <div class="intern-card">
+            <img
+              src="{% static 'images/faces/rox.png' %}"
+              alt="Roxannie Sentillas"
+              class="intern-photo"
+            />
+            <p class="intern-name">Roxannie Sentillas</p>
+            <p class="intern-role">IS - Documentation/Tester</p>
+          </div> -->
+
+          <!-- Kenneth's Card -->
+          <div class="intern-card">
+            <img
+              src="{% static 'images/faces/kenneth.png' %}"
+              alt="Kenneth Saluna"
+              class="intern-photo"
+            />
+            <p class="intern-name">Kenneth Saluna</p>
+            <p class="intern-role">CS - Backend Developer</p>
+          </div>
+
+          <!-- Charles's Card -->
+          <div class="intern-card">
+            <img
+              src="{% static 'images/faces/charles.png' %}"
+              alt="Charles Mata"
+              class="intern-photo"
+            />
+            <p class="intern-name">Charles Mata</p>
+            <p class="intern-role">CS - Backend Developer</p>
+          </div>
+
+          <!-- Vonn's Card -->
+          <div class="intern-card">
+            <img
+              src="{% static 'images/faces/vonn.png' %}"
+              alt="Vonn Adrian Jutar"
+              class="intern-photo"
+            />
+            <p class="intern-name">Vonn Adrian Jutar</p>
+            <p class="intern-role">CS - Backend Developer</p>
+          </div>
+
+          <!-- Jakob's Card -->
+          <div class="intern-card">
+            <img
+              src="{% static 'images/faces/jakob.png' %}"
+              alt="Jakob Maraguinot"
+              class="intern-photo"
+            />
+            <p class="intern-name">Jakob Maraguinot</p>
+            <p class="intern-role">CS - Mobile App developer</p>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="red-container">
+          <p>This system was developed for SFGC’s timekeeping providing an efficient and user-friendly
+            solution for managing employee attendance. It is designed to streamline employee time-ins, monitor work hours, track attendance records, and generate real-time reports for
+            better workforce management.This project was conceptualized, designed, and implemented by CCIS intern students from Mapúa Malayan Colleges Mindanao as part of their
+            internship program at Agridom Solutions Corp. The development of this system allowed the interns to apply their academic knowledge to a real-world setting, gaining hands-on
+            experience in software development, user interface design, and database management. Throughout the project, the interns worked on various aspects, such as frontend and backend
+            development, system integration, and testing, ensuring the system met the needs of SFGC. This internship experience not only helped them fulfill the required 240 hours for
+            Computer Science students but also provided an opportunity to improve operational efficiency.
+          </p>
+        </div>
     </div>
-  </div>
 
-  <!-- Hidden Logout Form (used by redirectToSignOut()) -->
-  <form id="logoutForm" action="{% url 'logout' %}" method="POST" style="display: none;">
-    {% csrf_token %}
-  </form>
+    <!-- Hidden Logout Form (used by redirectToSignOut()) -->
+    <form
+      id="logoutForm"
+      action="{% url 'logout' %}"
+      method="POST"
+      style="display: none"
+    >
+      {% csrf_token %}
+    </form>
 
-  <!-- Updated Functions JS -->
-  <script src="{% static 'js/custom_admin_page.js' %}"></script>
-</body>
+    <!-- Updated Functions JS -->
+    <script src="{% static 'js/custom_admin_page.js' %}"></script>
+  </body>
 </html>

@@ -62,8 +62,8 @@ function captureImage() {
 
 function uploadImage(imageData, employeeId) {
   const formData = new FormData();
-  formData.append('image', dataURItoBlob(imageData), 'clock_in_image.jpg');
-  formData.append('employee_id', employeeId);
+  formData.append("image", dataURItoBlob(imageData), "clock_in_image.jpg");
+  formData.append("employee_id", employeeId);
 
   return fetch("/upload_image/", {
     method: "POST",
@@ -83,8 +83,8 @@ function uploadImage(imageData, employeeId) {
 }
 
 function dataURItoBlob(dataURI) {
-  const byteString = atob(dataURI.split(',')[1]);
-  const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+  const byteString = atob(dataURI.split(",")[1]);
+  const mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
   const ab = new ArrayBuffer(byteString.length);
   const ia = new Uint8Array(ab);
   for (let i = 0; i < byteString.length; i++) {
@@ -116,7 +116,7 @@ function updateAttendanceList(attendanceList) {
   const tbody = document.getElementById("attendance-items");
   tbody.innerHTML = ""; // Clear existing rows
 
-  attendanceList.forEach(data => {
+  attendanceList.forEach((data) => {
     const row = document.createElement("tr");
     row.setAttribute("data-employee-id", data.employee_id);
 
@@ -187,7 +187,7 @@ window.addEventListener("click", (e) => {
   }
 });
 
-// --- Handling Clock In form submission ---
+ // --- Handling Clock In form submission ---
 clockInForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
@@ -204,50 +204,63 @@ clockInForm.addEventListener("submit", (e) => {
     body: JSON.stringify({
       employee_id,
       pin,
-      first_login_check: true
+      first_login_check: true,
     }),
   })
-  .then(response => response.json())
-  .then(data => {
-    if (data.error === "first_login") {
-      clockInModal.style.display = "none";
-      newPinModal.style.display = "block";
+    .then((response) => response.json())
+    .then((data) => {
+      // If the response is unsuccessful and it's not a first login prompt, alert the error
+      if (!data.success && data.error !== "first_login") {
+        alert("Clock In Error: " + data.error);
+        return;
+      }
 
-      const newPinForm = document.getElementById("newPinForm");
-      newPinForm.onsubmit = (e) => {
-        e.preventDefault();
-        const newPin = document.getElementById("newPin").value;
+      // If it's a first login, handle PIN update
+      if (data.error === "first_login") {
+        clockInModal.style.display = "none";
+        newPinModal.style.display = "block";
 
-        if (newPin && newPin.length === 4 && !isNaN(newPin)) {
-          fetch("/clock_in/", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRFToken": csrftoken,
-            },
-            body: JSON.stringify({
-              employee_id,
-              pin,
-              new_pin: newPin
-            }),
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              alert("PIN successfully changed! Please proceed with clock in using your new PIN.");
-              newPinModal.style.display = "none";
-              newPinForm.reset();
-              clockInForm.reset();
-            }
-          })
-          .catch(error => {
-            console.error('Error:', error);
-            alert("Error: " + error.message);
-          });
-        }
-      };
-    } else {
-      // Regular clock in with image
+        const newPinForm = document.getElementById("newPinForm");
+        newPinForm.onsubmit = (e) => {
+          e.preventDefault();
+          const newPin = document.getElementById("newPin").value;
+
+          if (newPin && newPin.length === 4 && !isNaN(newPin)) {
+            fetch("/clock_in/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken,
+              },
+              body: JSON.stringify({
+                employee_id,
+                pin,
+                new_pin: newPin,
+              }),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  alert(
+                    "PIN successfully changed! Please proceed with clock in using your new PIN."
+                  );
+                  newPinModal.style.display = "none";
+                  newPinForm.reset();
+                  clockInForm.reset();
+                } else {
+                  alert("Error: " + data.error);
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+                alert("Error: " + error.message);
+              });
+          }
+        };
+        return; // Stop further processing until the new PIN is set.
+      }
+
+      // Otherwise, proceed with regular clock in (with image)
       const imageData = captureImage();
       uploadImage(imageData, employee_id)
         .then((filePath) => {
@@ -260,23 +273,33 @@ clockInForm.addEventListener("submit", (e) => {
             body: JSON.stringify({
               employee_id,
               pin,
-              image_path: filePath
+              image_path: filePath,
             }),
           });
         })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            addAttendanceItem(data);
-            alert("Clock In successful!");
-            updatePartnerLogo(data.new_logo);
-            clockInModal.style.display = "none";
-            clockInForm.reset();
-            updateAttendanceList(data.attendance_list); // Update the attendance list
+        .then((response) => response.json())
+        .then((data) => {
+          // If the clock in attempt returns an error, alert it
+          if (!data.success) {
+            alert("Clock In Error: " + data.error);
+            return;
           }
+          addAttendanceItem(data);
+          alert("Clock In successful!");
+          updatePartnerLogo(data.new_logo);
+          clockInModal.style.display = "none";
+          clockInForm.reset();
+          updateAttendanceList(data.attendance_list); // Update the attendance list
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("Error: " + error.message);
         });
-    }
-  });
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("Error: " + error.message);
+    });
 });
 
 // --- Handling Clock Out form submission ---
@@ -317,17 +340,112 @@ clockOutForm.addEventListener("submit", (e) => {
 // Function to update the partner logo
 function updatePartnerLogo(newLogo) {
   const partnerLogo = document.getElementById("partnerLogo");
-  partnerLogo.src = `/static/images/${newLogo}`;
+  partnerLogo.src = `/static/images/logos/${newLogo}`;
+}
+
+// Extract fetch logic into a reusable function
+function fetchAndUpdateEntries() {
+  fetch("/get_todays_entries/")
+    .then((response) => response.json())
+    .then((data) => {
+      // Clear existing entries and update with new data
+      const tbody = document.getElementById("attendance-items");
+      tbody.innerHTML = ""; // Clear existing rows
+      data.entries.forEach((entry) => addAttendanceItem(entry));
+
+      console.log("Time entries refreshed at", new Date().toLocaleTimeString());
+    })
+    .catch((error) => console.error("Error loading entries:", error));
 }
 
 // Fetch today's entries when the page loads
 document.addEventListener("DOMContentLoaded", function () {
-  fetch("/get_todays_entries/") // You'll need to create this endpoint
+  // Initial fetch
+  fetchAndUpdateEntries();
+
+  // Set up auto-refresh every 30 seconds (30000 milliseconds)
+  const refreshInterval = setInterval(fetchAndUpdateEntries, 30000);
+
+  // Store the interval ID in case you need to stop it later
+  window.entriesRefreshInterval = refreshInterval;
+
+  // Rest of your existing code...
+  fetch("/announcements/posted/")
     .then((response) => response.json())
     .then((data) => {
-      data.entries.forEach((entry) => addAttendanceItem(entry));
+      const container = document.getElementById("posted-announcements");
+      container.innerHTML = "";
+
+      if (data.length === 0) {
+        container.innerHTML = "<p></p>";
+        return;
+      }
+
+      // Create a table element
+      const table = document.createElement('table');
+      table.classList.add('announcements-table');
+
+      // Create the table body (no header needed)
+      const tbody = document.createElement('tbody');
+
+      data.forEach((ann) => {
+        const fullText = ann.content;
+        const truncatedText =
+          fullText.length > 30 ? fullText.substring(0, 30) + "..." : fullText;
+
+        // Create a table row for each announcement
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+
+        // Create a span for the announcement text
+        const span = document.createElement("span");
+        span.textContent = truncatedText;
+        td.appendChild(span);
+
+        // Add a "See more/See less" link if needed
+        if (fullText.length > 30) {
+          const seeMore = document.createElement('a');
+          seeMore.href = '#';
+          seeMore.style.marginLeft = '5px';
+          seeMore.style.color = 'red';
+          seeMore.style.textDecoration = 'none';
+          seeMore.style.cursor = 'pointer';
+          seeMore.textContent = '[See more]';
+
+          // Toggle between truncated and full text on click
+          seeMore.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (seeMore.textContent === "[See more]") {
+              span.textContent = fullText;
+              seeMore.textContent = "[See less]";
+            } else {
+              span.textContent = truncatedText;
+              seeMore.textContent = "[See more]";
+            }
+            td.appendChild(seeMore);
+          });
+
+          td.appendChild(seeMore);
+        }
+
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      });
+
+      table.appendChild(tbody);
+      container.appendChild(table);
     })
-    .catch((error) => console.error("Error loading entries:", error));
+    .catch((error) => {
+      console.error("Error fetching posted announcements:", error);
+    });
+
+  fetch("/get_special_dates/")
+    .then((response) => response.json())
+    .then((data) => {
+      updateBirthdays(data.birthdays);
+      updateMilestones(data.milestones);
+    })
+    .catch((error) => console.error("Error loading special dates:", error));
 
   // Get button and modal elements
   const timeInBtn = document.getElementById("timeInBtn");
@@ -336,12 +454,229 @@ document.addEventListener("DOMContentLoaded", function () {
   const clockOutModal = document.getElementById("clockOutModal");
 
   // Time In button click handler
-  timeInBtn.addEventListener("click", function() {
-      clockInModal.style.display = "block";
+  timeInBtn.addEventListener("click", function () {
+    clockInModal.style.display = "block";
   });
 
   // Time Out button click handler
-  timeOutBtn.addEventListener("click", function() {
-      clockOutModal.style.display = "block";
+  timeOutBtn.addEventListener("click", function () {
+    clockOutModal.style.display = "block";
+  });
+
+  // Add keyboard navigation for employee ID and PIN fields
+  const employeeIdIn = document.getElementById("employeeIdIn");
+  const pinIn = document.getElementById("pinIn");
+  const employeeIdOut = document.getElementById("employeeIdOut");
+  const pinOut = document.getElementById("pinOut");
+
+  // When employee ID is filled and Enter is pressed, move to PIN field
+  employeeIdIn.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      pinIn.focus();
+    }
+  });
+
+  employeeIdOut.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      pinOut.focus();
+    }
+  });
+
+  // Add similar handling for newPinModal if needed
+  if (document.getElementById("newPin")) {
+    const newPinField = document.getElementById("newPin");
+    newPinField.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        document.getElementById("newPinForm").dispatchEvent(new Event("submit"));
+      }
+    });
+  }
+
+  timeInBtn.setAttribute("tabindex", "0");
+  timeOutBtn.setAttribute("tabindex", "0");
+
+  // Allow activation with Enter key
+  timeInBtn.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      openClockInModal();
+    }
+  });
+
+  timeOutBtn.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      openClockOutModal();
+    }
   });
 });
+
+// Function to update the Birthdays panel
+function updateBirthdays(birthdays) {
+  const birthdayPanel = document.querySelector(".birthdays .panel .note");
+  if (!birthdayPanel) return;
+
+  if (birthdays.length > 0) {
+    // Create a table element
+    const table = document.createElement('table');
+    table.classList.add('announcements-table'); // Use the same class as announcements
+
+    // Create the table body (no header needed)
+    const tbody = document.createElement('tbody');
+
+    birthdays.forEach((user) => {
+      const fullText = `${user.first_name} ${user.surname}'s birthday! 🥳`;
+      const truncatedText =
+        fullText.length > 60 ? fullText.substring(0, 60) + "..." : fullText;
+
+      // Create a table row for each birthday
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+
+      // Create a span for the birthday text
+      const span = document.createElement("span");
+      span.textContent = truncatedText;
+      td.appendChild(span);
+
+      // Add a "See more/See less" link if needed
+      if (fullText.length > 60) {
+        const seeMore = document.createElement('a');
+        seeMore.href = '#';
+        seeMore.style.marginLeft = '5px';
+        seeMore.style.color = 'red';
+        seeMore.style.textDecoration = 'none';
+        seeMore.style.cursor = 'pointer';
+        seeMore.textContent = '[See more]';
+
+        // Toggle between truncated and full text on click
+        seeMore.addEventListener("click", (e) => {
+          e.preventDefault();
+          if (seeMore.textContent === "[See more]") {
+            span.textContent = fullText;
+            seeMore.textContent = "[See less]";
+          } else {
+            span.textContent = truncatedText;
+            seeMore.textContent = "[See more]";
+          }
+          td.appendChild(seeMore);
+        });
+
+        td.appendChild(seeMore);
+      }
+
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    birthdayPanel.innerHTML = '';
+    birthdayPanel.appendChild(table);
+  } else {
+    birthdayPanel.innerHTML = "<p></p>";
+  }
+}
+
+// Function to update the Milestones panel
+function updateMilestones(milestones) {
+  const milestonePanel = document.querySelector(".milestones .panel .note");
+  if (!milestonePanel) return;
+
+  if (milestones.length > 0) {
+    // Create a table element
+    const table = document.createElement('table');
+    table.classList.add('announcements-table'); // Use the same class as announcements
+
+    // Create the table body (no header needed)
+    const tbody = document.createElement('tbody');
+
+    milestones.forEach((user) => {
+      const fullText = `${user.first_name} ${user.surname} \n${user.years} year${user.years > 1 ? "s" : ""} 🎉`;
+      const truncatedText =
+        fullText.length > 60 ? fullText.substring(0, 60) + "..." : fullText;
+
+      // Create a table row for each milestone
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+
+      // Create a span for the milestone text
+      const span = document.createElement("span");
+      span.textContent = truncatedText;
+      span.style.whiteSpace = "pre-line";
+      td.appendChild(span);
+
+      // Add a "See more/See less" link if needed
+      if (fullText.length > 60) {
+        const seeMore = document.createElement('a');
+        seeMore.href = '#';
+        seeMore.style.marginLeft = '5px';
+        seeMore.style.color = 'red';
+        seeMore.style.textDecoration = 'none';
+        seeMore.style.cursor = 'pointer';
+        seeMore.textContent = '[See more]';
+
+        // Toggle between truncated and full text on click
+        seeMore.addEventListener("click", (e) => {
+          e.preventDefault();
+          if (seeMore.textContent === "[See more]") {
+            span.textContent = fullText;
+            seeMore.textContent = "[See less]";
+          } else {
+            span.textContent = truncatedText;
+            seeMore.textContent = "[See more]";
+          }
+          td.appendChild(seeMore);
+        });
+
+        td.appendChild(seeMore);
+      }
+
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    milestonePanel.innerHTML = '';
+    milestonePanel.appendChild(table);
+  } else {
+    milestonePanel.innerHTML = "<p></p>";
+  }
+}
+
+document.addEventListener("keydown", (event) => {
+  // Check if any modal is open
+  const isClockInOpen = clockInModal.style.display === "block";
+  const isClockOutOpen = clockOutModal.style.display === "block";
+  const isNewPinOpen = newPinModal.style.display === "block";
+
+  if (isClockInOpen || isClockOutOpen || isNewPinOpen) {
+    // If Escape key is pressed, close the open modal
+    if (event.key === "Escape") {
+      if (isClockInOpen) clockInModal.style.display = "none";
+      if (isClockOutOpen) clockOutModal.style.display = "none";
+      if (isNewPinOpen) newPinModal.style.display = "none";
+    }
+    return; // Stop processing 'i' and 'o' when a modal is open
+  }
+
+  // Allow 'i' and 'o' shortcuts only when no modal is open
+  if (event.key.toLowerCase() === "i") {
+    openClockInModal();
+  } else if (event.key.toLowerCase() === "o") {
+    openClockOutModal();
+  }
+});
+
+// Update your openClockInModal function
+function openClockInModal() {
+  clockInModal.style.display = "block";
+  // Auto-focus on employee ID field when modal opens
+  setTimeout(() => document.getElementById("employeeIdIn").focus(), 100);
+}
+
+// Update your openClockOutModal function
+function openClockOutModal() {
+  clockOutModal.style.display = "block";
+  // Auto-focus on employee ID field when modal opens
+  setTimeout(() => document.getElementById("employeeIdOut").focus(), 100);
+}

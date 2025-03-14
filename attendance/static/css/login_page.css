@@ -1,0 +1,211 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;600&display=swap");
+
+* {
+  font-family: "Roboto", sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0px; /* Adjust spacing if needed */
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.5)),
+    url("/static/images/bg/office_bg.jpg") no-repeat center center fixed;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  flex-direction: column;
+}
+
+h1 {
+  margin-top: 30px; /* Adds space below the fixed header */
+  font-size: 70px;
+  color: #772e3f;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.container {
+  animation: fadeIn 1s ease-in-out;
+}
+
+.form-container,
+.login-container {
+  background: rgba(255, 255, 255, 0.85); /* Opaque background */
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); /* Softer and bigger shadow */
+  width: 100%;
+  text-align: center;
+}
+
+.form-container {
+  max-width: 5000px;
+  height: 380px;
+  margin-top: 40px;
+}
+
+.login-container {
+  max-width: 400px;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #621c1c;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Thicker shadow for a more dramatic effect */
+  z-index: 1000;
+  overflow: hidden; /* Prevent overflow if logos are wide */
+}
+
+.logo,
+.partner-logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo img {
+  /* SF GROUP LOGO */
+  width: 150px; /* Change this to your desired size */
+  height: auto; /* Maintains aspect ratio */
+  margin-right: 10px;
+}
+
+.partner-logo img {
+  /* Company Logos */
+  background-color: white;
+  padding: 10px; /* Adds space around the logo */
+  border-radius: 10px; /* Optional rounded corners */
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  width: 250px; /* Change this to your desired size */
+  height: auto; /* Maintains aspect ratio */
+  margin-top: 100px;
+  margin-right: 450px;
+}
+
+.partner-logos {
+  background-color: #ffffff3c; /* Set background to white */
+  display: flex;
+  align-items: center;
+  border-radius: 10px;
+  overflow: hidden; /* Changed from overflow-x: auto */
+  width: 100%; /* Add explicit width */
+  height: 80%;
+  padding: 0 10px; /* Add some padding for spacing */
+  position: relative; /* Add position relative */
+  gap: 10px; /* Add space between logos */
+  scrollbar-width: none; /* For modern browsers, make the scrollbar thinner */
+  margin-right: 30px;
+}
+
+.partner-logos img {
+  height: 40px; /* Ensure consistent height for all logos */
+  width: auto; /* Maintain aspect ratio */
+  transition: transform 0.2s ease; /* Add smooth scaling effect */
+  flex-shrink: 0; /* Prevent logo shrinking */
+}
+
+.partner-logos img:hover {
+  transform: scale(1.1); /* Slightly enlarge logo on hover */
+  cursor: pointer;
+}
+
+.partner-logos-inner {
+  display: inline-flex;
+  animation: scroll-logos 20s linear infinite; /* Adjust duration for speed */
+  display: flex;
+  gap: 20px; /* Space between logos */
+}
+
+.partner-logos-inner img {
+  height: 60px; /* Ensure consistent logo height */
+  width: auto; /* Maintain aspect ratio */
+  border-radius: 5px;
+  margin: 0 10px; /* Adjust spacing between logos */
+  transition: transform 0.2s ease; /* Smooth scaling on hover */
+}
+
+.partner-logos-inner img:hover {
+  transform: scale(1.1); /* Slightly enlarge on hover */
+}
+
+@keyframes scroll-logos {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        /* Set this to the negative width of your total logos + gaps */
+        transform: translateX(-100%);
+    }
+}
+
+.input-group {
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 15px;
+}
+
+.input-group input {
+  max-width: 500px;
+  width: 100%;
+  padding: 12px; /* Slightly more padding for comfort */
+  border: 1px solid #ddd;
+  border-radius: 15px;
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+.input-group input:focus {
+  border-color: #772e3f; /* Accent color for active state */
+  box-shadow: 0 0 8px rgba(119, 46, 63, 0.5); /* Subtle shadow to indicate focus */
+}
+
+.login-button {
+  display: block;
+  width: 15%;
+  max-width: 200px;
+  margin: 0 auto;
+  padding: 12px 25px; /* Wider padding for a more clickable button */
+  background-color: #772e3f;
+  color: white;
+  border: none;
+  border-radius: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.3s ease;
+  text-align: center;
+}
+
+.login-button:hover {
+  background-color: #5f1f2f;
+  transform: translateY(-5px); /* Slight hover lift effect */
+}

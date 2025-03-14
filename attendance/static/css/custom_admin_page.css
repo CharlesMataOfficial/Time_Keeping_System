@@ -1,24 +1,34 @@
-/* General Reset */
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;600&display=swap");
+
+* {
+  font-family: "Roboto", sans-serif;
+}
+
 body {
-  background: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), 
-  url("/static/images/white1 bg.jpg");
+  background: linear-gradient(
+      rgba(200, 200, 200, 0.2),
+      rgba(200, 200, 200, 0.2)
+    ),
+    url("/static/images/bg/agritech_bg.png");
   background-size: cover;
   background-position: center;
 }
-body, html {
+body,
+html {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: Arial, sans-serif;
   display: flex;
   justify-content: center; /* Horizontally center content */
   align-items: flex-start; /* Align items at the top to avoid extra space */
-  overflow: hidden;  /* Prevent both vertical and horizontal scrollbars */
+  overflow: hidden; /* Prevent both vertical and horizontal scrollbars */
 }
 
-h1, h2 {
+h1,
+h2 {
   background: linear-gradient(90deg, #621c1c, #be6364);
   -webkit-background-clip: text;
+  background-clip: text;
   color: transparent;
   text-shadow: none;
 }
@@ -53,7 +63,7 @@ h1, h2 {
 .menu {
   position: fixed;
   top: 0;
-  left: -300px;  /* Initially hidden */
+  left: -300px; /* Initially hidden */
   width: 260px;
   height: 100%;
   background-image: url("/static/images/red1.jpg");
@@ -62,7 +72,7 @@ h1, h2 {
   color: white;
   transition: left 0.3s ease;
   padding: 20px;
-  z-index: 2;  /* Lower z-index to ensure text stays on top */
+  z-index: 2; /* Lower z-index to ensure text stays on top */
 }
 
 .menu ul {
@@ -90,7 +100,6 @@ h1, h2 {
   width: 30px;
   height: 30px;
 }
-
 
 .sign-out {
   position: absolute;
@@ -124,13 +133,9 @@ h1, h2 {
   left: 5%;
 }
 
-
 .sign-out:hover {
   transform: none !important;
 }
-
-
-
 
 /* Screens */
 .screen {
@@ -147,9 +152,9 @@ h1, h2 {
 #dashboard {
   display: flex;
   flex-direction: column;
-  justify-content: center;  /* Vertically center the content */
-  align-items: center;      /* Horizontally center the content */
-  text-align: center;       /* Center text inside */
+  justify-content: center; /* Vertically center the content */
+  align-items: center; /* Horizontally center the content */
+  text-align: center; /* Center text inside */
   height: 100vh;
 }
 
@@ -159,7 +164,6 @@ h1, h2 {
   margin-top: -500px;
   margin-right: 105px;
 }
-
 
 /* Centering the Containers Without Extra Space */
 .dashboard-stats-container {
@@ -224,7 +228,6 @@ h1, h2 {
   align-items: center;
 }
 
-
 .total-user-timeout-container {
   position: relative;
   bottom: 0; /* Aligns with bottom of Late Employees */
@@ -242,7 +245,6 @@ h1, h2 {
   color: #333;
 }
 
-
 /* Top 5 Late Employees Container (Middle) */
 .top-late-employees-container {
   width: 320px;
@@ -259,8 +261,8 @@ h1, h2 {
 }
 
 .total-late-employees {
-  font-size: 14px;  /* Pareho sa Top 5 Late Employees */
-  color: #621c1c;  /* Parehong kulay */
+  font-size: 14px; /* Pareho sa Top 5 Late Employees */
+  color: #621c1c; /* Parehong kulay */
   font-weight: bold;
   margin-top: 5px; /* Bawasan ang space sa taas */
   margin-bottom: 3px; /* Bawasan ang space sa baba */
@@ -271,7 +273,6 @@ h1, h2 {
   font-weight: bold;
   color: #333;
 }
-
 
 .top-late-employees-container h2 {
   font-size: 14px;
@@ -287,32 +288,23 @@ h1, h2 {
 
 /* Bigger Space for Late Employees Names */
 .late-employees-list {
-  width: 90%;
+  width: 100%;
   height: 500px; /* Gawing mas malaki ang height */
-  background: rgba(240, 240, 240, 0.9);
-  border-radius: 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  /* background: rgba(240, 240, 240, 0.9); */
   font-size: 14px;
   color: #333;
-  margin-bottom: 5px; /* Paliitin ang espasyo sa pagitan */
-  padding: 10px;
+  /* margin-bottom: 5px; */ /* Paliitin ang espasyo sa pagitan */
   overflow-y: auto; /* Enables scrolling if names exceed space */
 }
 
-
-
-
-.total-late-employees h2{
-  font-size: 14px;  /* Pareho sa Top 5 Late Employees */
-  color: #621c1c;  /* Parehong kulay */
+.total-late-employees h2 {
+  font-size: 14px; /* Pareho sa Top 5 Late Employees */
+  color: #621c1c; /* Parehong kulay */
   font-weight: bold; /* Optional: Para mas litaw */
   margin-bottom: 8px;
 }
 
-
-.total-late-employees p{
+.total-late-employees p {
   font-size: 20px; /* Same as Total User Time In */
   font-weight: bold;
   color: #333;
@@ -358,23 +350,18 @@ h1, h2 {
 
 /* Bigger Space for Early Birds Names */
 .early-birds-list {
-  width: 90%;
+  width: 100%;
   height: 200px;
-  background: rgba(240, 240, 240, 0.9);
-  border-radius: 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   font-size: 14px;
   color: #333;
   margin-bottom: 8px;
-  padding: 10px;
   overflow-y: auto; /* Enables scrolling if names exceed space */
 }
 
-
-
-button, input, select, textarea {
+button,
+input,
+select,
+textarea {
   margin-top: 10px;
   padding: 10px;
   border: 1px solid #ccc;
@@ -399,6 +386,15 @@ button:hover {
   justify-content: center;
   width: 100%;
   height: 100%;
+  width: 90%;
+  max-width: 1200px;
+  height: 80vh;
+  max-height: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  padding: 20px;
 }
 
 #log h1 {
@@ -406,32 +402,35 @@ button:hover {
   font-size: 75px;
   text-align: center;
   margin-bottom: 20px;
-  
 }
 
 #log_rectangle {
   width: 1000px;
-  justify-content: center;
-  height: 500px; 
+  /* justify-content: center; */
+  height: 500px;
   background-color: #f0f0f0;
-  
   border-radius: 15px;
   overflow: hidden;
-  display: flex;
-  align-items: center;
+  /* display: flex; */
+  /* align-items: center; */
+  max-height: 70vh; /* 70% of viewport height */
+  overflow-y: auto; /* Enable vertical scrolling */
+  width: 100%;
+  padding: 10px;
 }
 
 #attendance_rectangle {
   width: 1200px;
-  height: 500px; 
+  height: 500px;
   background-color: #f0f0f0;
   border-radius: 15px;
   margin: 100px auto;
   margin-top: 10px; /* Adjust the space above the white rectangle */
   margin-bottom: 50px;
-  overflow: hidden;
   box-sizing: border-box;
   position: relative;
+  max-height: 70vh; /* 70% of viewport height */
+  overflow-y: auto; /* Enables vertical scrolling */
 }
 
 #attendance-list h1 {
@@ -444,7 +443,6 @@ button:hover {
   width: auto;
   margin: 0;
 }
-
 
 #attendance-list {
   position: absolute;
@@ -463,123 +461,6 @@ button:hover {
   height: auto;
   min-height: 500px; /* Ensure it doesn’t shrink below this */
   max-height: 750px; /* Optional: Limit max height */
-
-}
-
-
-/* Work Hours Preset Screen */
-#work-hours {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  width: 80%;
-  max-width: 600px;
-  height: 594px;
-  background-size: cover;
-  border-radius: 15px;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-#work-hours h1 {
-  font-size: 60px;
-  margin-top: 30px;
-}
-
-.work-hours-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 10px;
-}
-
-.work-hours-content {
-  width: 95%;
-  height: 240px;
-  margin-bottom: 20px;
-  padding: 10px;
-  border-radius: 15px;
-  background-color: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.work-hours-actions {
-  display: flex;
-  justify-content: center; /* Horizontally center the buttons */
-  align-items: center;     /* Vertically center the buttons */
-  gap: 20px;               /* Space between the buttons */
-  width: 100%;
-}
-
-.work-hours-actions button {
-  padding: 10px 20px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.work-hours-actions button:hover {
-  background-color: #2980b9;
-}
-
-.separator {
-  width: 600px;
-  height: 2px;
-  background-color: #6f6f6f;
-  margin: 10px 0;
-}
-
-.grace-period {
-  display: flex;
-  flex-direction: column; /* Change the flex direction to column to stack label and input vertically */
-  align-items: center;
-  gap: 10px; /* Space between label and input */
-}
-
-.grace-period label {
-  text-align: center;
-  justify-content: center;
-  font-size: 20px;
-}
-
-.grace-period select {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
-  width: 150px; /* Adjust width as needed */
-}
-
-.grace-period-input-container {
-  justify-content: center;
-  display: flex;
-  gap: 10px; /* Space between input and button */
-}
-
-.save-button {
-  padding: 10px 20px;
-  background-color: #2980b9;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.save-button:hover {
-  background-color: #2980b9;
 }
 
 /* Keeps the container centered always */
@@ -618,8 +499,6 @@ button:hover {
   max-height: 750px; /* Optional: Limit max height */
 }
 
-
-
 /* Export Buttons */
 .export-button {
   background-color: #2980b9;
@@ -638,7 +517,6 @@ button:hover {
   background-color: #2980b9;
 }
 
-
 /* Ensures the title remains fixed and centered */
 #export-excel h1 {
   position: absolute;
@@ -648,10 +526,8 @@ button:hover {
   font-size: 75px;
   text-align: center;
   width: auto;
-  margin: 0
+  margin: 0;
 }
-
-
 
 /* Ensure containers are properly aligned below the title */
 #announcement {
@@ -667,7 +543,7 @@ button:hover {
   max-width: 1000px;
 }
 
-#announcement h1{
+#announcement h1 {
   font-size: 75px;
   margin-bottom: -40px;
   margin-top: 40px;
@@ -687,7 +563,7 @@ button:hover {
 .announcement-container {
   width: 100%;
   max-width: 460px;
-  background-size: cover;
+  background-color: #fff;
   padding: 15px;
   margin-top: 90px;
   border-radius: 10px;
@@ -705,12 +581,13 @@ button:hover {
 /* Textarea Styling */
 .announcement-container textarea {
   width: 440px;
-  height: 146px;
+  height: 160px;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 14px;
   resize: none;
+  margin-bottom: 16px;
 }
 
 /* Ensure dropdown and buttons are aligned in one row */
@@ -722,9 +599,9 @@ button:hover {
 }
 /* Container for the list */
 .announcement-list-container {
-  overflow-y: auto;            /* Vertical scroll when content overflows */
-  border: 1px solid #ccc;      /* Optional: add a border */
-  padding: 5px;                /* Optional: add some padding */
+  overflow-y: auto; /* Vertical scroll when content overflows */
+  border: 1px solid #ccc; /* Optional: add a border */
+  padding: 5px; /* Optional: add some padding */
   background-color: #ffffff;
   text-align: left;
   margin-top: 20px;
@@ -745,7 +622,7 @@ button:hover {
   display: flex;
   align-items: center;
   gap: 8px;
-  line-height: 1.4;      /* Adjust as needed (1.2, 1.4, 1.5, etc.) */
+  line-height: 1.4; /* Adjust as needed (1.2, 1.4, 1.5, etc.) */
   padding: 5px 0;
   border-bottom: 1px solid #eee;
 }
@@ -765,10 +642,9 @@ button:hover {
 #announcement-list li span {
   flex: 1 1 auto;
   display: inline-block;
-  vertical-align: middle; 
+  vertical-align: middle;
   word-wrap: break-word; /* Allows text wrapping if it's very long */
 }
-
 
 /* Dropdown Styling */
 #post-options {
@@ -778,7 +654,7 @@ button:hover {
   border-radius: 5px;
   font-size: 14px;
   background: white;
-  cursor: pointer;  
+  cursor: pointer;
 }
 
 /* Post Button */
@@ -825,8 +701,11 @@ button:hover {
   background-color: #2980b9;
 }
 
-.dashboard-icon, .announcement-container, .work-hours-content, .export-container {
+.dashboard-icon,
+.announcement-container,
+.export-container {
   background: rgba(255, 255, 255, 0.6);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
@@ -923,7 +802,6 @@ button:hover {
   transform: scale(1.1);
 }
 
-
 .dashboard-icon-top-right img:first-child {
   margin-right: 10px; /* Space between the left and right arrows */
 }
@@ -934,12 +812,13 @@ button:hover {
 
 /* Ensure the arrows stay in place when navigating */
 #dashboard-shortcut {
-  display: flex; /* Align both arrows */
+  display: flex !important; /* Force it to be shown */
   justify-content: center;
+  align-items: center;
   position: fixed;
-  top: 20px; 
+  top: 20px;
   right: 40px;
-  z-index: 1000; /* Ensure the icons are above the content */
+  z-index: 1000; /* Ensure it's above all elements */
 }
 
 /* Default option (By company, By department) should always be black */
@@ -979,7 +858,6 @@ button:hover {
   font-size: 75px;
   text-align: center;
   margin-bottom: 20px;
-  
 }
 
 #leave-approval_rectangle {
@@ -987,12 +865,15 @@ button:hover {
   height: 500px;
   background-color: #f0f0f0;
   border-radius: 15px;
-  overflow: hidden;
+  overflow-y: auto;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding-top: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
 }
-
 
 .sign-out-text:hover {
   background-color: transparent !important;
@@ -1017,14 +898,12 @@ button:hover {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   text-align: justify;
   width: 1250px;
-  height: auto; /* Adjust height dynamically based on content */
+  height: auto; /* Adjust height dynamically */
   border-radius: 15px;
   overflow: hidden;
   display: flex;
-  flex-direction: column; /* Ensures text stacks properly */
-  align-items: center;
-  justify-content: center;
-  gap: 10px; /* Adds space between paragraphs */
+  flex-direction: column;
+  gap: 7px; /* Adds space between elements */
 }
 
 #about h1 {
@@ -1036,11 +915,11 @@ button:hover {
 /* Align logos side by side */
 .about-logo-container {
   display: flex;
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Align vertically */
-  gap: 20px; /* Space between logos */
-  margin-bottom: 20px; /* Space below logos */
-  position: relative; /* Needed for individual positioning */
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin: 0; /* No margin */
+  padding: 0; /* No padding */
 }
 
 /* Set uniform size for both logos */
@@ -1062,13 +941,17 @@ button:hover {
   bottom: 11px; /* Move down (increase value) or move up (use negative value) */
 }
 
+.agri-logo {
+  position: relative;
+}
 
 /* Apply same text style as Dashboard Stats */
-.about-container p{
+.about-container p {
   font-size: 15px; /* Match dashboard stats */
   color: #000000; /* Match dashboard color */
   background: linear-gradient(90deg, #000000, #000000);
   -webkit-background-clip: text;
+  background-clip: text;
   color: transparent;
   text-shadow: none;
 }
@@ -1082,6 +965,7 @@ button:hover {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(5px);
   backdrop-filter: blur(5px);
 }
 
@@ -1187,5 +1071,831 @@ button:hover {
   border-radius: 4px;
 }
 
+/* Ensure Intern Cards Stay in One Row */
+.intern-info {
+  display: flex;
+  align-items: center; /* Align photos and text vertically */
+  gap: 20px; /* Space between intern cards */
+  margin-left: 120px; /* Keep everything on the left (120px)*/
+}
 
+/* Each Intern's Card */
+.intern-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center photo, name, and role */
+  text-align: center;
+}
 
+/* Intern Photo - Centered */
+.intern-photo {
+  width: 83px;
+  height: auto;
+  border-radius: 10px;
+}
+
+/* Intern Name & Role */
+.intern-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: black;
+  margin-bottom: 0; /* Remove bottom space */
+}
+
+.intern-role {
+  font-size: 11px !important; /* Smaller font */
+  color: gray !important;
+  margin-top: -1px; /* Reduce space between name and role */
+}
+
+.about-description-container {
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 80%;
+  max-width: 900px;
+  margin: 7px auto;
+}
+
+.red-container {
+  background-color: #621c1c; /* Dark Red */
+  padding: 20px;
+  border-radius: 10px;
+  height: auto;
+  line-height: 1.2;
+  margin-top: 7px;
+  margin-bottom: 1px;
+}
+
+.red-container,
+.red-container p,
+.red-container span {
+  color: white !important;
+  text-align: justify !important;
+}
+
+/* Collaboration Section - Adjusted */
+.collaboration-section {
+  text-align: center;
+  margin: 0; /* Remove any margins */
+  padding: 0; /* Remove any padding */
+}
+
+/* Move COLLABORATION text above the logos */
+.collaboration-section h2 {
+  font-size: 10px !important;
+  color: #621c1c;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin: 0; /* No margin to remove any space */
+  padding: 0; /* Remove padding */
+}
+
+.broken-line {
+  border: none;
+  border-top: 3px dashed #621c1c;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+select option {
+  color: gray;
+}
+
+select:focus option:checked,
+select option:checked {
+  color: black !important;
+}
+
+/* Remove default anchor styles in the menu */
+.menu a {
+  text-decoration: none;
+  color: inherit;
+  border: none;
+  outline: none;
+}
+
+/* Optional: Make the anchor a block-level element so the entire area is clickable */
+.menu a {
+  display: block;
+}
+/* Container styling */
+#attendance_rectangle {
+  padding: 20px;
+  margin-top: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  font-family: Roboto, sans-serif;
+}
+/* Table styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 auto;
+}
+th,
+td {
+  /* border: 1px solid #ccc; */
+  padding: 10px;
+  text-align: left;
+}
+tr:hover {
+  background-color: #f1f1f1;
+}
+/* Dropdown and button styling */
+.attendance-dropdown-container select,
+.attendance-dropdown-container button {
+  padding: 8px 10px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+.attendance-dropdown-container button {
+  cursor: pointer;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+}
+.attendance-dropdown-container button:hover {
+  background-color: #0056b3;
+}
+
+/* Add these styles at the end of your file */
+
+/* Dashboard tables styling */
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* Make sure the table header is properly styled */
+.dashboard-table thead {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* Set the table body to match the header */
+.dashboard-table tbody {
+  display: block;
+  overflow-y: auto;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+  width: 100%;
+  max-height: 180px;
+}
+
+/* Ensure table rows maintain proper width */
+.dashboard-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* Cell styling */
+.dashboard-table th,
+.dashboard-table td {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap; /* Ensure text truncates instead of causing horizontal scroll */
+}
+
+/* Set column widths */
+.dashboard-table th:first-child,
+.dashboard-table td:first-child {
+  width: 65%;
+}
+
+.dashboard-table th:last-child,
+.dashboard-table td:last-child {
+  width: 35%;
+  text-align: right;
+}
+
+/* Other styling */
+.dashboard-table th {
+  color: #333;
+  font-size: 12px;
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.dashboard-table .minutes {
+  font-weight: bold;
+}
+
+.dashboard-table .late {
+  color: #e74c3c;
+}
+
+.dashboard-table .early {
+  color: #2ecc71;
+}
+
+/* Fix scrolling container display */
+.late-employees-list,
+.early-birds-list {
+  max-height: 180px;
+  overflow-y: auto;
+  overflow-x: hidden; /* Hide horizontal scrollbar */
+}
+
+/* Fix table displays within scrolling containers */
+.late-employees-list table,
+.early-birds-list table {
+  width: 100%;
+}
+
+.log-filters-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.log-filters-container {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.log-filters-container select,
+.log-filters-container input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  background: white;
+}
+
+#log-search {
+  width: 200px;
+}
+
+/* Fix log container scrolling */
+#log_rectangle {
+  max-height: 70vh; /* 70% of viewport height */
+  overflow-y: auto; /* Enable vertical scrolling */
+  width: 100%;
+  padding: 10px;
+}
+
+/* Position the filters above the scrollable area */
+.log-filters-wrapper {
+  width: 100%;
+  margin-bottom: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+/* Modal container */
+.modal_export_style {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4); /* Black with opacity */
+}
+
+/* Modal content box */
+.modal_export_content {
+  background-color: #fefefe;
+  margin: 10% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 400px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* Close button */
+.modal_export_close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.modal_export_close:hover,
+.modal_export_close:focus {
+  color: #000;
+}
+
+/* Export option buttons */
+.modal_export_options {
+  margin: 20px 0;
+}
+.modal_export_options button {
+  margin: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Export section styles */
+.modal_export_section {
+  margin: 20px 0;
+}
+.modal_export_section label {
+  display: block;
+  margin-top: 20px;
+  font-weight: bold;
+}
+.modal_export_section input {
+  padding: 8px;
+  margin-bottom: 10px;
+  width: 80%;
+}
+.modal_export_section button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+/* Excluded date styles */
+.excluded-date {
+  /* Display input and "x" button side by side */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.excluded-date input[type="date"] {
+  /* Let the browser handle the built-in icon without overlap */
+  padding: 8px;
+  /* Optional: remove or set a fixed width if desired
+     width: 200px;
+  */
+}
+
+/* Small "x" button styling */
+.remove_excluded_date {
+  background: none;
+  border: none;
+  color: red;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.leave-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0;
+}
+
+.leave-table th,
+.leave-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.leave-table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.approve-btn,
+.reject-btn {
+  padding: 6px 12px;
+  margin: 0 4px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.approve-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.reject-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+/* Styling for lazy loading containers and indicators */
+#log_rectangle,
+#attendance_rectangle {
+  max-height: 70vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 12px;
+  margin-top: 10px;
+  border-top: 1px solid #eee;
+  color: #666;
+  display: none;
+}
+
+.loading-spinner.visible {
+  display: block;
+}
+
+/* Common Table Styling for All Tables (Logs, Attendance, Announcements) */
+.log-table,
+#attendance_rectangle table,
+#announcement-list {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* Sticky Header Styling */
+.log-table thead,
+#attendance_rectangle table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #f2f2f2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Table header styling */
+.log-table th,
+#attendance_rectangle table th {
+  background-color: #f2f2f2;
+  color: #333;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 12px 8px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+
+/* Table cell styling */
+.log-table td,
+#attendance_rectangle table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+  color: #333;
+}
+
+/* Zebra striping for rows */
+.log-table tbody tr:nth-child(even),
+#attendance_rectangle table tbody tr:nth-child(even),
+#announcement-list li:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Hover effect */
+.log-table tbody tr:hover,
+#attendance_rectangle table tbody tr:hover,
+#announcement-list li:hover {
+  background-color: #f0f0f0;
+}
+
+/* Announcement list styling to match tables */
+#announcement-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  max-height: 100%;
+  width: 100%;
+}
+
+#announcement-list li {
+  display: flex;
+  align-items: center;
+  padding: 10px 8px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+  color: #333;
+}
+
+/* Checkbox styling in announcement list */
+#announcement-list li input[type="checkbox"] {
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+/* Text in announcement list */
+#announcement-list li span {
+  flex: 1;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+/* Announcement list container - update to match other tables */
+.announcement-list-container {
+  overflow-y: auto;
+  background-color: #ffffff;
+  border-radius: 5px;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: 200px;
+  width: 440px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+/* Container styling for log and attendance */
+#log_rectangle,
+#attendance_rectangle {
+  height: 500px;
+  max-height: 70vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  background-color: #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  padding: 0;
+}
+
+/* Loading indicator styling */
+.loading-spinner {
+  text-align: center;
+  padding: 12px;
+  margin-top: 10px;
+  border-top: 1px solid #eee;
+  color: #666;
+  display: none;
+}
+
+.loading-spinner.visible {
+  display: block;
+}
+
+/* Add a title for the announcement container */
+.announcement-container h2 {
+  color: #333;
+  font-size: 18px;
+  margin-bottom: 10px;
+  text-align: center;
+  width: 100%;
+}
+
+/* Button styling for announcements */
+.save-button,
+.post-button,
+.delete-button,
+.view-button {
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.save-button {
+  background-color: #2980b9;
+  color: white;
+}
+
+.post-button {
+  background-color: #27ae60;
+  color: white;
+}
+
+.delete-button {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.save-button:hover,
+.post-button:hover,
+.delete-button:hover,
+.view-button:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+/* Ensure smooth scrolling for announcement list */
+.announcement-list-container {
+  scroll-behavior: smooth;
+}
+
+/* Animation for newly added announcements */
+@keyframes highlightNew {
+  0% {
+    background-color: #fffde7;
+  }
+  100% {
+    background-color: inherit;
+  }
+}
+
+/* Apply animation to new announcements */
+.highlight-new {
+  animation: highlightNew 2s ease-out;
+}
+
+/* Fix scrolling in log and attendance rectangles */
+#log_rectangle,
+#attendance_rectangle {
+  /* Keep the flex layout but allow scrolling */
+  overflow: auto !important; /* Force overflow to be auto */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Make sure tables take full width */
+.log-table,
+#attendance_rectangle table {
+  width: 100%;
+}
+
+/* Fix table display */
+.log-table tbody,
+#attendance_rectangle table tbody {
+  display: table-row-group; /* Reset to standard table display */
+  width: 100%;
+}
+
+/* Reset table row display */
+.log-table tr,
+#attendance_rectangle table tr {
+  display: table-row; /* Reset to standard table display */
+  width: 100%;
+}
+
+/* Remove fixed max-height that might be causing scrolling issues */
+.log-table tbody,
+#attendance_rectangle table tbody {
+  max-height: none;
+}
+
+/* Make sticky headers work properly */
+.log-table thead,
+#attendance_rectangle table thead {
+  display: table-header-group;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #f2f2f2;
+}
+
+/* Announcement item styling */
+#announcement-list li.announcement-item {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 10px 8px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+  color: #333;
+  transition: background-color 0.2s ease;
+}
+
+/* Selected announcement styling */
+#announcement-list li.selected {
+  background-color: #e3f2fd !important; /* Light blue highlight */
+  border-left: 3px solid #2196f3;
+}
+
+/* Hide actual checkbox (we'll use the whole row instead) */
+#announcement-list li .announcement-checkbox {
+  margin-right: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Content wrapper to hold text and read more link */
+.announcement-content-wrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  word-break: break-word;
+}
+
+/* Text styling */
+.announcement-text {
+  line-height: 1.4;
+  max-width: 100%;
+}
+
+/* Read more link styling */
+.read-more-link {
+  color: #ff5252;
+  text-decoration: none;
+  margin-top: 4px;
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.read-more-link:hover {
+  text-decoration: underline;
+}
+
+/* Update leave approval table styling to be consistent */
+.leave-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  margin-top: 0;
+}
+
+/* Match header styling with other tables */
+.leave-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #f2f2f2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: table-header-group;
+}
+
+/* Table header styling to match other tables */
+.leave-table th {
+  background-color: #f2f2f2;
+  color: #333;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 12px 8px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+
+/* Table cell styling to match other tables */
+.leave-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+  color: #333;
+}
+
+/* Make table body display correctly */
+.leave-table tbody {
+  display: table-row-group;
+}
+
+/* Make table rows display correctly */
+.leave-table tr {
+  display: table-row;
+}
+
+/* Zebra striping for leave table rows */
+.leave-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Hover effect for leave table rows */
+.leave-table tbody tr:hover {
+  background-color: #f0f0f0;
+}
+
+/* Adjust leave-approval_rectangle to match other rectangles */
+#leave-approval_rectangle {
+  height: 500px;
+  max-height: 70vh;
+  overflow: auto !important;
+  border-radius: 10px;
+  background-color: #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 0;
+  margin-top: 20px;
+  width: 1000px; /* Match log_rectangle width */
+}
+
+/* Style buttons consistently with other action buttons */
+.approve-btn,
+.reject-btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin: 0 4px;
+}
+
+.approve-btn {
+  background-color: #27ae60;
+  color: white;
+}
+
+.reject-btn {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.approve-btn:hover,
+.reject-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}

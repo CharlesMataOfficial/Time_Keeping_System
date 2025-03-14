@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>SFGC Timekeeping Login</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/login_page.css' %}">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img src="{% static 'images/logos/sfgroup.png' %}" alt="SF Group of Companies">
+        </div>
+        <div class="partner-logos">
+            <div class="partner-logos-inner">
+                <img src="{% static 'images/logos/geniustech.png' %}" alt="Genius Tech">
+                <img src="{% static 'images/logos/agridom.png' %}" alt="Agri Online">
+                <img src="{% static 'images/logos/farmtech.png' %}" alt="Farmtech">
+                <img src="{% static 'images/logos/djas.png' %}" alt="DJAS Servitrade Corporation">
+                <img src="{% static 'images/logos/subangfarm.png' %}" alt="Subang Farm">
+                <img src="{% static 'images/logos/agridom4.png' %}" alt="Agridom">
+                <img src="{% static 'images/logos/sunfood.png' %}" alt="Sunfood Marketing">
+                <img src="{% static 'images/logos/geniustech.png' %}" alt="Genius Tech">
+                <img src="{% static 'images/logos/agridom.png' %}" alt="Agri Online">
+                <img src="{% static 'images/logos/farmtech.png' %}" alt="Farmtech">
+                <img src="{% static 'images/logos/djas.png' %}" alt="DJAS Servitrade Corporation">
+                <img src="{% static 'images/logos/subangfarm.png' %}" alt="Subang Farm">
+                <img src="{% static 'images/logos/agridom4.png' %}" alt="Agridom">
+                <img src="{% static 'images/logos/sunfood.png' %}" alt="Sunfood Marketing">
+                <img src="{% static 'images/logos/geniustech.png' %}" alt="Genius Tech">
+                <img src="{% static 'images/logos/agridom.png' %}" alt="Agri Online">
+                <img src="{% static 'images/logos/farmtech.png' %}" alt="Farmtech">
+                <img src="{% static 'images/logos/djas.png' %}" alt="DJAS Servitrade Corporation">
+                <img src="{% static 'images/logos/subangfarm.png' %}" alt="Subang Farm">
+                <img src="{% static 'images/logos/agridom2.png' %}" alt="Agridom">
+                <img src="{% static 'images/logos/sunfood.png' %}" alt="Sunfood Marketing">
+            </div>
+        </div>
+    </header>
+    <div class="container">
+        <div class="form-container">
+            <h1>SFGC Timekeeping System</h1>
+            <!-- Display error message if there's one -->
+            {% if error %}
+                <div class="error">{{ error }}</div>
+            {% endif %}
+            <form action="{% url 'login' %}" method="POST">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="text" name="employee_id" placeholder="Employee ID" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" name="pin" placeholder="Pin (4 Digits)" required>
+                </div>
+                <button type="submit" class="login-button">Login</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
