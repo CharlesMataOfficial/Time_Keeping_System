@@ -10,18 +10,18 @@
   </head>
   <body>
     {% if messages %}
-  <ul class="messages">
-    {% for message in messages %}
-      <li class="alert alert-danger">{{ message }}</li>
-    {% endfor %}
-  </ul>
-{% endif %}
+      <ul class="messages">
+        {% for message in messages %}
+          <li class="alert alert-danger">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
     <div class="container">
       <header>
         <div class="logo">
           <img src="{% static 'images/logos/sfgroup.png' %}" alt="SF Group of Companies">
         </div>
-          <img id="partnerLogo" src="{% static 'images/logos/' %}{{ partner_logo }}" alt="{{ user_company }} Logo">
+        <img id="partnerLogo" src="{% static 'images/logos/' %}{{ partner_logo }}" alt="{{ user_company }} Logo">
       </header>
       <div class="clock">
         <div class="clock-content">
@@ -40,20 +40,20 @@
         </div>
       </div>
       <div class="attendance-list">
-          <table id="attendance-table">
-            <thead>
-              <tr>
-                <th>Employee ID</th>
-                <th>First Name</th>
-                <th>Surname</th>
-                <th>Company</th>
-                <th>Time In</th>
-                <th>Time Out</th>
-              </tr>
-            </thead>
-            <tbody id="attendance-items">
-            </tbody>
-          </table>
+        <table id="attendance-table">
+          <thead>
+            <tr>
+              <th>Employee ID</th>
+              <th>First Name</th>
+              <th>Surname</th>
+              <th>Company</th>
+              <th>Time In</th>
+              <th>Time Out</th>
+            </tr>
+          </thead>
+          <tbody id="attendance-items">
+          </tbody>
+        </table>
       </div>
       <div class="sidebar">
         <div class="birthdays">
@@ -71,19 +71,17 @@
         <div class="announcements">
           <div class="panel">
             <h3><i class="fas fa-bullhorn"></i> Announcements</h3>
-            <!-- We'll display posted announcements here -->
             <div class="note posted-note" id="posted-announcements"></div>
           </div>
         </div>
         <form action="{% url 'logout' %}" method="POST">
           {% csrf_token %}
           <button type="submit" class="sign-out-btn">
-          <i class="fas fa-sign-out-alt"></i> Sign Out
+            <i class="fas fa-sign-out-alt"></i> Sign Out
           </button>
         </form>
       </div>
     </div>
-    <!-- Clock In Modal -->
     <div id="clockInModal" class="modal">
       <div class="modal-content">
         <span class="close" id="closeClockIn">&times;</span>
@@ -96,7 +94,6 @@
         </form>
       </div>
     </div>
-    <!-- Clock Out Modal -->
     <div id="clockOutModal" class="modal">
       <div class="modal-content">
         <span class="close" id="closeClockOut">&times;</span>
@@ -109,7 +106,6 @@
         </form>
       </div>
     </div>
-    <!-- New PIN Modal -->
     <div id="newPinModal" class="modal">
       <div class="modal-content">
         <span class="close" id="closeNewPin">&times;</span>

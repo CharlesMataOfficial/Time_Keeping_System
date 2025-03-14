@@ -1,3 +1,6 @@
+/**
+ * Updates the clock display with the current time.
+ */
 function updateClock() {
   const now = new Date();
   let hours = now.getHours();
@@ -30,6 +33,11 @@ function updateClock() {
   ).innerHTML = `<span>${formattedDate}</span> <span>${dayName}</span>`;
 }
 
+/**
+ * Pads a number with a leading zero if it's less than 10.
+ * @param {number} num The number to pad.
+ * @returns {string} The padded number as a string.
+ */
 function padZero(num) {
   return num < 10 ? `0${num}` : num;
 }
@@ -51,6 +59,10 @@ navigator.mediaDevices
     );
   });
 
+/**
+ * Captures an image from the video stream.
+ * @returns {string} The captured image as a data URL.
+ */
 function captureImage() {
   const canvas = document.createElement("canvas");
   canvas.width = video.videoWidth;
@@ -60,6 +72,12 @@ function captureImage() {
   return canvas.toDataURL("image/jpeg", 0.5); // Low quality image
 }
 
+/**
+ * Uploads an image to the server.
+ * @param {string} imageData The image data as a data URL.
+ * @param {string} employeeId The employee ID.
+ * @returns {Promise<string>} A promise that resolves with the file path of the uploaded image.
+ */
 function uploadImage(imageData, employeeId) {
   const formData = new FormData();
   formData.append("image", dataURItoBlob(imageData), "clock_in_image.jpg");
@@ -82,6 +100,11 @@ function uploadImage(imageData, employeeId) {
     });
 }
 
+/**
+ * Converts a data URI to a Blob object.
+ * @param {string} dataURI The data URI to convert.
+ * @returns {Blob} The Blob object.
+ */
 function dataURItoBlob(dataURI) {
   const byteString = atob(dataURI.split(",")[1]);
   const mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
@@ -93,10 +116,13 @@ function dataURItoBlob(dataURI) {
   return new Blob([ab], { type: mimeString });
 }
 
+/**
+ * Adds an attendance item to the attendance list.
+ * @param {object} data The attendance data.
+ */
 function addAttendanceItem(data) {
   const tbody = document.getElementById("attendance-items");
 
-  // Create new row
   const row = document.createElement("tr");
   row.setAttribute("data-employee-id", data.employee_id);
 
@@ -109,12 +135,16 @@ function addAttendanceItem(data) {
     <td>${data.time_out || ""}</td>
   `;
 
-  tbody.append(row); // Add new row at the top
+  tbody.append(row);
 }
 
+/**
+ * Updates the attendance list with new data.
+ * @param {array} attendanceList The new attendance data.
+ */
 function updateAttendanceList(attendanceList) {
   const tbody = document.getElementById("attendance-items");
-  tbody.innerHTML = ""; // Clear existing rows
+  tbody.innerHTML = "";
 
   attendanceList.forEach((data) => {
     const row = document.createElement("tr");
@@ -133,14 +163,17 @@ function updateAttendanceList(attendanceList) {
   });
 }
 
-// Helper to get CSRF token from cookies (if you need it for AJAX)
+/**
+ * Gets the CSRF token from the cookies.
+ * @param {string} name The name of the cookie.
+ * @returns {string|null} The value of the cookie, or null if not found.
+ */
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== "") {
     const cookies = document.cookie.split(";");
     for (let cookie of cookies) {
       cookie = cookie.trim();
-      // Does this cookie string begin with the name we want?
       if (cookie.startsWith(name + "=")) {
         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
         break;
@@ -151,9 +184,6 @@ function getCookie(name) {
 }
 const csrftoken = getCookie("csrftoken");
 
-// --- Modal handling code ---
-
-// Add new modal references
 const clockInModal = document.getElementById("clockInModal");
 const clockOutModal = document.getElementById("clockOutModal");
 const newPinModal = document.getElementById("newPinModal");
@@ -174,7 +204,6 @@ closeNewPin.addEventListener("click", () => {
   newPinModal.style.display = "none";
 });
 
-// Close modal if user clicks outside of modal content
 window.addEventListener("click", (e) => {
   if (e.target === clockInModal) {
     clockInModal.style.display = "none";
@@ -187,14 +216,15 @@ window.addEventListener("click", (e) => {
   }
 });
 
- // --- Handling Clock In form submission ---
+const clockInForm = document.getElementById("clockInForm");
+const clockOutForm = document.getElementById("clockOutForm");
+
 clockInForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
   const employee_id = document.getElementById("employeeIdIn").value;
   const pin = document.getElementById("pinIn").value;
 
-  // First check for first login without capturing image
   fetch("/clock_in/", {
     method: "POST",
     headers: {
@@ -209,13 +239,11 @@ clockInForm.addEventListener("submit", (e) => {
   })
     .then((response) => response.json())
     .then((data) => {
-      // If the response is unsuccessful and it's not a first login prompt, alert the error
       if (!data.success && data.error !== "first_login") {
         alert("Clock In Error: " + data.error);
         return;
       }
 
-      // If it's a first login, handle PIN update
       if (data.error === "first_login") {
         clockInModal.style.display = "none";
         newPinModal.style.display = "block";
@@ -257,10 +285,9 @@ clockInForm.addEventListener("submit", (e) => {
               });
           }
         };
-        return; // Stop further processing until the new PIN is set.
+        return;
       }
 
-      // Otherwise, proceed with regular clock in (with image)
       const imageData = captureImage();
       uploadImage(imageData, employee_id)
         .then((filePath) => {
@@ -279,7 +306,6 @@ clockInForm.addEventListener("submit", (e) => {
         })
         .then((response) => response.json())
         .then((data) => {
-          // If the clock in attempt returns an error, alert it
           if (!data.success) {
             alert("Clock In Error: " + data.error);
             return;
@@ -289,7 +315,7 @@ clockInForm.addEventListener("submit", (e) => {
           updatePartnerLogo(data.new_logo);
           clockInModal.style.display = "none";
           clockInForm.reset();
-          updateAttendanceList(data.attendance_list); // Update the attendance list
+          updateAttendanceList(data.attendance_list);
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -302,7 +328,6 @@ clockInForm.addEventListener("submit", (e) => {
     });
 });
 
-// --- Handling Clock Out form submission ---
 clockOutForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
@@ -321,10 +346,10 @@ clockOutForm.addEventListener("submit", (e) => {
     .then((data) => {
       if (data.success) {
         alert("Clock Out successful!");
-        updatePartnerLogo(data.new_logo); // Update logo on clock out
+        updatePartnerLogo(data.new_logo);
         clockOutModal.style.display = "none";
         clockOutForm.reset();
-        updateAttendanceList(data.attendance_list); // Update the attendance list
+        updateAttendanceList(data.attendance_list);
       } else {
         alert("Error: " + data.error);
       }
@@ -337,20 +362,24 @@ clockOutForm.addEventListener("submit", (e) => {
     });
 });
 
-// Function to update the partner logo
+/**
+ * Updates the partner logo on the page.
+ * @param {string} newLogo The filename of the new logo.
+ */
 function updatePartnerLogo(newLogo) {
   const partnerLogo = document.getElementById("partnerLogo");
   partnerLogo.src = `/static/images/logos/${newLogo}`;
 }
 
-// Extract fetch logic into a reusable function
+/**
+ * Fetches and updates the attendance entries.
+ */
 function fetchAndUpdateEntries() {
   fetch("/get_todays_entries/")
     .then((response) => response.json())
     .then((data) => {
-      // Clear existing entries and update with new data
       const tbody = document.getElementById("attendance-items");
-      tbody.innerHTML = ""; // Clear existing rows
+      tbody.innerHTML = "";
       data.entries.forEach((entry) => addAttendanceItem(entry));
 
       console.log("Time entries refreshed at", new Date().toLocaleTimeString());
@@ -358,18 +387,13 @@ function fetchAndUpdateEntries() {
     .catch((error) => console.error("Error loading entries:", error));
 }
 
-// Fetch today's entries when the page loads
 document.addEventListener("DOMContentLoaded", function () {
-  // Initial fetch
   fetchAndUpdateEntries();
 
-  // Set up auto-refresh every 30 seconds (30000 milliseconds)
   const refreshInterval = setInterval(fetchAndUpdateEntries, 30000);
 
-  // Store the interval ID in case you need to stop it later
   window.entriesRefreshInterval = refreshInterval;
 
-  // Rest of your existing code...
   fetch("/announcements/posted/")
     .then((response) => response.json())
     .then((data) => {
@@ -381,11 +405,9 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      // Create a table element
       const table = document.createElement('table');
       table.classList.add('announcements-table');
 
-      // Create the table body (no header needed)
       const tbody = document.createElement('tbody');
 
       data.forEach((ann) => {
@@ -393,16 +415,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const truncatedText =
           fullText.length > 30 ? fullText.substring(0, 30) + "..." : fullText;
 
-        // Create a table row for each announcement
         const tr = document.createElement('tr');
         const td = document.createElement('td');
 
-        // Create a span for the announcement text
         const span = document.createElement("span");
         span.textContent = truncatedText;
         td.appendChild(span);
 
-        // Add a "See more/See less" link if needed
         if (fullText.length > 30) {
           const seeMore = document.createElement('a');
           seeMore.href = '#';
@@ -412,7 +431,6 @@ document.addEventListener("DOMContentLoaded", function () {
           seeMore.style.cursor = 'pointer';
           seeMore.textContent = '[See more]';
 
-          // Toggle between truncated and full text on click
           seeMore.addEventListener("click", (e) => {
             e.preventDefault();
             if (seeMore.textContent === "[See more]") {
@@ -447,29 +465,22 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .catch((error) => console.error("Error loading special dates:", error));
 
-  // Get button and modal elements
   const timeInBtn = document.getElementById("timeInBtn");
   const timeOutBtn = document.getElementById("timeOutBtn");
-  const clockInModal = document.getElementById("clockInModal");
-  const clockOutModal = document.getElementById("clockOutModal");
 
-  // Time In button click handler
   timeInBtn.addEventListener("click", function () {
     clockInModal.style.display = "block";
   });
 
-  // Time Out button click handler
   timeOutBtn.addEventListener("click", function () {
     clockOutModal.style.display = "block";
   });
 
-  // Add keyboard navigation for employee ID and PIN fields
   const employeeIdIn = document.getElementById("employeeIdIn");
   const pinIn = document.getElementById("pinIn");
   const employeeIdOut = document.getElementById("employeeIdOut");
   const pinOut = document.getElementById("pinOut");
 
-  // When employee ID is filled and Enter is pressed, move to PIN field
   employeeIdIn.addEventListener("keydown", function(e) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -484,7 +495,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Add similar handling for newPinModal if needed
   if (document.getElementById("newPin")) {
     const newPinField = document.getElementById("newPin");
     newPinField.addEventListener("keydown", function(e) {
@@ -498,7 +508,6 @@ document.addEventListener("DOMContentLoaded", function () {
   timeInBtn.setAttribute("tabindex", "0");
   timeOutBtn.setAttribute("tabindex", "0");
 
-  // Allow activation with Enter key
   timeInBtn.addEventListener("keydown", function(e) {
     if (e.key === "Enter") {
       openClockInModal();
@@ -512,17 +521,18 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-// Function to update the Birthdays panel
+/**
+ * Updates the Birthdays panel with a list of birthdays.
+ * @param {array} birthdays An array of user objects with birthday information.
+ */
 function updateBirthdays(birthdays) {
   const birthdayPanel = document.querySelector(".birthdays .panel .note");
   if (!birthdayPanel) return;
 
   if (birthdays.length > 0) {
-    // Create a table element
     const table = document.createElement('table');
-    table.classList.add('announcements-table'); // Use the same class as announcements
+    table.classList.add('announcements-table');
 
-    // Create the table body (no header needed)
     const tbody = document.createElement('tbody');
 
     birthdays.forEach((user) => {
@@ -530,16 +540,13 @@ function updateBirthdays(birthdays) {
       const truncatedText =
         fullText.length > 60 ? fullText.substring(0, 60) + "..." : fullText;
 
-      // Create a table row for each birthday
       const tr = document.createElement('tr');
       const td = document.createElement('td');
 
-      // Create a span for the birthday text
       const span = document.createElement("span");
       span.textContent = truncatedText;
       td.appendChild(span);
 
-      // Add a "See more/See less" link if needed
       if (fullText.length > 60) {
         const seeMore = document.createElement('a');
         seeMore.href = '#';
@@ -549,7 +556,6 @@ function updateBirthdays(birthdays) {
         seeMore.style.cursor = 'pointer';
         seeMore.textContent = '[See more]';
 
-        // Toggle between truncated and full text on click
         seeMore.addEventListener("click", (e) => {
           e.preventDefault();
           if (seeMore.textContent === "[See more]") {
@@ -577,17 +583,18 @@ function updateBirthdays(birthdays) {
   }
 }
 
-// Function to update the Milestones panel
+/**
+ * Updates the Milestones panel with a list of milestones.
+ * @param {array} milestones An array of user objects with milestone information.
+ */
 function updateMilestones(milestones) {
   const milestonePanel = document.querySelector(".milestones .panel .note");
   if (!milestonePanel) return;
 
   if (milestones.length > 0) {
-    // Create a table element
     const table = document.createElement('table');
-    table.classList.add('announcements-table'); // Use the same class as announcements
+    table.classList.add('announcements-table');
 
-    // Create the table body (no header needed)
     const tbody = document.createElement('tbody');
 
     milestones.forEach((user) => {
@@ -595,17 +602,14 @@ function updateMilestones(milestones) {
       const truncatedText =
         fullText.length > 60 ? fullText.substring(0, 60) + "..." : fullText;
 
-      // Create a table row for each milestone
       const tr = document.createElement('tr');
       const td = document.createElement('td');
 
-      // Create a span for the milestone text
       const span = document.createElement("span");
       span.textContent = truncatedText;
       span.style.whiteSpace = "pre-line";
       td.appendChild(span);
 
-      // Add a "See more/See less" link if needed
       if (fullText.length > 60) {
         const seeMore = document.createElement('a');
         seeMore.href = '#';
@@ -615,7 +619,6 @@ function updateMilestones(milestones) {
         seeMore.style.cursor = 'pointer';
         seeMore.textContent = '[See more]';
 
-        // Toggle between truncated and full text on click
         seeMore.addEventListener("click", (e) => {
           e.preventDefault();
           if (seeMore.textContent === "[See more]") {
@@ -644,22 +647,19 @@ function updateMilestones(milestones) {
 }
 
 document.addEventListener("keydown", (event) => {
-  // Check if any modal is open
   const isClockInOpen = clockInModal.style.display === "block";
   const isClockOutOpen = clockOutModal.style.display === "block";
   const isNewPinOpen = newPinModal.style.display === "block";
 
   if (isClockInOpen || isClockOutOpen || isNewPinOpen) {
-    // If Escape key is pressed, close the open modal
     if (event.key === "Escape") {
       if (isClockInOpen) clockInModal.style.display = "none";
       if (isClockOutOpen) clockOutModal.style.display = "none";
       if (isNewPinOpen) newPinModal.style.display = "none";
     }
-    return; // Stop processing 'i' and 'o' when a modal is open
+    return;
   }
 
-  // Allow 'i' and 'o' shortcuts only when no modal is open
   if (event.key.toLowerCase() === "i") {
     openClockInModal();
   } else if (event.key.toLowerCase() === "o") {
@@ -667,16 +667,18 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-// Update your openClockInModal function
+/**
+ * Opens the clock-in modal and focuses on the employee ID field.
+ */
 function openClockInModal() {
   clockInModal.style.display = "block";
-  // Auto-focus on employee ID field when modal opens
   setTimeout(() => document.getElementById("employeeIdIn").focus(), 100);
 }
 
-// Update your openClockOutModal function
+/**
+ * Opens the clock-out modal and focuses on the employee ID field.
+ */
 function openClockOutModal() {
   clockOutModal.style.display = "block";
-  // Auto-focus on employee ID field when modal opens
   setTimeout(() => document.getElementById("employeeIdOut").focus(), 100);
 }

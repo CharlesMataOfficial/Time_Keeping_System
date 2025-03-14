@@ -42,4 +42,3 @@ python manage.py runsslserver IP_ADDRESS_HERE:8000 --certificate CERT_NAME.pem -
 
 Go to <https://IP-ADDRESS-HERE:8000/>
 IF css is not loading, just hit ctrl + f5 OR just f5 to refresh the page
->>>>>>> merge

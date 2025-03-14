@@ -6,46 +6,49 @@ from io import BytesIO
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.urls import reverse
-from .models import CustomUser, TimeEntry, Announcement, AdminLog, Company, Position, Department, Q
+from .models import (
+    CustomUser,
+    TimeEntry,
+    Announcement,
+    AdminLog,
+    Leave,
+)
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-import os
-from datetime import datetime, timedelta, date, time
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib import messages
-from .utils import (
-    COMPANY_CHOICES,
-    DEPARTMENT_CHOICES,
-    get_day_code,
-    format_minutes,
-    COMPANY_LOGO_MAPPING,
-    get_company_logo,
-    log_admin_action,
-)
-from django.utils.timezone import make_aware
-from io import BytesIO
+from django.views.decorators.http import require_GET, require_POST
+
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
-from openpyxl import Workbook, load_workbook
-from django.contrib.auth.hashers import make_password
-from django.views.decorators.cache import never_cache
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET, require_POST
 from openpyxl import Workbook
 
-from .models import AdminLog, Announcement, CustomUser, Leave, TimeEntry
-from .utils import (COMPANY_CHOICES, DEPARTMENT_CHOICES, get_company_logo,
-                    log_admin_action)
-
+from .utils import (
+    COMPANY_CHOICES,
+    DEPARTMENT_CHOICES,
+    get_company_logo,
+    log_admin_action,
+)
 
 @never_cache
 def login_view(request):
+    """
+    Handles user login.
+
+    Authenticates users based on employee ID and PIN. Redirects staff/superusers
+    to the admin page and guards to the user page.
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        HttpResponse: Renders the login page or redirects to the appropriate page
+                      after successful login.
+    """
     if request.method == "POST":
         employee_id = request.POST.get("employee_id")
         pin = request.POST.get("pin")
@@ -94,14 +97,19 @@ def login_view(request):
 
 @login_required
 def user_page(request):
+    """
+    Renders the user page for guards.
+
+    Retrieves today's time entries and renders the user page.
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        HttpResponse: Renders the user page with time entry data.
+    """
     # Force a refresh from the DB so that the latest value of is_guard is loaded
     request.user.refresh_from_db()
-    print(
-        "USER_PAGE VIEW: request.user:",
-        request.user,
-        "is_guard:",
-        request.user.is_guard,
-    )
 
     if not request.user.is_guard:
         messages.error(
@@ -128,6 +136,17 @@ def user_page(request):
 
 
 def logout_view(request):
+    """
+    Logs out the user.
+
+    Logs the logout action and redirects to the login page.
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        HttpResponseRedirect: Redirects to the login page.
+    """
     if request.user.is_authenticated:
         log_admin_action(request, 'logout', f'User logged out')
     logout(request)
@@ -136,6 +155,20 @@ def logout_view(request):
 
 @require_POST
 def clock_in_view(request):
+    """
+    Handles clock-in requests.
+
+    Authenticates the user, captures an image (if available), and creates a new
+    time entry.
+
+    Args:
+        request: The HTTP request object containing employee ID, PIN, and
+                 optionally, a new PIN for first-time login.
+
+    Returns:
+        JsonResponse: Indicates success or failure, along with user and time
+                      entry data.
+    """
     data = json.loads(request.body)
     employee_id = data.get("employee_id")
     pin = data.get("pin")
@@ -230,9 +263,20 @@ def clock_in_view(request):
     })
 
 
-
 @require_POST
 def clock_out_view(request):
+    """
+    Handles clock-out requests.
+
+    Authenticates the user and updates the latest time entry with a clock-out time.
+
+    Args:
+        request: The HTTP request object containing employee ID and PIN.
+
+    Returns:
+        JsonResponse: Indicates success or failure, along with user and time
+                      entry data.
+    """
     data = json.loads(request.body)
     employee_id = data.get("employee_id")
     pin = data.get("pin")
@@ -314,6 +358,18 @@ def clock_out_view(request):
 @require_GET
 @login_required
 def get_todays_entries(request):
+    """
+    Retrieves today's time entries.
+
+    Retrieves all time entries for the current day and returns them as a JSON
+    response.
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        JsonResponse: A JSON response containing a list of time entries.
+    """
     now = timezone.now()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     today_end = today_start + timedelta(days=1)
@@ -345,6 +401,17 @@ def get_todays_entries(request):
 
 @require_POST
 def upload_image(request):
+    """
+    Uploads an image associated with a time entry.
+
+    Saves the uploaded image to the server and returns the file path.
+
+    Args:
+        request: The HTTP request object containing the image and employee ID.
+
+    Returns:
+        JsonResponse: Indicates success or failure, along with the file path.
+    """
     image_data = request.FILES.get("image")
     employee_id = request.POST.get("employee_id")
 
@@ -381,8 +448,17 @@ def upload_image(request):
 @csrf_exempt
 def announcements_list_create(request):
     """
-    GET  -> Return a list of all announcements (JSON)
-    POST -> Create a new announcement (expects JSON body { content: "..."} )
+    API endpoint for listing and creating announcements.
+
+    GET: Returns a list of all announcements (JSON).
+    POST: Creates a new announcement (expects JSON body { content: "..."} ).
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        JsonResponse: A JSON response containing announcement data or a
+                      success/error message.
     """
     if request.method == "GET":
         announcements = Announcement.objects.all().order_by("-created_at")
@@ -414,7 +490,16 @@ def announcements_list_create(request):
 @csrf_exempt
 def announcement_detail(request, pk):
     """
-    GET -> Return details of a single announcement by ID.
+    API endpoint for retrieving a single announcement.
+
+    GET: Returns details of a single announcement by ID.
+
+    Args:
+        request: The HTTP request object.
+        pk: The primary key of the announcement.
+
+    Returns:
+        JsonResponse: A JSON response containing the announcement data.
     """
     announcement = get_object_or_404(Announcement, pk=pk)
 
@@ -433,7 +518,16 @@ def announcement_detail(request, pk):
 @csrf_exempt
 def announcement_delete(request, pk):
     """
-    DELETE -> Delete an announcement by ID.
+    API endpoint for deleting an announcement.
+
+    DELETE: Deletes an announcement by ID.
+
+    Args:
+        request: The HTTP request object.
+        pk: The primary key of the announcement.
+
+    Returns:
+        JsonResponse: A JSON response indicating success.
     """
     if request.method == "DELETE":
         announcement = get_object_or_404(Announcement, pk=pk)
@@ -445,7 +539,16 @@ def announcement_delete(request, pk):
 @csrf_exempt
 def announcement_post(request, pk):
     """
-    POST -> Mark an announcement as posted (is_posted = True).
+    API endpoint for posting an announcement.
+
+    POST: Marks an announcement as posted (is_posted = True).
+
+    Args:
+        request: The HTTP request object.
+        pk: The primary key of the announcement.
+
+    Returns:
+        JsonResponse: A JSON response indicating success.
     """
     if request.method == "POST":
         announcement = get_object_or_404(Announcement, pk=pk)
@@ -460,7 +563,16 @@ def announcement_post(request, pk):
 @csrf_exempt
 def posted_announcements_list(request):
     """
-    GET -> Return a list of posted announcements (is_posted=True).
+    API endpoint for listing posted announcements.
+
+    GET: Returns a list of posted announcements (is_posted=True).
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        JsonResponse: A JSON response containing a list of posted
+                      announcements.
     """
     if request.method == "GET":
         # Filter to only posted announcements
@@ -483,6 +595,17 @@ def posted_announcements_list(request):
 
 @login_required
 def custom_admin_page(request):
+    """
+    Renders the custom admin page.
+
+    Redirects non-staff/non-superusers to the user page.
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        HttpResponse: Renders the custom admin page.
+    """
     if not (request.user.is_staff or request.user.is_superuser):
         return redirect("user_page")
 
@@ -492,6 +615,15 @@ def custom_admin_page(request):
 
 @login_required
 def superadmin_redirect(request):
+    """
+    Redirects superusers to the Django admin page.
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        HttpResponseRedirect: Redirects to the Django admin page.
+    """
     if request.user.is_superuser:
         log_admin_action(request, "navigation", "Accessed the superadmin page")
         return redirect(reverse("admin:index"))
@@ -503,6 +635,18 @@ def superadmin_redirect(request):
 
 
 def get_special_dates(request):
+    """
+    Retrieves special dates (birthdays and hiring anniversaries).
+
+    Retrieves users with birthdays and hiring anniversaries for the current day.
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        JsonResponse: A JSON response containing lists of birthdays and
+                      milestones.
+    """
     today = timezone.now().date()
 
     # Get users with birthdays today based on 'birth_date'
@@ -533,6 +677,18 @@ def get_special_dates(request):
 
 @login_required
 def attendance_list_json(request):
+    """
+    API endpoint for retrieving attendance data.
+
+    Retrieves attendance data based on various filter parameters and returns it
+    as a JSON response.
+
+    Args:
+        request: The HTTP request object containing filter parameters.
+
+    Returns:
+        JsonResponse: A JSON response containing a list of attendance records.
+    """
     # Get filter parameters
     attendance_type = request.GET.get("attendance_type", "time-log")
     company_code = request.GET.get("attendance_company", "all")
@@ -729,7 +885,18 @@ def attendance_list_json(request):
 @login_required
 @require_GET
 def dashboard_data(request):
-    """Return data for dashboard"""
+    """
+    API endpoint for retrieving dashboard data.
+
+    Retrieves data for the admin dashboard, including today's time entries,
+    top late employees, and top early birds.
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        JsonResponse: A JSON response containing dashboard data.
+    """
     now = timezone.now()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     today_end = today_start + timedelta(days=1)
@@ -797,7 +964,18 @@ def dashboard_data(request):
 @login_required
 @require_GET
 def get_logs(request):
-    """Return log data for the log page with filtering"""
+    """
+    API endpoint for retrieving admin logs.
+
+    Retrieves admin logs based on various filter parameters and returns them as a
+    JSON response.
+
+    Args:
+        request: The HTTP request object containing filter parameters.
+
+    Returns:
+        JsonResponse: A JSON response containing a list of admin logs.
+    """
     if not (request.user.is_staff or request.user.is_superuser):
         return JsonResponse({"error": "Permission denied"}, status=403)
 
@@ -866,6 +1044,17 @@ def get_logs(request):
 
 @require_GET
 def export_time_entries_by_date(request):
+    """
+    API endpoint for exporting time entries to Excel by date.
+
+    Exports time entries for a specific date to an Excel file.
+
+    Args:
+        request: The HTTP request object containing the date parameter.
+
+    Returns:
+        HttpResponse: An Excel file containing the time entries.
+    """
     date_str = request.GET.get("date")
     if not date_str:
         return HttpResponse("Date parameter is required.", status=400)
@@ -881,12 +1070,12 @@ def export_time_entries_by_date(request):
         time_in__gte=start_datetime,
         time_in__lte=end_datetime
     ).order_by("time_in")
-    
+
     employee_id = request.GET.get("employee_id")
     if employee_id:
         # Remove the int conversion to match the behavior of your date range export
         qs = qs.filter(user__employee_id=employee_id)
-    
+
     # Create Excel workbook
     wb = Workbook()
     ws = wb.active
@@ -934,6 +1123,17 @@ def export_time_entries_by_date(request):
 
 @require_GET
 def export_time_entries_range(request):
+    """
+    API endpoint for exporting time entries to Excel by date range.
+
+    Exports time entries for a specific date range to an Excel file.
+
+    Args:
+        request: The HTTP request object containing the start and end date parameters.
+
+    Returns:
+        HttpResponse: An Excel file containing the time entries.
+    """
     date_start_str = request.GET.get("date_start")
     date_end_str = request.GET.get("date_end")
     if not date_start_str or not date_end_str:
@@ -951,19 +1151,19 @@ def export_time_entries_range(request):
         time_in__gte=start_datetime,
         time_in__lte=end_datetime
     )
-    
+
     # Exclude dates if provided
     excluded_dates = request.GET.getlist("exclude_date")
     if excluded_dates:
         qs = qs.exclude(time_in__date__in=excluded_dates)
-    
+
     # Optional employee id filter
     employee_id = request.GET.get("employee_id")
     if employee_id:
         qs = qs.filter(user__employee_id=employee_id)
-    
+
     qs = qs.order_by("time_in")
-    
+
     # Create Excel workbook and sheet (code unchanged)
     wb = Workbook()
     ws = wb.active
@@ -1009,6 +1209,17 @@ def export_time_entries_range(request):
 
 @login_required
 def get_pending_leaves(request):
+    """
+    API endpoint for retrieving pending leave requests.
+
+    Retrieves pending leave requests based on user role (HR or manager).
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        JsonResponse: A JSON response containing a list of pending leave requests.
+    """
     user = request.user
 
     try:
@@ -1045,6 +1256,17 @@ def get_pending_leaves(request):
 @login_required
 @require_POST
 def process_leave(request):
+    """
+    API endpoint for processing leave requests.
+
+    Processes leave requests (approve or reject) based on user role (HR or manager).
+
+    Args:
+        request: The HTTP request object containing leave ID and action.
+
+    Returns:
+        JsonResponse: A JSON response indicating success or failure.
+    """
     leave_id = request.POST.get('leave_id')
     action = request.POST.get('action')  # 'approve' or 'reject'
     rejection_reason = request.POST.get('rejection_reason', '')
@@ -1079,6 +1301,17 @@ def process_leave(request):
 
 @require_GET
 def export_time_entries_by_date(request):
+    """
+    API endpoint for exporting time entries to Excel by date.
+
+    Exports time entries for a specific date to an Excel file.
+
+    Args:
+        request: The HTTP request object containing the date parameter.
+
+    Returns:
+        HttpResponse: An Excel file containing the time entries.
+    """
     # Get the date parameter from the request (e.g. from your date picker)
     date_str = request.GET.get("date")
     if not date_str:

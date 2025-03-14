@@ -1,9 +1,12 @@
+/**
+ * Toggles the display format of time between formatted and raw values.
+ * @param {HTMLElement} element - The HTML element whose text content needs to be toggled.
+ */
 function toggleTimeFormat(element) {
     const currentText = element.innerText;
     const formattedText = element.getAttribute('data-formatted');
     const rawText = element.getAttribute('data-raw');
 
-    // Toggle between formatted and raw display
     if (currentText === formattedText) {
         element.innerText = rawText;
     } else {
@@ -11,7 +14,6 @@ function toggleTimeFormat(element) {
     }
 }
 
-// Initialize after page loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log("Time format toggle initialized");
 });

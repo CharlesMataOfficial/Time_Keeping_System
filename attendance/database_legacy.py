@@ -1,6 +1,9 @@
 from django.db import models
 
 class UsersLegacy(models.Model):
+    """
+    Legacy model representing users from the old database.
+    """
     employee_id = models.CharField(unique=True, max_length=6)
     first_name = models.CharField(max_length=100, blank=True, null=True)
     surname = models.CharField(max_length=100, blank=True, null=True)
@@ -17,6 +20,9 @@ class UsersLegacy(models.Model):
         db_table = 'users'
 
 class EntriesLegacy(models.Model):
+    """
+    Legacy model representing time entries from the old database.
+    """
     employee_id = models.CharField(max_length=6, db_column='employee_id')
     date = models.DateField()
     time_in = models.TimeField(blank=True, null=True)
@@ -31,6 +37,9 @@ class EntriesLegacy(models.Model):
         db_table = 'entries'
 
 class PresetsLegacy(models.Model):
+    """
+    Legacy model representing time presets from the old database.
+    """
     name = models.CharField(max_length=100)
     preset_type = models.CharField(max_length=7, choices=[('regular', 'Regular'), ('custom', 'Custom')])
     monday_start = models.TimeField(null=True, blank=True)

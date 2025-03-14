@@ -2,10 +2,11 @@ from django.urls import path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+
 urlpatterns = [
-    path('', views.login_view, name='login_page'),  # Login page
-    path('login/', views.login_view, name='login'),  # Handles the login form submission
-    path('user_page/', views.user_page, name='user_page'),  # Corrected to use views.user_page
+    path('', views.login_view, name='login_page'),
+    path('login/', views.login_view, name='login'),
+    path('user_page/', views.user_page, name='user_page'),
     path('logout/', views.logout_view, name='logout'),
     path('clock_in/', views.clock_in_view, name='clock_in'),
     path('clock_out/', views.clock_out_view, name='clock_out'),
@@ -28,6 +29,4 @@ urlpatterns = [
     path('export_time_entries_by_date/', views.export_time_entries_by_date, name='export_time_entries_by_date'),
     path('leaves/pending/', views.get_pending_leaves, name='get_pending_leaves'),
     path('leaves/process/', views.process_leave, name='process_leave'),
-
-]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

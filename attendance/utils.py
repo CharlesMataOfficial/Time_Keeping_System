@@ -1,7 +1,6 @@
 """
 Utility functions and constants for the attendance app.
 """
-from django.utils import timezone
 import datetime
 
 # Mapping: key is the code; value is a tuple (main, alias) that should match exactly what's stored in the database.
@@ -75,11 +74,27 @@ DAY_CODE_MAPPING = {
 }
 
 def get_day_code(date):
-    """Convert a datetime to a day code (mon, tue, etc.)"""
+    """
+    Convert a datetime object to a day code (mon, tue, etc.).
+
+    Args:
+        date (datetime): The datetime object to convert.
+
+    Returns:
+        str: The day code corresponding to the date.
+    """
     return DAY_CODE_MAPPING[date.weekday()]
 
 def format_minutes(minutes):
-    """Format minutes as 'X mins late' or 'X mins early'"""
+    """
+    Format minutes to display lateness or earliness.
+
+    Args:
+        minutes (int): The number of minutes.
+
+    Returns:
+        str: A string indicating whether the time is 'X mins late', 'X mins early', or 'On time'.
+    """
     if minutes > 0:
         return f"{minutes} mins late"
     elif minutes < 0:
@@ -88,7 +103,15 @@ def format_minutes(minutes):
         return "On time"
 
 def get_company_logo(company_name):
-    """Get a company logo based on company name"""
+    """
+    Retrieve the company logo filename based on the company name.
+
+    Args:
+        company_name (str): The name of the company.
+
+    Returns:
+        str: The filename of the company logo.  Returns a default logo if the company name is not found.
+    """
     if not company_name:
         return COMPANY_LOGO_MAPPING["default"]
 
@@ -96,7 +119,15 @@ def get_company_logo(company_name):
     return COMPANY_LOGO_MAPPING.get(company_name, COMPANY_LOGO_MAPPING["default"])
 
 def create_default_time_preset(day_code):
-    """Create a default TimePreset for a given day code"""
+    """
+    Create a default TimePreset object for a given day code.
+
+    Args:
+        day_code (str): The day code (e.g., 'mon', 'tue', 'wed').
+
+    Returns:
+        TimePreset: A TimePreset object with default values for the given day.
+    """
     from .models import TimePreset  # Import here to avoid circular imports
 
     if day_code == "wed":  # Wednesday
@@ -115,7 +146,14 @@ def create_default_time_preset(day_code):
         )
 
 def log_admin_action(request, action, description):
-    """Log admin actions"""
+    """
+    Log admin actions to the AdminLog model.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+        action (str): The action performed by the admin.
+        description (str): A description of the action.
+    """
     from .models import AdminLog  # Import here instead of at the top level
 
     if request.user.is_authenticated:
@@ -127,7 +165,15 @@ def log_admin_action(request, action, description):
         )
 
 def get_client_ip(request):
-    """Get client IP address"""
+    """
+    Get the client's IP address from the request.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        str: The client's IP address.
+    """
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
         ip = x_forwarded_for.split(',')[0]

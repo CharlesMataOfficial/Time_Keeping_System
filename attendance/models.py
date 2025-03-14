@@ -1,52 +1,67 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core.validators import MinLengthValidator
-from django.db import models 
-from django.db.models import Max, Q
-
+from django.db import models
+from django.db.models import Max
 from django.forms import ValidationError
 from django.utils import timezone
-
-from .utils import (create_default_time_preset, get_day_code, format_minutes)
-
-from django.utils.timezone import make_aware
+from .utils import create_default_time_preset, get_day_code
 import datetime as dt
-from django.http import HttpResponse
 
 
 class CustomUserManager(BaseUserManager):
+    """
+    Custom user manager for the CustomUser model.
+    """
     def get_next_employee_id(self):
-        # Get the highest employee ID currently in use
+        """
+        Generate the next available employee ID.
+
+        Returns:
+            str: The next available employee ID, padded with leading zeros.
+
+        Raises:
+            ValueError: If no available employee IDs can be found.
+        """
         highest_id = self.model.objects.aggregate(Max("employee_id"))[
             "employee_id__max"
         ]
 
         if not highest_id:
-            return "000001"  # First employee
+            return "000001"
 
         next_id = int(highest_id) + 1
 
-        # If next ID would exceed 999999, look for gaps
         if next_id > 999999:
-            # Get all employee IDs sorted
             existing_ids = set(self.model.objects.values_list("employee_id", flat=True))
 
-            # Find first available gap
-            for i in range(1, 1000000):  # From 000001 to 999999
+            for i in range(1, 1000000):
                 candidate = str(i).zfill(6)
                 if candidate not in existing_ids:
                     return candidate
 
             raise ValueError("No available employee IDs - all slots filled")
 
-        # Normal case - return next highest ID
         return str(next_id).zfill(6)
 
     def create_user(self, employee_id=None, password=None, **extra_fields):
+        """
+        Create and save a CustomUser with the given employee_id and password.
+
+        Args:
+            employee_id (str, optional): The employee ID. If None, a new one is generated.
+            password (str): The user's password.
+            **extra_fields: Additional fields to set on the user.
+
+        Returns:
+            CustomUser: The created user object.
+
+        Raises:
+            ValidationError: If the employee_id is not a 6-digit number.
+        """
         if not employee_id:
             employee_id = self.get_next_employee_id()
 
-        # Validate employee_id is numeric and 6 digits
         if not employee_id.isdigit() or len(employee_id) != 6:
             raise ValidationError("Employee ID must be a 6-digit number")
 
@@ -56,6 +71,20 @@ class CustomUserManager(BaseUserManager):
         return user
 
     def create_superuser(self, employee_id=None, password=None, **extra_fields):
+        """
+        Create and save a superuser with the given employee_id and password.
+
+        Args:
+            employee_id (str, optional): The employee ID. If None, a new one is generated.
+            password (str): The user's password.
+            **extra_fields: Additional fields to set on the user.
+
+        Returns:
+            CustomUser: The created superuser object.
+
+        Raises:
+            ValueError: If is_staff or is_superuser is not True.
+        """
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
@@ -69,6 +98,9 @@ class CustomUserManager(BaseUserManager):
 
 
 class Company(models.Model):
+    """
+    Represents a company.
+    """
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
@@ -77,9 +109,13 @@ class Company(models.Model):
     class Meta:
         verbose_name_plural = "User Companies"
         ordering = ["name"]
-        db_table = "django_companies"  # Changed from 'companies'
+        db_table = "django_companies"
+
 
 class Department(models.Model):
+    """
+    Represents a department within a company.
+    """
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
@@ -88,9 +124,13 @@ class Department(models.Model):
     class Meta:
         verbose_name_plural = "User Departments"
         ordering = ["name"]
-        db_table = "django_departments" # Changed From 'departments'
+        db_table = "django_departments"
+
 
 class Position(models.Model):
+    """
+    Represents a job position within a company.
+    """
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
@@ -99,12 +139,13 @@ class Position(models.Model):
     class Meta:
         verbose_name_plural = "User Positions"
         ordering = ["name"]
-        db_table = "django_positions"  # Changed from 'positions'
+        db_table = "django_positions"
 
 
 class CustomUser(AbstractUser):
-    # Remove the username field
-    username = None
+    """
+    Custom user model extending AbstractUser.
+    """
     employee_id = models.CharField(unique=True, max_length=6)
     first_name = models.CharField(max_length=100, null=True, blank=True)
     surname = models.CharField(max_length=100, null=True, blank=True)
@@ -132,9 +173,6 @@ class CustomUser(AbstractUser):
     )
     manager = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='subordinates')
     leave_credits = models.IntegerField(default=16)
-    # Remove other redundant fields
-    email = None
-    last_name = None  # Since you're using 'surname'
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_guard = models.BooleanField(default=False)
@@ -148,6 +186,18 @@ class CustomUser(AbstractUser):
 
     @classmethod
     def authenticate_by_pin(cls, employee_id, pin):
+        """
+        Authenticate a user by employee ID and PIN.
+
+        Args:
+            employee_id (str): The employee ID.
+            pin (str): The PIN.
+
+        Returns:
+            CustomUser or dict or None: The user object if authentication is successful.
+                Returns a dict with status "first_login" and the user if it's the user's first login.
+                Returns None if authentication fails.
+        """
         try:
             user = cls.objects.get(employee_id=employee_id)
             if not user.is_active:
@@ -167,77 +217,88 @@ class CustomUser(AbstractUser):
             return None
 
     def get_schedule_for_day(self, day_code):
-        """Get the schedule that applies to this user for the specified day."""
+        """
+        Get the schedule that applies to this user for the specified day.
+
+        Args:
+            day_code (str): The day code (e.g., 'mon', 'tue', 'wed').
+
+        Returns:
+            TimePreset: The TimePreset object for the specified day.
+        """
         if self.schedule_group:
             return self.schedule_group.get_schedule_for_day(day_code)
         else:
-            # Use the utility function to create default schedules
             return create_default_time_preset(day_code)
 
     class Meta:
-        db_table = "django_users"  # Changed from 'users'
+        db_table = "django_users"
         verbose_name = "User"
         verbose_name_plural = "Users"
 
 
 class TimeEntry(models.Model):
+    """
+    Represents a time entry record for a user.
+    """
     ordering = ["-time_in"]
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     time_in = models.DateTimeField(default=timezone.now, editable=True)
     time_out = models.DateTimeField(null=True, blank=True)
     hours_worked = models.FloatField(null=True, blank=True)
     is_late = models.BooleanField(default=False)
-    minutes_late = models.IntegerField(default=0)  # New field: positive for late, negative for early
+    minutes_late = models.IntegerField(default=0)
     last_modified = models.DateTimeField(auto_now=True)
     image_path = models.CharField(max_length=255, null=True, blank=True)
 
     @property
     def date(self):
+        """
+        Get the date of the time entry.
+
+        Returns:
+            date: The date of the time entry.
+        """
         return self.time_in.date()
 
     def clock_out(self):
+        """
+        Record the clock-out time and calculate hours worked and lateness.
+        """
         self.time_out = timezone.now()
 
         if self.time_in and self.time_out:
             delta = self.time_out - self.time_in
             self.hours_worked = round(delta.total_seconds() / 3600, 2)
 
-        # Use user's schedule for lateness check if available
         if self.time_in:
             try:
                 time_in_local = self.time_in
-                day_code = get_day_code(time_in_local)  # Using utility function
+                day_code = get_day_code(time_in_local)
 
-                # Get schedule using get_schedule_for_day
                 preset = self.user.get_schedule_for_day(day_code)
                 if preset:
                     expected_start = preset.start_time
                     grace_period = dt.datetime.timedelta(minutes=preset.grace_period_minutes)
 
-                    # Create datetime with schedule time
                     naive_expected_time = dt.datetime.combine(
                         time_in_local.date(), expected_start
                     )
 
-                    # Make timezone-aware
                     expected_start_dt = timezone.make_aware(naive_expected_time)
                     expected_with_grace = expected_start_dt + grace_period
 
-                    # Ensure time_in_local is timezone aware for comparison
                     if not timezone.is_aware(time_in_local):
                         time_in_local = timezone.make_aware(time_in_local)
 
-                    # Now both datetimes are timezone-aware for safe comparison
                     self.is_late = time_in_local > expected_with_grace
 
-                    # Calculate minutes late/early
                     time_diff = time_in_local - expected_start_dt
                     self.minutes_late = round(time_diff.total_seconds() / 60)
                 else:
                     self.is_late = False
                     self.minutes_late = 0
             except Exception as e:
-                # In case of errors, don't mark as late
                 self.is_late = False
                 self.minutes_late = 0
                 print(f"Error in clock_out: {e}")
@@ -246,41 +307,40 @@ class TimeEntry(models.Model):
 
     @classmethod
     def clock_in(cls, user):
+        """
+        Record the clock-in time and calculate lateness.
+
+        Args:
+            user (CustomUser): The user clocking in.
+
+        Returns:
+            TimeEntry: The created TimeEntry object.
+        """
         new_entry = cls.objects.create(user=user)
-        # Calculate lateness based on schedule
         try:
             time_in_local = new_entry.time_in
-            # Use utility function instead of duplicating the day mapping
             day_code = get_day_code(time_in_local)
 
-            # Get the appropriate schedule
             preset = user.get_schedule_for_day(day_code)
             if preset:
-                # Create a datetime object with schedule time
                 naive_expected_time = dt.datetime.combine(
                     time_in_local.date(), preset.start_time
                 )
 
-                # Make timezone-aware
                 expected_time = timezone.make_aware(naive_expected_time)
 
-                # Ensure time_in_local is timezone-aware
                 if not timezone.is_aware(time_in_local):
                     time_in_local = timezone.make_aware(time_in_local)
 
-                # Calculate grace period
                 grace_period = dt.timedelta(minutes=preset.grace_period_minutes)
                 expected_time_with_grace = expected_time + grace_period
 
-                # Both datetimes are now timezone-aware for safe comparison
                 new_entry.is_late = time_in_local > expected_time_with_grace
 
-                # Calculate minutes late
                 time_diff = time_in_local - expected_time
                 new_entry.minutes_late = round(time_diff.total_seconds() / 60)
                 new_entry.save()
         except Exception as e:
-            # If timezone handling fails, set reasonable defaults
             new_entry.is_late = False
             new_entry.minutes_late = 0
             new_entry.save()
@@ -289,39 +349,33 @@ class TimeEntry(models.Model):
         return new_entry
 
     def clean(self):
-        """Validate entry and calculate derived values."""
+        """
+        Validate entry and calculate derived values.
+        """
         super().clean()
 
-        # Always calculate minutes_late if time_in exists
         if self.time_in and hasattr(self, 'user') and self.user:
             try:
                 time_in_local = self.time_in
 
-                # Ensure time_in_local is timezone-aware
                 if not timezone.is_aware(time_in_local):
                     time_in_local = timezone.make_aware(time_in_local)
 
                 day_code = get_day_code(time_in_local)
 
-                # Get schedule using get_schedule_for_day
                 preset = self.user.get_schedule_for_day(day_code)
                 if preset:
                     expected_start = preset.start_time
 
-                    # Create datetime with schedule time
                     naive_expected_time = dt.datetime.combine(
                         time_in_local.date(), expected_start
                     )
 
-                    # Make timezone-aware - this is crucial
                     expected_start_dt = timezone.make_aware(naive_expected_time)
 
-                    # Compare times and calculate minutes_late
-                    # Now both times are timezone-aware
                     time_diff = time_in_local - expected_start_dt
                     self.minutes_late = round(time_diff.total_seconds() / 60)
 
-                    # Calculate if late considering grace period
                     grace_period = dt.timedelta(minutes=preset.grace_period_minutes)
                     expected_with_grace = expected_start_dt + grace_period
                     self.is_late = time_in_local > expected_with_grace
@@ -329,7 +383,9 @@ class TimeEntry(models.Model):
                 print(f"Error calculating lateness in clean(): {e}")
 
     def save(self, *args, **kwargs):
-        # Call clean() to ensure validation and calculations happen
+        """
+        Save the TimeEntry object.
+        """
         self.clean()
         super().save(*args, **kwargs)
 
@@ -342,6 +398,9 @@ class TimeEntry(models.Model):
 
 
 class Announcement(models.Model):
+    """
+    Represents an announcement.
+    """
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_posted = models.BooleanField(default=False)
@@ -354,6 +413,9 @@ class Announcement(models.Model):
 
 
 class TimePreset(models.Model):
+    """
+    Represents a time preset.
+    """
     name = models.CharField(max_length=100, blank=True, null=True)
     start_time = models.TimeField()
     end_time = models.TimeField()
@@ -361,6 +423,9 @@ class TimePreset(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
+        """
+        Save the TimePreset object.
+        """
         if self.name is None:
             self.name = ""
         super(TimePreset, self).save(*args, **kwargs)
@@ -375,6 +440,9 @@ class TimePreset(models.Model):
 
 
 class ScheduleGroup(models.Model):
+    """
+    Represents a schedule group.
+    """
     name = models.CharField(max_length=100, null=True, blank=True)
     default_schedule = models.ForeignKey(
         "TimePreset", on_delete=models.SET_NULL, null=True, blank=True, related_name="default_for_groups"
@@ -382,6 +450,9 @@ class ScheduleGroup(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
+        """
+        Save the ScheduleGroup object.
+        """
         if self.name is None or self.name == "":
             start_time = self.default_schedule.start_time.strftime("%I:%M %p")
             end_time = self.default_schedule.end_time.strftime("%I:%M %p")
@@ -392,17 +463,22 @@ class ScheduleGroup(models.Model):
         return f"{self.name}"
 
     def get_schedule_for_day(self, day_code):
-        """Get the appropriate TimePreset for a specific day"""
-        # Check if there's a day-specific override
+        """
+        Get the appropriate TimePreset for a specific day.
+
+        Args:
+            day_code (str): The day code (e.g., 'mon', 'tue', 'wed').
+
+        Returns:
+            TimePreset: The TimePreset object for the specified day.
+        """
         try:
             override = self.day_overrides.get(day=day_code)
             return override.time_preset
         except DayOverride.DoesNotExist:
-            # If no override exists, return the default schedule
             if self.default_schedule:
                 return self.default_schedule
             else:
-                # Use the utility function to create default schedules
                 return create_default_time_preset(day_code)
 
     class Meta:
@@ -412,6 +488,9 @@ class ScheduleGroup(models.Model):
 
 
 class DayOverride(models.Model):
+    """
+    Represents a day-specific override for a schedule group.
+    """
     DAY_CHOICES = [
         ("mon", "Monday"),
         ("tue", "Tuesday"),
@@ -436,10 +515,13 @@ class DayOverride(models.Model):
         unique_together = [
             "schedule_group",
             "day",
-        ]  # Only one override per day per group
+        ]
 
 
 class AdminLog(models.Model):
+    """
+    Represents a log of admin actions.
+    """
     ACTION_CHOICES = (
         ('navigation', 'Navigation'),
         ('announcement_create', 'Announcement Created'),
@@ -466,16 +548,24 @@ class AdminLog(models.Model):
         return f"{self.user} - {self.action} - {self.timestamp}"
 
     def save(self, *args, **kwargs):
+        """
+        Save the AdminLog object.
+        """
         if self.pk:
-            # If this is an update to an existing record
             raise PermissionError("Admin logs cannot be modified after creation")
         return super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
+        """
+        Delete the AdminLog object.
+        """
         raise PermissionError("Admin logs cannot be deleted")
 
 
 class LeaveType(models.Model):
+    """
+    Represents a type of leave.
+    """
     name = models.CharField(max_length=100, unique=True)
     is_paid = models.BooleanField(default=True, help_text="Whether this leave type uses leave credits")
 
@@ -489,6 +579,9 @@ class LeaveType(models.Model):
 
 
 class Leave(models.Model):
+    """
+    Represents a leave request.
+    """
     STATUS_CHOICES = (
         ('PENDING', 'Pending Manager Approval'),
         ('APPROVED_BY_MANAGER', 'Approved by Manager'),
@@ -508,6 +601,12 @@ class Leave(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def get_duration(self):
+        """
+        Get the duration of the leave in days.
+
+        Returns:
+            int: The duration of the leave.
+        """
         return (self.end_date - self.start_date).days + 1
 
     def __str__(self):

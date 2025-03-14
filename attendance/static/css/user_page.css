@@ -13,7 +13,7 @@ body {
       rgba(200, 200, 200, 0.2)
     ),
     url("/static/images/bg/agritech_bg.png");
-  background-size: cover; /* Ensures the image fully covers the container */
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
@@ -22,7 +22,7 @@ html,
 body {
   width: 100%;
   height: 100vh;
-  overflow: hidden; /* Prevent any scrolling on the body */
+  overflow: hidden;
 }
 
 h1,
@@ -35,10 +35,10 @@ h3,
 .container {
   margin-right: 15%;
   width: 86%;
-  height: 100vh; /* Make the container fit the screen height */
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* Adjust the spacing between items */
+  justify-content: space-between;
   overflow: hidden;
 }
 
@@ -46,12 +46,12 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #621c1c; /* Background color */
-  height: 8vh; /* Adjust height as needed */
-  padding: 0 20px; /* Add spacing inside the header */
-  position: relative; /* Ensures the header stays at the top layer */
-  width: 100%; /* Full width */
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional shadow */
+  background-color: #621c1c;
+  height: 8vh;
+  padding: 0 20px;
+  position: relative;
+  width: 100%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
@@ -60,30 +60,28 @@ header {
 }
 
 .logo img {
-  /* SF GROUP LOGO */
-  width: 400px; /* Change this to your desired size */
-  height: auto; /* Maintains aspect ratio */
+  width: 400px;
+  height: auto;
   margin-top: 125px;
   margin-right: 10px;
 }
 
 #partnerLogo {
-  /* Company Logos */
   background-color: white;
-  padding: 10px; /* Adds space around the logo */
-  border-radius: 10px; /* Optional rounded corners */
+  padding: 10px;
+  border-radius: 10px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
   width: 300px;
   height: auto;
-  max-width: 250px; /* Change this to your desired size */
-  max-height: 250px; /* Maintains aspect ratio */
+  max-width: 250px;
+  max-height: 250px;
   margin-top: 6%;
   margin-right: 8%;
 }
 
 .logo img:hover,
 #partnerLogo :hover {
-  transform: scale(1.05); /* Slight zoom on hover */
+  transform: scale(1.05);
   transition: transform 0.3s ease-in-out;
 }
 
@@ -93,31 +91,30 @@ header {
   margin-top: 20px;
   margin-left: 40px;
   flex-grow: 1;
-  justify-content: flex-start; /* Aligns items (including the camera) to the left */
+  justify-content: flex-start;
 }
 
 .clock-content {
-  flex: 1; /* Allow clock-content to take available space */
+  flex: 1;
 }
 
 .clock h1 {
-  /* Real clock time styling */
   font-size: 105px;
   color: #621c1c;
   margin-top: 80px;
-  margin-bottom: 0; /* Remove bottom margin to align neatly */
+  margin-bottom: 0;
   margin-left: 100px;
 }
 
 .clock p {
   font-size: 40px;
   color: #be6364;
-  white-space: nowrap; /* Prevent line breaks */
+  white-space: nowrap;
   margin-left: 100px;
 }
 
 .clock p span {
-  margin-right: 185px; /* Adjust spacing between date and day */
+  margin-right: 185px;
 }
 
 .clock,
@@ -127,46 +124,45 @@ header {
 }
 
 .camera {
-  position: absolute; /* Absolute positioning */
-  width: 25%; /* Adjust width for smaller screens */
+  position: absolute;
+  width: 25%;
   flex: 0 0 auto;
   height: 300px;
   border: 2px solid #621c1c;
   border-radius: 12px;
   overflow: hidden;
   margin-top: 35px;
-  left: 860px; /* Default position for large screens */
+  left: 860px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
-/* Move camera left as screen size decreases */
 @media screen and (max-width: 1400px) {
   .camera {
-    left: 800px; /* Slightly left for medium screens */
+    left: 800px;
   }
 }
 
 @media screen and (max-width: 1200px) {
   .camera {
-    left: 650px; /* Move more left for smaller screens */
+    left: 650px;
   }
 }
 
 @media screen and (max-width: 992px) {
   .camera {
-    left: 450px; /* Further left for tablet screens */
+    left: 450px;
   }
 }
 
 @media screen and (max-width: 768px) {
   .camera {
-    left: 250px; /* Almost to the edge on small devices */
+    left: 250px;
   }
 }
 
 @media screen and (max-width: 576px) {
   .camera {
-    left: 60px; /* Close to the left on very small screens */
+    left: 60px;
   }
 }
 
@@ -177,7 +173,6 @@ header {
 }
 
 .btn {
-  /* TIME IN TIME OUT BUTTON */
   padding: 10px 32px;
   font-size: 25px;
   background: #621c1c;
@@ -188,22 +183,22 @@ header {
   margin: 40px;
   margin-left: 115px;
   transition: background 0.3s ease, transform 0.3s ease;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional shadow */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .btn:focus {
   background: #be6364;
-  transform: scale(1.05); /* Button enlarges slightly */
+  transform: scale(1.05);
 }
 
 .btn:hover {
-  background-color: #be6364; /* Add color change on hover */
-  transform: scale(1.1); /* Enlarge button slightly */
+  background-color: #be6364;
+  transform: scale(1.1);
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
 }
 
 .attendance-list {
-  width: 90%; /* Adjust width for smaller screens */
+  width: 90%;
   margin: 20px auto;
   background: #621c1c;
   border-radius: 10px;
@@ -212,7 +207,7 @@ header {
   top: -30px;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
   position: relative;
-  height: calc(93vh - 400px); /* Adjust dynamically based on viewport height */
+  height: calc(93vh - 400px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -256,7 +251,6 @@ header {
 #attendance-table tbody {
   display: block;
   overflow-y: auto;
-  /* height: calc(100vh - 550px); Adjust this value to fit perfectly */
   height: 100%;
 }
 
@@ -289,26 +283,24 @@ header {
 }
 
 .panel {
-  /*CONTENTS INSIDE THE SIDE PANEL*/
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* text-align: center; */
-  font-size: 12px; /* Adjust font-size as needed */
+  font-size: 12px;
   color: #e2e2e2;
-  margin-bottom: 10px; /* Adjust space between panels */
+  margin-bottom: 10px;
   border-radius: 10px;
   width: 100%;
   height: auto;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
-  background-color: #621c1c; /* Fallback for older browsers */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  background-color: #621c1c;
   padding: 15px;
 }
 
 .panel:hover {
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Hover effect */
-  transform: translateY(-5px); /* Slight lift on hover */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transform: translateY(-5px);
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
@@ -316,10 +308,9 @@ header {
 .milestones .panel h3,
 .announcements .panel h3 {
   font-size: 15px;
-  margin-top: -10px; /* Move Birthdays and Milestones header slightly up */
+  margin-top: -10px;
 }
 
-/* Note styles for Birthdays, Milestones, and Announcements - consolidated version */
 .note {
   background: #f9f9f9;
   width: 100%;
@@ -347,14 +338,12 @@ header {
   color: #000;
 }
 
-/* Make sure birthdays and milestones use the same table style */
 .announcements-table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
 }
 
-/* Zebra striping for rows */
 .announcements-table tbody tr:nth-child(odd) {
   background-color: #ffffff;
 }
@@ -363,7 +352,6 @@ header {
   background-color: #f9f9f9;
 }
 
-/* Hover effect for table rows */
 .announcements-table tbody tr:hover {
   background-color: #e0e0e0;
 }
@@ -374,26 +362,21 @@ header {
   flex-direction: column;
 }
 
-/* Table styles for announcements */
 .announcements-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed; /* Ensures content wraps properly */
+  table-layout: fixed;
 }
 
-/* Updated cell styling for larger, bold, and modern font */
 .announcements-table td {
-  /* border: 1px solid #ddd; */
   padding: 0.75rem;
   text-align: center;
   word-wrap: break-word;
-  color: black;               /* Black font on white background */
-  font-size: 13px;            /* Increased font size */
-  /* font-weight: bold; */          /* Bold text */
+  color: black;
+  font-size: 13px;
   font-family: 'Roboto', sans-serif;
 }
 
-/* Zebra striping for rows */
 .announcements-table tbody tr:nth-child(odd) {
   background-color: #ffffff;
 }
@@ -402,7 +385,6 @@ header {
   background-color: #f9f9f9;
 }
 
-/* Hover effect for table rows */
 .announcements-table tbody tr:hover {
   background-color: #e0e0e0;
 }
@@ -423,11 +405,10 @@ header {
   z-index: 10;
 }
 
-/* Birthdays container */
 .birthdays,
 .milestones,
 .announcements {
-  flex: 1; /* Makes them shrink evenly */
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -436,28 +417,27 @@ header {
 .birthdays .panel,
 .milestones .panel {
   width: 100%;
-  height: 175px; /* You can specify a fixed height here for Birthdays & Milestones */
+  height: 175px;
 }
 
 .sign-out-btn {
   color: rgb(255, 255, 255);
-  text-decoration: underline; /* Underlined text */
-  background: none; /* Transparent background */
-  border: none; /* No border */
-  font-size: 15px; /* Font size for visibility */
-  cursor: pointer; /* Pointer cursor on hover */
+  text-decoration: underline;
+  background: none;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
   margin-top: auto;
   margin-left: 45px;
   margin-bottom: 20px;
 }
 
 .sign-out-btn:hover {
-  color: red; /* Darker red for hover effect */
+  color: red;
 }
 
-/* Common modal styles */
 .modal {
-  display: none; /* Hidden by default */
+  display: none;
   position: fixed;
   z-index: 2000;
   left: 0;
@@ -465,15 +445,15 @@ header {
   width: 100%;
   height: 100%;
   overflow: auto;
-  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
 .modal-content {
   background-color: #fefefe;
-  margin: 15% auto; /* 15% from the top and centered */
+  margin: 15% auto;
   padding: 20px;
   border: 1px solid #888;
-  width: 300px; /* Could be more or less, depending on screen size */
+  width: 300px;
   border-radius: 8px;
 }
 

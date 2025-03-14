@@ -4,9 +4,15 @@ from django.utils import timezone
 from datetime import timedelta
 
 class Command(BaseCommand):
+    """
+    Creates test data for the leave approval system.
+    """
     help = 'Creates test data for leave approval system'
 
     def handle(self, *args, **kwargs):
+        """
+        Handles the creation of leave test data.
+        """
         # Create leave types
         vacation, _ = LeaveType.objects.get_or_create(name="Vacation Leave", defaults={'is_paid': True})
         sick, _ = LeaveType.objects.get_or_create(name="Sick Leave", defaults={'is_paid': True})

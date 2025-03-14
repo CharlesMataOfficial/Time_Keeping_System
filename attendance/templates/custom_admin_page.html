@@ -5,19 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SFGC Admin Dashboard</title>
     {% load static %}
-    <!-- Use your updated CSS file -->
     <link rel="stylesheet" href="{% static 'css/custom_admin_page.css' %}" />
   </head>
   <body>
-    <!-- Menu Icon -->
     <div class="menu-icon" onclick="toggleMenu()">
       <img src="{% static 'images/icons/menu_icon.png' %}" alt="Menu Icon" />
     </div>
 
-    <!-- Menu Pop-Up -->
     <div class="menu" id="menu">
       <ul>
-        <!-- New: Manage Users (for superadmin) -->
         {% if user.is_superuser %}
         <a href="{% url 'superadmin_redirect' %}">
           <li class="menu-item superadmin">
@@ -73,7 +69,6 @@
           <img src="{% static 'images/icons/credits_icon.png' %}" alt="About" />
           System Information
         </li>
-        <!-- New: Sign Out (triggers hidden logout form) -->
         <li
           class="menu-item sign-out"
           onclick="document.getElementById('logout-form').submit();"
@@ -95,7 +90,6 @@
       </ul>
     </div>
 
-    <!-- Dashboard Shortcut (Back/Forward Arrows) -->
     <div
       id="dashboard-shortcut"
       class="dashboard-icon-top-right"
@@ -113,8 +107,6 @@
       />
     </div>
 
-    <!-- Screens -->
-    <!-- Dashboard Screen (Updated with stats) -->
     <div id="dashboard" class="screen" style="display: flex">
       <h1 id="dashboard_title">Dashboard</h1>
       <div class="dashboard-stats-container">
@@ -138,7 +130,6 @@
               </tr>
             </thead>
             <tbody class="late-employees-list">
-              <!-- Will be populated by JavaScript -->
             </tbody>
           </table>
           <div class="total-late-employees">
@@ -156,14 +147,12 @@
               </tr>
             </thead>
             <tbody class="early-birds-list">
-              <!-- Will be populated by JavaScript -->
             </tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- Log Screen -->
     <div id="log" class="screen" style="display: none">
       <h1>Log</h1>
       <div class="log-filters-wrapper">
@@ -193,11 +182,9 @@
           <button class="go-button" onclick="filterLogs()">Filter</button>
         </div>
       </div>
-      <!-- Add this missing div -->
       <div id="log_rectangle"></div>
     </div>
 
-<!-- Attendance List Screen -->
 <div id="attendance-list" class="screen">
   <h1>Attendance List</h1>
   <div class="attendance-dropdown-wrapper">
@@ -242,47 +229,37 @@
     </div>
   </div>
 
-  <!-- Fetched data will be rendered here -->
   <div id="attendance_rectangle"></div>
 </div>
 
-
-
-  <!-- Export Excel Screen -->
   <div id="export-excel" class="screen">
     <h1>Export Excel</h1>
     <div class="export-container">
-      <!-- Single button to open the export modal -->
       <button class="export-button" id="export_excel_button">Export</button>
     </div>
   </div>
 
-  <!-- Export Excel Modal -->
   <div id="modal_export_excel" class="modal_export_style">
     <div class="modal_export_content">
       <span class="modal_export_close" id="modal_export_close">&times;</span>
-      
-      <!-- Option Toggler -->
+
       <div class="modal_export_options">
         <button id="option_single_date" class="modal_export_option active">Single Date</button>
         <button id="option_date_range" class="modal_export_option">Date Range</button>
       </div>
-      
-      <!-- Common Section: Optional Employee ID -->
+
       <div class="modal_export_section">
         <label for="modal_export_employee_id">Employee ID (Optional):</label>
         <input type="text" id="modal_export_employee_id" placeholder="Enter Employee ID">
       </div>
-      
-      <!-- Single Date Export Section -->
+
       <div id="modal_export_by_date_section" class="modal_export_section">
         <h2>Export by Single Date</h2>
         <label for="modal_export_date">Select Date:</label>
         <input type="date" id="modal_export_date">
         <button id="modal_export_date_submit" type="button">Export</button>
       </div>
-      
-      <!-- Date Range Export Section -->
+
       <div id="modal_export_by_date_range_section" class="modal_export_section" style="display: none;">
         <h2>Export by Date Range</h2>
         <div>
@@ -293,7 +270,6 @@
           <label for="modal_export_date_end">End Date:</label>
           <input type="date" id="modal_export_date_end">
         </div>
-        <!-- Excluded Dates (if needed) -->
         <div id="modal_excluded_dates_container">
           <label>Excluded Dates:</label>
           <div class="excluded-date">
@@ -304,16 +280,13 @@
         <button id="add_excluded_date" type="button">Add Another Excluded Date</button>
         <button id="modal_export_date_range_submit" type="button">Export</button>
       </div>
-      
+
     </div>
   </div>
 
-
-    <!-- Announcement Screen -->
     <div id="announcement" class="screen" style="display: none">
       <h1>Announcement</h1>
       <div class="announcement-content">
-        <!-- Create Announcement Section -->
         <div class="announcement-container">
           <h2>Create Announcement</h2>
           <textarea
@@ -322,10 +295,8 @@
           ></textarea>
           <button class="save-button" onclick="saveAnnouncement()">Save</button>
         </div>
-        <!-- Saved Announcements Section -->
         <div class="announcement-container">
           <h2>Saved Announcement Files</h2>
-          <!-- Container for the announcements list with scrollbar when needed -->
           <div class="announcement-list-container">
             <ul id="announcement-list"></ul>
           </div>
@@ -349,18 +320,16 @@
       </div>
     </div>
 
-    <!-- Leave Approval Screen (new) -->
     <div id="leave-approval" class="screen" style="display: none">
       <h1>Leave Approval</h1>
       <div id="leave-approval_rectangle"></div>
     </div>
 
-    <!-- About Screen (new) -->
     <div id="about" class="screen" style="display: none">
       <h1>System Information</h1>
       <div class="about-container">
         <div class="about-logo-container">
-          <h2>A collaboration of:</h2> <!-- "COLLABORATION" text above the logos -->
+          <h2>A collaboration of:</h2>
         </div>
         <div class="about-logo-container">
           <img src="{% static 'images/logos/mmcm.png' %}" alt="MMCM Logo"class="about-logo mapua-logo">
@@ -371,9 +340,7 @@
           <hr class="broken-line">
         </div>
 
-        <!-- Intern Information (Left Side) -->
         <div class="intern-info">
-          <!-- SirJong's Card -->
           <div class="intern-card">
             <img
               src="{% static 'images/faces/patrick.png' %}"
@@ -384,7 +351,6 @@
             <p class="intern-role">Agridom - Manager</p>
           </div>
 
-          <!-- SirPatrick's Card -->
           <div class="intern-card">
             <img
               src="{% static 'images/faces/patrick.png' %}"
@@ -395,7 +361,6 @@
             <p class="intern-role">Agridom - Supervisor</p>
           </div>
 
-          <!-- Shennah's Card -->
           <div class="intern-card">
             <img
               src="{% static 'images/faces/shennah.png' %}"
@@ -406,7 +371,6 @@
             <p class="intern-role">CS - Frontend Developer</p>
           </div>
 
-          <!-- Clent's Card -->
           <div class="intern-card">
             <img
               src="{% static 'images/faces/clent.png' %}"
@@ -417,18 +381,6 @@
             <p class="intern-role">CS - Frontend Developer</p>
           </div>
 
-          <!-- Roxannie's Card -->
-          <!-- <div class="intern-card">
-            <img
-              src="{% static 'images/faces/rox.png' %}"
-              alt="Roxannie Sentillas"
-              class="intern-photo"
-            />
-            <p class="intern-name">Roxannie Sentillas</p>
-            <p class="intern-role">IS - Documentation/Tester</p>
-          </div> -->
-
-          <!-- Kenneth's Card -->
           <div class="intern-card">
             <img
               src="{% static 'images/faces/kenneth.png' %}"
@@ -439,7 +391,6 @@
             <p class="intern-role">CS - Backend Developer</p>
           </div>
 
-          <!-- Charles's Card -->
           <div class="intern-card">
             <img
               src="{% static 'images/faces/charles.png' %}"
@@ -450,7 +401,6 @@
             <p class="intern-role">CS - Backend Developer</p>
           </div>
 
-          <!-- Vonn's Card -->
           <div class="intern-card">
             <img
               src="{% static 'images/faces/vonn.png' %}"
@@ -461,7 +411,6 @@
             <p class="intern-role">CS - Backend Developer</p>
           </div>
 
-          <!-- Jakob's Card -->
           <div class="intern-card">
             <img
               src="{% static 'images/faces/jakob.png' %}"
@@ -473,7 +422,6 @@
           </div>
         </div>
 
-        <!-- Description -->
         <div class="red-container">
           <p>This system was developed for SFGC’s timekeeping providing an efficient and user-friendly
             solution for managing employee attendance. It is designed to streamline employee time-ins, monitor work hours, track attendance records, and generate real-time reports for
@@ -486,7 +434,6 @@
         </div>
     </div>
 
-    <!-- Hidden Logout Form (used by redirectToSignOut()) -->
     <form
       id="logoutForm"
       action="{% url 'logout' %}"
@@ -496,7 +443,6 @@
       {% csrf_token %}
     </form>
 
-    <!-- Updated Functions JS -->
     <script src="{% static 'js/custom_admin_page.js' %}"></script>
   </body>
 </html>

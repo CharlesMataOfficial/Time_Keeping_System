@@ -8,12 +8,18 @@ from attendance.models import (
 from attendance.database_legacy import (
     UsersLegacy, EntriesLegacy, PresetsLegacy
 )
-from attendance.utils import STANDARD_DEPARTMENTS  # Import from utils.py
+from attendance.utils import STANDARD_DEPARTMENTS
 
 class Command(BaseCommand):
+    """
+    Migrates data from legacy database tables to Django models.
+    """
     help = 'Migrate all data from legacy tables to Django models'
 
     def handle(self, *args, **kwargs):
+        """
+        Handles the data migration process.
+        """
         self.stdout.write('Starting migration...')
         Company.objects.all().delete()
         Position.objects.all().delete()
@@ -23,14 +29,12 @@ class Command(BaseCommand):
         ScheduleGroup.objects.all().delete()
         Department.objects.all().delete()
 
-        # First create companies and positions
         companies = {}
         positions = {}
-        
-        # Create all standard departments first
+
         self.stdout.write('Creating standard departments...')
         departments = {}
-        
+
         for dept_name in STANDARD_DEPARTMENTS:
             department, created = Department.objects.get_or_create(name=dept_name)
             departments[dept_name] = department
@@ -40,7 +44,6 @@ class Command(BaseCommand):
         else:
             self.stdout.write(self.style.WARNING(f'Department "{dept_name}" already exists, skipping.'))
 
-        # Manual department assignments based on provided list
         manual_departments = {
         '000003': 'Sales',
         '000302': 'Operations - Mindanao',
@@ -81,14 +84,12 @@ class Command(BaseCommand):
         '000373': 'Support - Finance',
         '000379': 'Support - Supply Management',
         }
-        
-        # Ensure all manual departments exist in the departments dictionary
+
         for dept_name in manual_departments.values():
             if dept_name not in departments:
                 department, created = Department.objects.get_or_create(name=dept_name)
                 departments[dept_name] = department
 
-        # Get legacy users data
         legacy_users = UsersLegacy.objects.all()
         for legacy_user in legacy_users:
             if legacy_user.company:
@@ -96,16 +97,13 @@ class Command(BaseCommand):
                     name=legacy_user.company
                 )[0]
             if legacy_user.position:
-                # This will only create positions not already created above
                 positions[legacy_user.position] = Position.objects.get_or_create(
                     name=legacy_user.position
-                )[0]              
-            
-            # Assign manually if user ID exists in the mapping dictionary
+                )[0]
+
             if legacy_user.employee_id in manual_departments:
-                department_instance = departments.get(manual_departments[legacy_user.employee_id], None)            
-            
-        # Create TimePresets and ScheduleGroups
+                department_instance = departments.get(manual_departments[legacy_user.employee_id], None)
+
         presets = {}
         legacy_presets = PresetsLegacy.objects.all()
         for legacy_preset in legacy_presets:
@@ -120,7 +118,7 @@ class Command(BaseCommand):
                 name=preset_name,
                 start_time=legacy_preset.monday_start or time(8, 0),
                 end_time=legacy_preset.monday_end or time(17, 0),
-                grace_period_minutes=5  # Default grace period
+                grace_period_minutes=5
             )
             presets[preset_name] = time_preset
 
@@ -129,17 +127,14 @@ class Command(BaseCommand):
                 default_schedule=time_preset
             )
 
-        # Create users with proper foreign key relationships
-        user_mapping = {}  # To store employee_id -> new_user mapping
+        user_mapping = {}
         for legacy_user in legacy_users:
             schedule_group = None
             if legacy_user.preset_name:
                 schedule_group = ScheduleGroup.objects.get(name=legacy_user.preset_name)
-            
-            # Default to None (blank) if not manually assigned
+
             department_instance = None
 
-            # Assign manually if user ID exists in the mapping dictionary
             if legacy_user.employee_id in manual_departments:
                 department_instance = departments.get(manual_departments[legacy_user.employee_id], None)
 
@@ -149,7 +144,7 @@ class Command(BaseCommand):
                 surname=legacy_user.surname,
                 company=companies.get(legacy_user.company),
                 position=positions.get(legacy_user.position),
-                department=department_instance,  # Now defaults to None if not found
+                department=department_instance,
                 birth_date=legacy_user.birth_date,
                 date_hired=legacy_user.date_hired,
                 pin=legacy_user.pin,
@@ -159,15 +154,13 @@ class Command(BaseCommand):
                 schedule_group=schedule_group
             )
 
-            user_mapping[legacy_user.employee_id] = new_user  # Map by employee_id instead of id
+            user_mapping[legacy_user.employee_id] = new_user
         self.stdout.write(self.style.SUCCESS('Users migrated successfully'))
 
-        # Migrate entries
         entries = EntriesLegacy.objects.all()
         for entry in entries:
             try:
-                # Use the raw foreign key value instead of entry.user.employee_id
-                employee_id = entry.employee_id  # This gives you the value of the employee_id column.
+                employee_id = entry.employee_id
                 user = user_mapping.get(employee_id)
                 if not user:
                     self.stdout.write(self.style.WARNING(
@@ -175,13 +168,11 @@ class Command(BaseCommand):
                     ))
                     continue
 
-                # For time_in
                 if entry.time_in:
                     time_in = datetime.combine(entry.date, entry.time_in)
                 else:
                     time_in = None
 
-                # For time_out
                 if entry.time_out:
                     time_out = datetime.combine(entry.date, entry.time_out)
                 else:

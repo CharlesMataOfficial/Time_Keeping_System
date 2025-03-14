@@ -15,12 +15,18 @@ from .utils import get_day_code, log_admin_action
 
 
 class TimeEntryInline(admin.TabularInline):
+    """
+    Inline admin interface for TimeEntry model.
+    """
     model = TimeEntry
     form = TimeEntryForm
     extra = 1  # Number of extra forms to display
 
 
 def deactivate_users(modeladmin, request, queryset):
+    """
+    Deactivates selected users.
+    """
     queryset.update(is_active=False)
 
 
@@ -28,6 +34,9 @@ deactivate_users.short_description = "Deactivate selected users"
 
 
 def activate_users(modeladmin, request, queryset):
+    """
+    Activates selected users.
+    """
     queryset.update(is_active=True)
 
 
@@ -35,11 +44,13 @@ activate_users.short_description = "Activate selected users"
 
 
 class CustomUserAdmin(UserAdmin):
+    """
+    Admin interface for CustomUser model.
+    """
     add_form = CustomUserCreationForm
     add_form_template = "admin/custom_user_add_form.html"
-    actions = [activate_users, deactivate_users]  # Add the actions here
+    actions = [activate_users, deactivate_users]
 
-    # Remove password from required fields for adding new users
     add_fieldsets = (
         (
             None,
@@ -52,16 +63,15 @@ class CustomUserAdmin(UserAdmin):
                     "birth_date",
                     "company",
                     "position",
-                    "department",  # Added department
+                    "department",
                     "date_hired",
-                    "schedule_group",  # Added time schedule
-                    "manager",  # Added manager
+                    "schedule_group",
+                    "manager",
                 ),
             },
         ),
     )
 
-    # Updated fieldsets - add manager field to Other Info
     fieldsets = (
         (None, {"fields": ("employee_id", "password", "pin")}),
         ("Personal Info", {"fields": ("first_name", "surname", "birth_date")}),
@@ -74,14 +84,14 @@ class CustomUserAdmin(UserAdmin):
                     "department",
                     "date_hired",
                     "schedule_group",
-                    "manager",  # Add manager field here
-                    "leave_credits",  # Also add leave_credits to make it editable
+                    "manager",
+                    "leave_credits",
                 )
             },
         ),
         (
             "Permissions",
-            {"fields": ("is_active", "is_staff", "is_superuser", "is_guard", "is_hr")},  # Add is_hr here
+            {"fields": ("is_active", "is_staff", "is_superuser", "is_guard", "is_hr")},
         ),
     )
 
@@ -93,8 +103,8 @@ class CustomUserAdmin(UserAdmin):
         "position",
         "department",
         "is_active",
-        "schedule_group",  # Update list_display too
-        "manager",  # Add manager field here
+        "schedule_group",
+        "manager",
     )
     search_fields = (
         "employee_id",
@@ -107,14 +117,15 @@ class CustomUserAdmin(UserAdmin):
     ordering = ("-employee_id",)
     list_filter = ("is_active", "is_staff", "is_superuser", "is_guard")
 
-    # Add autocomplete fields
     autocomplete_fields = ["company", "position", "department", "schedule_group", "manager"]
 
     def save_model(self, request, obj, form, change):
+        """
+        Saves the model and logs the admin action.
+        """
         if not change and not obj.employee_id:
             obj.employee_id = CustomUser.objects.get_next_employee_id()
 
-        # Log admin action with better descriptions
         action_type = 'admin_update' if change else 'admin_create'
         if change:
             log_admin_action(request, action_type, f"Updated user {obj.employee_id}")
@@ -124,13 +135,18 @@ class CustomUserAdmin(UserAdmin):
         super().save_model(request, obj, form, change)
 
     def get_actions(self, request):
+        """
+        Removes the delete action from the admin interface.
+        """
         actions = super().get_actions(request)
         if "delete_selected" in actions:
             del actions["delete_selected"]
         return actions
 
     def delete_model(self, request, obj):
-        # Log the deletion before the object is deleted
+        """
+        Logs the deletion of a user before deleting the object.
+        """
         log_admin_action(
             request,
             'admin_delete',
@@ -140,6 +156,9 @@ class CustomUserAdmin(UserAdmin):
 
 
 class TimeEntryAdmin(admin.ModelAdmin):
+    """
+    Admin interface for TimeEntry model.
+    """
     list_display = (
         "user__first_name",
         "user__surname",
@@ -163,13 +182,14 @@ class TimeEntryAdmin(admin.ModelAdmin):
 
     autocomplete_fields = ["user"]
 
-    # Make these fields read-only
     readonly_fields = ("hours_worked", "is_late", "minutes_late", "view_image_path")
 
     def get_form(self, request, obj=None, **kwargs):
+        """
+        Customizes the form to add help text to specific fields.
+        """
         form = super().get_form(request, obj, **kwargs)
 
-        # Check if fields exist in base_fields before setting help_text
         if 'hours_worked' in form.base_fields:
             form.base_fields['hours_worked'].help_text = "Automatically calculated based on time in and time out."
         if 'is_late' in form.base_fields:
@@ -180,18 +200,18 @@ class TimeEntryAdmin(admin.ModelAdmin):
         return form
 
     def save_model(self, request, obj, form, change):
-        # Always calculate hours worked if time_in and time_out exist
+        """
+        Saves the model and calculates hours worked and lateness.
+        """
         if obj.time_in and obj.time_out:
             delta = obj.time_out - obj.time_in
             obj.hours_worked = round(delta.total_seconds() / 3600, 2)
 
-        # Always calculate lateness if time_in exists
         if obj.time_in:
             try:
                 time_in_local = obj.time_in
                 day_code = get_day_code(time_in_local)
 
-                # Get schedule using get_schedule_for_day
                 preset = obj.user.get_schedule_for_day(day_code)
                 if preset:
                     expected_start = preset.start_time
@@ -222,14 +242,15 @@ class TimeEntryAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
     def formatted_minutes_late(self, obj):
+        """
+        Formats the minutes late for display in the admin list.
+        """
         if obj.minutes_late == 0:
             return ""
 
-        # Format for display - either hours/minutes or raw minutes
         is_late = obj.minutes_late > 0
         abs_mins = abs(obj.minutes_late)
 
-        # Format in hours and minutes
         hours = abs_mins // 60
         mins = abs_mins % 60
 
@@ -241,13 +262,10 @@ class TimeEntryAdmin(admin.ModelAdmin):
         else:
             formatted_time = f"{mins} min"
 
-        # Format in raw minutes
         raw_minutes = f"{abs_mins} min"
 
-        # Determine status text
         status = "late" if is_late else "early"
 
-        # Create HTML with data attributes for toggling
         color = "red" if is_late else "green"
         return format_html(
             '<span style="color: {color}; cursor: pointer;" '
@@ -266,18 +284,27 @@ class TimeEntryAdmin(admin.ModelAdmin):
     formatted_minutes_late.admin_order_field = "minutes_late"
 
     def user__first_name(self, obj):
+        """
+        Returns the first name of the user associated with the time entry.
+        """
         return obj.user.first_name
 
     user__first_name.short_description = "First Name"
     user__first_name.admin_order_field = "user__first_name"
 
     def user__surname(self, obj):
+        """
+        Returns the surname of the user associated with the time entry.
+        """
         return obj.user.surname
 
     user__surname.short_description = "Surname"
     user__surname.admin_order_field = "user__surname"
 
     def view_image_path(self, obj):
+        """
+        Returns a link to view the image associated with the time entry.
+        """
         if obj.image_path:
             return format_html(
                 '<a href="{}" target="_blank">View Image</a>',
@@ -288,25 +315,40 @@ class TimeEntryAdmin(admin.ModelAdmin):
     view_image_path.short_description = "View Image"
 
     class Media:
+        """
+        Adds custom JavaScript to the admin interface.
+        """
         js = ("admin/js/toggle_time_format.js",)
 
 
 class CompanyAdmin(admin.ModelAdmin):
+    """
+    Admin interface for Company model.
+    """
     search_fields = ["name"]
     list_display = ("name",)
 
 
 class DepartmentAdmin(admin.ModelAdmin):
+    """
+    Admin interface for Department model.
+    """
     search_fields = ["name"]
     list_display = ("name",)
 
 
 class PositionAdmin(admin.ModelAdmin):
+    """
+    Admin interface for Position model.
+    """
     search_fields = ["name"]
     list_display = ("name",)
 
 
 class TimePresetAdmin(admin.ModelAdmin):
+    """
+    Admin interface for TimePreset model.
+    """
     list_display = (
         "name",
         "start_time",
@@ -323,20 +365,32 @@ class TimePresetAdmin(admin.ModelAdmin):
     )
 
     class Media:
+        """
+        Adds custom JavaScript to the admin interface.
+        """
         js = ("admin/js/custom_time_options.js",)
 
 
 class DayOverrideInline(admin.TabularInline):
+    """
+    Inline admin interface for DayOverride model.
+    """
     model = DayOverride
     extra = 0
 
 
 class ScheduleGroupAdmin(admin.ModelAdmin):
+    """
+    Admin interface for ScheduleGroup model.
+    """
     list_display = ("name", "default_schedule", "get_overrides", "created_at")
     search_fields = ("name",)
     inlines = [DayOverrideInline]
 
     def get_overrides(self, obj):
+        """
+        Returns a formatted string of day overrides for the schedule group.
+        """
         overrides = obj.day_overrides.all()
         if overrides:
             override_list = [
@@ -353,6 +407,9 @@ class ScheduleGroupAdmin(admin.ModelAdmin):
 
 
 class AdminLogAdmin(admin.ModelAdmin):
+    """
+    Admin interface for AdminLog model.
+    """
     list_display = ('user', 'action', 'description', 'ip_address', 'timestamp')
     list_filter = ('action', 'timestamp')
     search_fields = ('user__employee_id', 'user__first_name', 'user__surname', 'description')
@@ -360,15 +417,27 @@ class AdminLogAdmin(admin.ModelAdmin):
     date_hierarchy = 'timestamp'
 
     def has_add_permission(self, request):
+        """
+        Disables the add permission for AdminLog.
+        """
         return False
 
     def has_delete_permission(self, request, obj=None):
-        return False  # Changed from superuser-only to nobody
+        """
+        Disables the delete permission for AdminLog.
+        """
+        return False
 
     def has_change_permission(self, request, obj=None):
-        return False  # Prevent editing
+        """
+        Disables the change permission for AdminLog.
+        """
+        return False
 
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        """
+        Customizes the change form view to remove save buttons.
+        """
         extra_context = extra_context or {}
         extra_context['show_save'] = False
         extra_context['show_save_and_continue'] = False
@@ -376,13 +445,18 @@ class AdminLogAdmin(admin.ModelAdmin):
         return super().changeform_view(request, object_id, form_url, extra_context)
 
 
-# Add this class
 class LeaveTypeAdmin(admin.ModelAdmin):
+    """
+    Admin interface for LeaveType model.
+    """
     search_fields = ["name"]
     list_display = ("name",)
 
 
 class LeaveAdmin(admin.ModelAdmin):
+    """
+    Admin interface for Leave model.
+    """
     list_display = ('employee', 'leave_type', 'start_date', 'end_date', 'status', 'created_at')
     list_filter = ('status', 'leave_type', 'start_date')
     search_fields = ('employee__first_name', 'employee__surname', 'employee__employee_id', 'reason')
@@ -397,10 +471,8 @@ class LeaveAdmin(admin.ModelAdmin):
     )
 
 
-# Unregister the group model
 admin.site.unregister(Group)
 
-# Register the models
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(TimePreset, TimePresetAdmin)
 admin.site.register(TimeEntry, TimeEntryAdmin)
@@ -409,5 +481,5 @@ admin.site.register(Position, PositionAdmin)
 admin.site.register(ScheduleGroup, ScheduleGroupAdmin)
 admin.site.register(Department, DepartmentAdmin)
 admin.site.register(AdminLog, AdminLogAdmin)
-admin.site.register(LeaveType, LeaveTypeAdmin)  # Register the model at the bottom with other admin registrations
-admin.site.register(Leave, LeaveAdmin)  # Register the Leave model with LeaveAdmin
+admin.site.register(LeaveType, LeaveTypeAdmin)
+admin.site.register(Leave, LeaveAdmin)

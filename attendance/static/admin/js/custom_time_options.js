@@ -1,5 +1,8 @@
 window.addEventListener('load', function () {
     (function ($) {
+        /**
+         * Defines custom time options for the Django admin time picker.
+         */
         DateTimeShortcuts.clockHours.default_ = [
             ['6:00 AM', 6],
             ['7:00 AM', 7],
@@ -11,6 +14,11 @@ window.addEventListener('load', function () {
             ['7:00 PM', 19],
         ];
 
+        /**
+         * Handles the selection of a quick time link in the Django admin time picker.
+         * @param {number} num - The index of the time input field.
+         * @param {number} val - The time value to set (in hours). If -1, sets the current time.
+         */
         DateTimeShortcuts.handleClockQuicklink = function (num, val) {
             let d;
             if (val == -1) {

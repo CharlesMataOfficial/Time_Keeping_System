@@ -6,33 +6,58 @@ from django.contrib.admin.models import LogEntry
 
 
 class BlockAdminAccessMiddleware:
+    """
+    Middleware to block unauthorized access to the admin page.
+    """
     def __init__(self, get_response):
+        """
+        Initialize the middleware.
+
+        Args:
+            get_response: The next middleware or view to call.
+        """
         self.get_response = get_response
 
     def __call__(self, request):
-        # Check if the user is trying to access the admin page
-        if request.path.startswith("/admin"):
+        """
+        Process the request.
 
-            # Allow access if the user is an authenticated staff or superuser
+        If the user is trying to access the admin page and is not an authenticated
+        staff or superuser, redirect them to the login page.
+
+        Args:
+            request: The HTTP request object.
+
+        Returns:
+            The HTTP response object.
+        """
+        if request.path.startswith("/admin"):
             if request.user.is_authenticated and (
                 request.user.is_staff or request.user.is_superuser
             ):
                 return self.get_response(request)
 
-            # Otherwise, redirect to the login page
-            return redirect(
-                reverse("login")
-            )  # Adjust 'login' to your actual login page name
+            return redirect(reverse("login"))
 
         return self.get_response(request)
 
 
 @receiver(post_save, sender=LogEntry)
 def log_admin_entries(sender, instance, created, **kwargs):
-    """Log Django admin actions from LogEntry"""
+    """
+    Log Django admin actions from LogEntry.
+
+    This function is a receiver for the post_save signal of the LogEntry model.
+    It creates an AdminLog entry for each admin action, excluding user actions.
+
+    Args:
+        sender: The model class that sent the signal (LogEntry).
+        instance: The LogEntry instance being saved.
+        created (bool): True if a new record was created.
+        **kwargs: Additional keyword arguments.
+    """
     from .models import AdminLog  # Import locally to avoid circular import
 
-    # Skip if this is a user action - already handled by direct logging
     if instance.content_type.model == 'customuser':
         return
 
@@ -40,7 +65,6 @@ def log_admin_entries(sender, instance, created, **kwargs):
         action_flag = instance.action_flag
         action = None
 
-        # Create a more readable description based on the action type
         if action_flag == 1:  # Addition
             action = 'admin_create'
             description = f"Added new {instance.content_type.model}: {instance.object_repr}"
@@ -51,7 +75,7 @@ def log_admin_entries(sender, instance, created, **kwargs):
             action = 'admin_delete'
             description = f"Deleted {instance.content_type.model}: {instance.object_repr}"
         else:
-            return  # Skip unknown action types
+            return
 
         if action:
             AdminLog.objects.create(

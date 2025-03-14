@@ -12,7 +12,7 @@ form {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 0px; /* Adjust spacing if needed */
+  margin-top: 0px;
 }
 
 body {
@@ -28,7 +28,7 @@ body {
 }
 
 h1 {
-  margin-top: 30px; /* Adds space below the fixed header */
+  margin-top: 30px;
   font-size: 70px;
   color: #772e3f;
   margin-bottom: 20px;
@@ -41,10 +41,10 @@ h1 {
 
 .form-container,
 .login-container {
-  background: rgba(255, 255, 255, 0.85); /* Opaque background */
+  background: rgba(255, 255, 255, 0.85);
   padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); /* Softer and bigger shadow */
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
   width: 100%;
   text-align: center;
 }
@@ -81,9 +81,9 @@ header {
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Thicker shadow for a more dramatic effect */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   z-index: 1000;
-  overflow: hidden; /* Prevent overflow if logos are wide */
+  overflow: hidden;
 }
 
 .logo,
@@ -93,68 +93,66 @@ header {
 }
 
 .logo img {
-  /* SF GROUP LOGO */
-  width: 150px; /* Change this to your desired size */
-  height: auto; /* Maintains aspect ratio */
+  width: 150px;
+  height: auto;
   margin-right: 10px;
 }
 
 .partner-logo img {
-  /* Company Logos */
   background-color: white;
-  padding: 10px; /* Adds space around the logo */
-  border-radius: 10px; /* Optional rounded corners */
+  padding: 10px;
+  border-radius: 10px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-  width: 250px; /* Change this to your desired size */
-  height: auto; /* Maintains aspect ratio */
+  width: 250px;
+  height: auto;
   margin-top: 100px;
   margin-right: 450px;
 }
 
 .partner-logos {
-  background-color: #ffffff3c; /* Set background to white */
+  background-color: #ffffff3c;
   display: flex;
   align-items: center;
   border-radius: 10px;
-  overflow: hidden; /* Changed from overflow-x: auto */
-  width: 100%; /* Add explicit width */
+  overflow: hidden;
+  width: 100%;
   height: 80%;
-  padding: 0 10px; /* Add some padding for spacing */
-  position: relative; /* Add position relative */
-  gap: 10px; /* Add space between logos */
-  scrollbar-width: none; /* For modern browsers, make the scrollbar thinner */
+  padding: 0 10px;
+  position: relative;
+  gap: 10px;
+  scrollbar-width: none;
   margin-right: 30px;
 }
 
 .partner-logos img {
-  height: 40px; /* Ensure consistent height for all logos */
-  width: auto; /* Maintain aspect ratio */
-  transition: transform 0.2s ease; /* Add smooth scaling effect */
-  flex-shrink: 0; /* Prevent logo shrinking */
+  height: 40px;
+  width: auto;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
 }
 
 .partner-logos img:hover {
-  transform: scale(1.1); /* Slightly enlarge logo on hover */
+  transform: scale(1.1);
   cursor: pointer;
 }
 
 .partner-logos-inner {
   display: inline-flex;
-  animation: scroll-logos 20s linear infinite; /* Adjust duration for speed */
+  animation: scroll-logos 20s linear infinite;
   display: flex;
-  gap: 20px; /* Space between logos */
+  gap: 20px;
 }
 
 .partner-logos-inner img {
-  height: 60px; /* Ensure consistent logo height */
-  width: auto; /* Maintain aspect ratio */
+  height: 60px;
+  width: auto;
   border-radius: 5px;
-  margin: 0 10px; /* Adjust spacing between logos */
-  transition: transform 0.2s ease; /* Smooth scaling on hover */
+  margin: 0 10px;
+  transition: transform 0.2s ease;
 }
 
 .partner-logos-inner img:hover {
-  transform: scale(1.1); /* Slightly enlarge on hover */
+  transform: scale(1.1);
 }
 
 @keyframes scroll-logos {
@@ -162,7 +160,6 @@ header {
         transform: translateX(0);
     }
     100% {
-        /* Set this to the negative width of your total logos + gaps */
         transform: translateX(-100%);
     }
 }
@@ -176,7 +173,7 @@ header {
 .input-group input {
   max-width: 500px;
   width: 100%;
-  padding: 12px; /* Slightly more padding for comfort */
+  padding: 12px;
   border: 1px solid #ddd;
   border-radius: 15px;
   font-size: 16px;
@@ -184,8 +181,8 @@ header {
 }
 
 .input-group input:focus {
-  border-color: #772e3f; /* Accent color for active state */
-  box-shadow: 0 0 8px rgba(119, 46, 63, 0.5); /* Subtle shadow to indicate focus */
+  border-color: #772e3f;
+  box-shadow: 0 0 8px rgba(119, 46, 63, 0.5);
 }
 
 .login-button {
@@ -193,7 +190,7 @@ header {
   width: 15%;
   max-width: 200px;
   margin: 0 auto;
-  padding: 12px 25px; /* Wider padding for a more clickable button */
+  padding: 12px 25px;
   background-color: #772e3f;
   color: white;
   border: none;
@@ -207,5 +204,5 @@ header {
 
 .login-button:hover {
   background-color: #5f1f2f;
-  transform: translateY(-5px); /* Slight hover lift effect */
+  transform: translateY(-5px);
 }

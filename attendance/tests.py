@@ -15,7 +15,13 @@ from .utils import get_day_code, format_minutes, create_default_time_preset
 User = get_user_model()
 
 class ModelsTestCase(TestCase):
+    """
+    Test case for attendance models.
+    """
     def setUp(self):
+        """
+        Set up test data for the model tests.
+        """
         # Create test objects for foreign key relationships
         self.company = Company.objects.create(name="Test Company")
         self.department = Department.objects.create(name="Test Department")
@@ -67,26 +73,37 @@ class ModelsTestCase(TestCase):
         )
 
     def test_company_model(self):
+        """
+        Test the Company model.
+        """
         company = Company.objects.get(name="Test Company")
         self.assertEqual(str(company), "Test Company")
         self.assertEqual(Company._meta.verbose_name_plural, "User Companies")
         self.assertEqual(Company._meta.db_table, "django_companies")
 
     def test_department_model(self):
+        """
+        Test the Department model.
+        """
         department = Department.objects.get(name="Test Department")
         self.assertEqual(str(department), "Test Department")
         self.assertEqual(Department._meta.verbose_name_plural, "User Departments")
         self.assertEqual(Department._meta.db_table, "django_departments")
 
     def test_position_model(self):
+        """
+        Test the Position model.
+        """
         position = Position.objects.get(name="Test Position")
         self.assertEqual(str(position), "Test Position")
         self.assertEqual(Position._meta.verbose_name_plural, "User Positions")
         self.assertEqual(Position._meta.db_table, "django_positions")
 
     def test_custom_user_model(self):
+        """
+        Test the custom User model.
+        """
         user = User.objects.get(employee_id="123456")
-        # Fix: Match the actual implementation of get_full_name()
         self.assertEqual(f"{user.first_name} {user.surname}", "Test User")
         self.assertEqual(User._meta.db_table, "django_users")
 
@@ -106,6 +123,9 @@ class ModelsTestCase(TestCase):
             )
 
     def test_time_entry_model(self):
+        """
+        Test the TimeEntry model.
+        """
         # Get the time entry we created
         entry = TimeEntry.objects.get(user=self.user)
         self.assertIsNone(entry.time_out)  # Should be None since we didn't set it
@@ -126,12 +146,18 @@ class ModelsTestCase(TestCase):
         self.assertGreaterEqual(entry.hours_worked, 0.1)  # Just check it's positive
 
     def test_time_preset_model(self):
+        """
+        Test the TimePreset model.
+        """
         preset = TimePreset.objects.get(name="Default Schedule")
         self.assertEqual(preset.start_time.hour, 8)
         self.assertEqual(preset.end_time.hour, 17)
         self.assertEqual(preset.grace_period_minutes, 5)
 
     def test_schedule_group_model(self):
+        """
+        Test the ScheduleGroup model.
+        """
         group = ScheduleGroup.objects.get(name="Test Group")
         self.assertEqual(group.default_schedule, self.time_preset)
 
@@ -152,6 +178,9 @@ class ModelsTestCase(TestCase):
         self.assertEqual(tuesday_schedule, self.time_preset)
 
     def test_announcement_model(self):
+        """
+        Test the Announcement model.
+        """
         announcement = Announcement.objects.get(content="Test Announcement")
         self.assertTrue(announcement.is_posted)
         self.assertIsNotNone(announcement.created_at)
@@ -159,7 +188,13 @@ class ModelsTestCase(TestCase):
 
 
 class UtilsTestCase(TestCase):
+    """
+    Test case for utility functions.
+    """
     def test_get_day_code(self):
+        """
+        Test the get_day_code utility function.
+        """
         # Test all days of the week
         test_dates = [
             (datetime.datetime(2023, 5, 1), "mon"),  # Monday
@@ -175,6 +210,9 @@ class UtilsTestCase(TestCase):
             self.assertEqual(get_day_code(date), expected)
 
     def test_format_minutes(self):
+        """
+        Test the format_minutes utility function.
+        """
         # Test positive minutes (late)
         self.assertEqual(format_minutes(10), "10 mins late")
         self.assertEqual(format_minutes(1), "1 mins late")
@@ -187,6 +225,9 @@ class UtilsTestCase(TestCase):
         self.assertEqual(format_minutes(0), "On time")
 
     def test_create_default_time_preset(self):
+        """
+        Test the create_default_time_preset utility function.
+        """
         # Test Wednesday preset (special case)
         wed_preset = create_default_time_preset("wed")
         self.assertEqual(wed_preset.name, "Default Wednesday")
@@ -203,7 +244,13 @@ class UtilsTestCase(TestCase):
 
 
 class ViewsTestCase(TestCase):
+    """
+    Test case for attendance views.
+    """
     def setUp(self):
+        """
+        Set up test data for the view tests.
+        """
         # Create a client for testing views
         self.client = Client()
 
@@ -231,10 +278,13 @@ class ViewsTestCase(TestCase):
         )
 
     def test_login_view(self):
+        """
+        Test the login view.
+        """
         # Test GET request
         response = self.client.get(reverse('login'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'login_page.html')  # Fix: Use actual template name
+        self.assertTemplateUsed(response, 'login_page.html')
 
         # Test successful login - expecting redirect rather than 200
         response = self.client.post(reverse('login'), {
@@ -254,6 +304,9 @@ class ViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 200)  # Error should stay on same page
 
     def test_logout_view(self):
+        """
+        Test the logout view.
+        """
         # First login
         self.client.login(employee_id='123456', password='testpass123')
 
@@ -262,6 +315,9 @@ class ViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_user_page_access(self):
+        """
+        Test access to the user page.
+        """
         # Login as guard
         self.client.login(employee_id='123456', password='testpass123')
 
@@ -271,6 +327,9 @@ class ViewsTestCase(TestCase):
         self.assertTemplateUsed(response, 'user_page.html')
 
     def test_admin_page_access(self):
+        """
+        Test access to the admin page.
+        """
         # Login as admin
         self.client.login(employee_id='999999', password='admin123')
 
@@ -280,6 +339,9 @@ class ViewsTestCase(TestCase):
         self.assertTemplateUsed(response, 'custom_admin_page.html')
 
     def test_clock_in_api(self):
+        """
+        Test the clock_in API endpoint.
+        """
         # Test clock in API endpoint
         response = self.client.post(
             reverse('clock_in'),
@@ -296,6 +358,9 @@ class ViewsTestCase(TestCase):
         self.assertIn('success', data)
 
     def test_clock_out_api(self):
+        """
+        Test the clock_out API endpoint.
+        """
         # First create a time entry
         entry = TimeEntry.objects.create(
             user=self.user,
