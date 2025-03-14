@@ -656,148 +656,59 @@ function superadmin_redirect() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  // Close modal for Export Excel (Date Range and Employee ID)
+  // Open modal when the main export button is clicked
+  const exportExcelButton = document.getElementById('export_excel_button');
+  exportExcelButton.addEventListener('click', function() {
+    document.getElementById('modal_export_excel').style.display = 'block';
+    // Default to Single Date option
+    showSingleDateSection();
+  });
+  
+  // Close modal when the close icon is clicked
   document.getElementById('modal_export_close').addEventListener('click', function () {
     document.getElementById('modal_export_excel').style.display = 'none';
   });
-
-  // Close modal for Single Date Export
-  document.getElementById('modal_export_single_date_close').addEventListener('click', function () {
-    document.getElementById('modal_export_single_date').style.display = 'none';
-  });
-
-  // Close modals if user clicks outside of them
+  
+  // Optional: Close modal if user clicks outside the modal content
   window.addEventListener('click', function (event) {
-    const modalExportExcel = document.getElementById('modal_export_excel');
-    const modalSingleDate = document.getElementById('modal_export_single_date');
-    if (event.target === modalExportExcel) {
-      modalExportExcel.style.display = 'none';
-    }
-    if (event.target === modalSingleDate) {
-      modalSingleDate.style.display = 'none';
+    const modal = document.getElementById('modal_export_excel');
+    if (event.target === modal) {
+      modal.style.display = 'none';
     }
   });
-
-  // Reset functions
-  function resetDateRangeFields() {
-    document.getElementById('modal_export_date_start').value = '';
-    document.getElementById('modal_export_date_end').value = '';
-    const excludedContainer = document.getElementById('modal_excluded_dates_container');
-    excludedContainer.innerHTML = `
-      <label>Excluded Dates:</label>
-      <div class="excluded-date">
-        <input type="date" class="modal_export_excluded_date">
-        <button class="remove_excluded_date" type="button">&times;</button>
-      </div>
-    `;
-    const removeBtn = excludedContainer.querySelector('.remove_excluded_date');
-    if (removeBtn) {
-      attachRemoveListener(removeBtn);
-    }
+  
+  // Option toggling: Single Date vs. Date Range
+  const optionSingleDate = document.getElementById('option_single_date');
+  const optionDateRange = document.getElementById('option_date_range');
+  
+  optionSingleDate.addEventListener('click', showSingleDateSection);
+  optionDateRange.addEventListener('click', showDateRangeSection);
+  
+  function showSingleDateSection() {
+    optionSingleDate.classList.add('active');
+    optionDateRange.classList.remove('active');
+    document.getElementById('modal_export_by_date_section').style.display = 'block';
+    document.getElementById('modal_export_by_date_range_section').style.display = 'none';
   }
-
-  function resetEmployeeFields() {
-    document.getElementById('modal_export_employee_id').value = '';
+  
+  function showDateRangeSection() {
+    optionDateRange.classList.add('active');
+    optionSingleDate.classList.remove('active');
+    document.getElementById('modal_export_by_date_section').style.display = 'none';
+    document.getElementById('modal_export_by_date_range_section').style.display = 'block';
   }
-
+  
   // Attach remove event for excluded date buttons
   function attachRemoveListener(button) {
     button.addEventListener('click', function() {
       this.parentElement.remove();
     });
   }
-
   document.querySelectorAll('.remove_excluded_date').forEach(button => {
     attachRemoveListener(button);
   });
-
-  // --- Date Range Export Section ---
-  const exportDateRangeButton = document.getElementById('export_date_range_button');
-  if (exportDateRangeButton) {
-    exportDateRangeButton.addEventListener('click', function () {
-      resetEmployeeFields();
-      document.getElementById('modal_export_excel').style.display = 'block';
-      document.getElementById('modal_export_by_date_range_section').style.display = 'block';
-      document.getElementById('modal_export_by_employee_section').style.display = 'none';
-    });
-  }
-
-  // --- Employee ID Export Section ---
-  const exportEmployeeButton = document.getElementById('export_employee_button');
-  if (exportEmployeeButton) {
-    exportEmployeeButton.addEventListener('click', function () {
-      resetDateRangeFields();
-      document.getElementById('modal_export_excel').style.display = 'block';
-      document.getElementById('modal_export_by_employee_section').style.display = 'block';
-      document.getElementById('modal_export_by_date_range_section').style.display = 'none';
-    });
-  }
-
-  // --- Single Date Export Section ---
-  const exportDateButton = document.getElementById('export_date_button');
-  if (exportDateButton) {
-    exportDateButton.addEventListener('click', function () {
-      resetDateRangeFields();
-      resetEmployeeFields();
-      document.getElementById('modal_export_single_date').style.display = 'block';
-    });
-  }
-
-  // Export by Date Range submit handler
-  const exportDateRangeSubmit = document.getElementById('modal_export_date_range_submit');
-  if (exportDateRangeSubmit) {
-    exportDateRangeSubmit.addEventListener('click', function () {
-      const startDate = document.getElementById('modal_export_date_start').value;
-      const endDate = document.getElementById('modal_export_date_end').value;
-      if (!startDate || !endDate) {
-        alert("Please select both start and end dates.");
-        return;
-      }
-
-      const excludedInputs = document.getElementsByClassName('modal_export_excluded_date');
-      let excludedDates = [];
-      for (let input of excludedInputs) {
-        if (input.value) {
-          excludedDates.push(input.value);
-        }
-      }
-
-      let url = `/export_time_entries_range/?date_start=${startDate}&date_end=${endDate}`;
-      excludedDates.forEach(date => {
-        url += `&exclude_date=${date}`;
-      });
-
-      window.location.href = url;
-    });
-  }
-
-  // Export by Employee ID submit handler
-  const exportEmployeeSubmit = document.getElementById('modal_export_employee_submit');
-  if (exportEmployeeSubmit) {
-    exportEmployeeSubmit.addEventListener('click', function () {
-      const employeeId = document.getElementById('modal_export_employee_id').value.trim();
-      if (!employeeId) {
-        alert("Please enter an Employee ID.");
-        return;
-      }
-      window.location.href = `/export_time_entries_by_employee/?employee_id=${employeeId}`;
-    });
-  }
-
-  // Single Date Export submit handler
-  const exportDateSubmit = document.getElementById('modal_export_date_submit');
-  if (exportDateSubmit) {
-    exportDateSubmit.addEventListener('click', function () {
-      const dateValue = document.getElementById('modal_export_date').value;
-      if (!dateValue) {
-        alert("Please select a date.");
-        return;
-      }
-      window.location.href = `/export_time_entries_by_date/?date=${encodeURIComponent(dateValue)}`;
-    });
-  }
-
-  // Add new excluded date input for date range modal
+  
+  // Add new excluded date input for Date Range export
   const addExcludedDateBtn = document.getElementById('add_excluded_date');
   if (addExcludedDateBtn) {
     addExcludedDateBtn.addEventListener('click', function() {
@@ -812,6 +723,54 @@ document.addEventListener('DOMContentLoaded', function() {
       attachRemoveListener(newInputDiv.querySelector('.remove_excluded_date'));
     });
   }
+  
+  // Submit handler for Single Date Export
+  const exportDateSubmit = document.getElementById('modal_export_date_submit');
+exportDateSubmit.addEventListener('click', function () {
+  const dateValue = document.getElementById('modal_export_date').value;
+  if (!dateValue) {
+    alert("Please select a date.");
+    return;
+  }
+  const employeeId = document.getElementById('modal_export_employee_id').value.trim();
+  let url = `/export_time_entries_by_date/?date=${encodeURIComponent(dateValue)}`;
+  if (employeeId) {
+    url += `&employee_id=${encodeURIComponent(employeeId)}`;
+  }
+  window.location.href = url;
+});
+  
+  // Submit handler for Date Range Export
+  const exportDateRangeSubmit = document.getElementById('modal_export_date_range_submit');
+  exportDateRangeSubmit.addEventListener('click', function () {
+    const startDate = document.getElementById('modal_export_date_start').value;
+    const endDate = document.getElementById('modal_export_date_end').value;
+    if (!startDate || !endDate) {
+      alert("Please select both start and end dates.");
+      return;
+    }
+    
+    // Gather excluded dates (if any)
+    const excludedInputs = document.getElementsByClassName('modal_export_excluded_date');
+    let excludedDates = [];
+    for (let input of excludedInputs) {
+      if (input.value) {
+        excludedDates.push(input.value);
+      }
+    }
+    
+    const employeeId = document.getElementById('modal_export_employee_id').value.trim();
+    
+    let url = `/export_time_entries_range/?date_start=${encodeURIComponent(startDate)}&date_end=${encodeURIComponent(endDate)}`;
+    excludedDates.forEach(date => {
+      url += `&exclude_date=${encodeURIComponent(date)}`;
+    });
+    if (employeeId) {
+      url += `&employee_id=${encodeURIComponent(employeeId)}`;
+    }
+    
+    window.location.href = url;
+  });
 });
 
 // Function to load pending leaves

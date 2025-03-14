@@ -1,12 +1,13 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core.validators import MinLengthValidator
-from django.db import models
+from django.db import models 
 from django.db.models import Max, Q
+
 from django.forms import ValidationError
 from django.utils import timezone
 
-from .utils import (create_default_time_preset, get_day_code)
+from .utils import (create_default_time_preset, get_day_code, format_minutes)
 
 from django.utils.timezone import make_aware
 import datetime as dt
@@ -472,6 +473,7 @@ class AdminLog(models.Model):
 
     def delete(self, *args, **kwargs):
         raise PermissionError("Admin logs cannot be deleted")
+
 
 class LeaveType(models.Model):
     name = models.CharField(max_length=100, unique=True)

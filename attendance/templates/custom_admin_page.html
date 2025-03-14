@@ -248,64 +248,65 @@
 
 
 
- <!-- Export Excel Screen -->
-<div id="export-excel" class="screen">
-  <h1>Export Excel</h1>
-  <div class="export-container">
-    <button class="export-button" id="export_date_button">Export Date</button>
-    <button class="export-button" id="export_date_range_button">Export Date in Range</button>
-    <button class="export-button" id="export_employee_button">Export Employee ID</button>
+  <!-- Export Excel Screen -->
+  <div id="export-excel" class="screen">
+    <h1>Export Excel</h1>
+    <div class="export-container">
+      <!-- Single button to open the export modal -->
+      <button class="export-button" id="export_excel_button">Export</button>
+    </div>
   </div>
-</div>
 
-<!-- Export Excel Modal (for Date Range and Employee ID) -->
-<div id="modal_export_excel" class="modal_export_style">
-  <div class="modal_export_content">
-    <span class="modal_export_close" id="modal_export_close">&times;</span>
-
-    <!-- Section for Export by Date Range with Exclusions -->
-    <div id="modal_export_by_date_range_section" class="modal_export_section" style="display: none;">
-      <div>
-        <h2>Export Excel Date Range</h2>
-        <label for="modal_export_date_start">Start Date:</label>
-        <input type="date" id="modal_export_date_start">
+  <!-- Export Excel Modal -->
+  <div id="modal_export_excel" class="modal_export_style">
+    <div class="modal_export_content">
+      <span class="modal_export_close" id="modal_export_close">&times;</span>
+      
+      <!-- Option Toggler -->
+      <div class="modal_export_options">
+        <button id="option_single_date" class="modal_export_option active">Single Date</button>
+        <button id="option_date_range" class="modal_export_option">Date Range</button>
       </div>
-      <div>
-        <label for="modal_export_date_end">End Date:</label>
-        <input type="date" id="modal_export_date_end">
+      
+      <!-- Common Section: Optional Employee ID -->
+      <div class="modal_export_section">
+        <label for="modal_export_employee_id">Employee ID (Optional):</label>
+        <input type="text" id="modal_export_employee_id" placeholder="Enter Employee ID">
       </div>
-      <div id="modal_excluded_dates_container">
-        <label>Excluded Dates:</label>
-        <div class="excluded-date">
-          <input type="date" class="modal_export_excluded_date">
-          <button class="remove_excluded_date" type="button">&times;</button>
+      
+      <!-- Single Date Export Section -->
+      <div id="modal_export_by_date_section" class="modal_export_section">
+        <h2>Export by Single Date</h2>
+        <label for="modal_export_date">Select Date:</label>
+        <input type="date" id="modal_export_date">
+        <button id="modal_export_date_submit" type="button">Export</button>
+      </div>
+      
+      <!-- Date Range Export Section -->
+      <div id="modal_export_by_date_range_section" class="modal_export_section" style="display: none;">
+        <h2>Export by Date Range</h2>
+        <div>
+          <label for="modal_export_date_start">Start Date:</label>
+          <input type="date" id="modal_export_date_start">
         </div>
+        <div>
+          <label for="modal_export_date_end">End Date:</label>
+          <input type="date" id="modal_export_date_end">
+        </div>
+        <!-- Excluded Dates (if needed) -->
+        <div id="modal_excluded_dates_container">
+          <label>Excluded Dates:</label>
+          <div class="excluded-date">
+            <input type="date" class="modal_export_excluded_date">
+            <button class="remove_excluded_date" type="button">&times;</button>
+          </div>
+        </div>
+        <button id="add_excluded_date" type="button">Add Another Excluded Date</button>
+        <button id="modal_export_date_range_submit" type="button">Export</button>
       </div>
-      <button id="add_excluded_date" type="button">Add Another Excluded Date</button>
-      <button id="modal_export_date_range_submit" type="button">Export Excel</button>
-    </div>
-
-    <!-- Section for Export by Employee ID -->
-    <div id="modal_export_by_employee_section" class="modal_export_section" style="display: none;">
-      <h2>Export Employee ID</h2>
-      <input type="text" id="modal_export_employee_id" placeholder="Enter Employee ID">
-      <button id="modal_export_employee_submit" type="button">Export Excel</button>
+      
     </div>
   </div>
-</div>
-
-<!-- Single Date Export Modal -->
-<div id="modal_export_single_date" class="modal_export_style">
-  <div class="modal_export_content">
-    <span class="modal_export_close" id="modal_export_single_date_close">&times;</span>
-    <div id="modal_export_by_date_section" class="modal_export_section">
-      <h2>Export Excel by Single Date</h2>
-      <label>Select Date:</label>
-      <input type="date" id="modal_export_date">
-      <button id="modal_export_date_submit" type="button">Export Date</button>
-    </div>
-  </div>
-</div>
 
 
     <!-- Announcement Screen -->

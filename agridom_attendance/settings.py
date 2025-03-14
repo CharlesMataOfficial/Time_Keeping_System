@@ -42,9 +42,12 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "attendance",
     "sslserver",
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -53,6 +56,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "attendance.middleware.BlockAdminAccessMiddleware",  # Block admin access
+   
 ]
 
 ROOT_URLCONF = "agridom_attendance.urls"
@@ -156,3 +160,5 @@ CSRF_COOKIE_SECURE = True
 
 # Make sure static files use HTTPS
 # STATIC_URL = 'https://' + ALLOWED_HOSTS[0] + ':8000/static/' if ALLOWED_HOSTS else '/static/'
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
