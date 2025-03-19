@@ -7,7 +7,7 @@
       "program": "${workspaceFolder}/manage.py",
       "args": [
         "runsslserver",
-        "192.168.50.49:8000",
+        "10.0.0.68:8000",
         "--certificate",
         ".\\localhost+3.pem",
         "--key",
