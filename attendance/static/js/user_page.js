@@ -279,13 +279,15 @@ clockInForm.addEventListener("submit", (e) => {
         })
         .then((response) => response.json())
         .then((data) => {
-          // If the clock in attempt returns an error, alert it
           if (!data.success) {
             alert("Clock In Error: " + data.error);
             return;
           }
           addAttendanceItem(data);
           alert("Clock In successful!");
+          if (data.warning) {
+            alert(data.warning);
+          }
           updatePartnerLogo(data.new_logo);
           clockInModal.style.display = "none";
           clockInForm.reset();
