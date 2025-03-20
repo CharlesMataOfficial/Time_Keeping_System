@@ -181,14 +181,12 @@ def clock_in_view(request):
     # Handle first login cases
     if isinstance(auth_result, dict) and auth_result.get("status") == "first_login":
         if new_pin:
-            # Update PIN for first time login
             user = auth_result["user"]
             user.pin = new_pin
             user.if_first_login = False
             user.save()
             return JsonResponse({"success": True, "message": "PIN updated successfully"})
         else:
-            # Prompt for new PIN
             return JsonResponse({
                 "success": False,
                 "error": "first_login",
@@ -205,7 +203,7 @@ def clock_in_view(request):
             })
         return JsonResponse({"success": True})
 
-    # Check if authentication failed
+    # If authentication failed
     if not auth_result:
         try:
             CustomUser.objects.get(employee_id=employee_id)
@@ -214,23 +212,40 @@ def clock_in_view(request):
             error_message = "Employee ID not found"
         return JsonResponse({"success": False, "error": error_message})
 
-
-    # If authentication passed, proceed with clock in
+    # Authentication passed: get the user
     user = auth_result
 
-    # Handle company logo using the utility function
-    user_company = user.company.name if user.company else ""
-    company_logo = get_company_logo(user_company)
+    # --- Prevent Multiple Clock-Ins in the Same Day ---
+    now = timezone.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    # Check if there is already a clock in entry for today for this user
+    if TimeEntry.objects.filter(user=user, time_in__gte=today_start).exists():
+        return JsonResponse({"success": False, "error": "You have already clocked in today"})
 
-    # Create time entry (using the updated clock_in that always creates a new record)
+    # --- Check for Previous Day Entry Without Clock-Out ---
+    yesterday_start = today_start - timedelta(days=1)
+    yesterday_end = today_start
+    yesterday_entry = TimeEntry.objects.filter(
+        user=user,
+        time_in__gte=yesterday_start,
+        time_in__lt=yesterday_end,
+        time_out__isnull=True
+    ).first()
+    warning_message = None
+    if yesterday_entry:
+        warning_message = "Clock in successful! However, you forgot to clock out yesterday."
+
+    # --- Proceed with Creating a New Clock-In Entry ---
     entry = TimeEntry.clock_in(user)
     if image_path:
         entry.image_path = image_path
         entry.save()
 
+    # Get the company logo using the utility function
+    user_company = user.company.name if user.company else ""
+    company_logo = get_company_logo(user_company)
+
     # Fetch updated attendance list for today
-    now = timezone.now()
-    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     today_end = today_start + timedelta(days=1)
     todays_entries = TimeEntry.objects.filter(
         time_in__gte=today_start, time_in__lt=today_end
@@ -249,7 +264,7 @@ def clock_in_view(request):
         for entry in todays_entries
     ]
 
-    return JsonResponse({
+    response = {
         "success": True,
         "employee_id": user.employee_id,
         "first_name": user.first_name,
@@ -260,7 +275,11 @@ def clock_in_view(request):
         "image_path": entry.image_path,
         "new_logo": company_logo,
         "attendance_list": attendance_list,
-    })
+    }
+    if warning_message:
+        response["warning"] = warning_message
+
+    return JsonResponse(response)
 
 
 @require_POST

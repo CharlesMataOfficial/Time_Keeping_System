@@ -312,6 +312,9 @@ clockInForm.addEventListener("submit", (e) => {
           }
           addAttendanceItem(data);
           alert("Clock In successful!");
+          if (data.warning) {
+            alert(data.warning);
+          }
           updatePartnerLogo(data.new_logo);
           clockInModal.style.display = "none";
           clockInForm.reset();
