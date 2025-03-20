@@ -138,21 +138,43 @@ class Command(BaseCommand):
             if legacy_user.employee_id in manual_departments:
                 department_instance = departments.get(manual_departments[legacy_user.employee_id], None)
 
-            new_user = CustomUser.objects.create(
-                employee_id=legacy_user.employee_id,
-                first_name=legacy_user.first_name,
-                surname=legacy_user.surname,
-                company=companies.get(legacy_user.company),
-                position=positions.get(legacy_user.position),
-                department=department_instance,
-                birth_date=legacy_user.birth_date,
-                date_hired=legacy_user.date_hired,
-                pin=legacy_user.pin,
-                password='',
-                is_active=bool(legacy_user.status),
-                if_first_login=False,
-                schedule_group=schedule_group
-            )
+            # Check if user already exists before creating
+            try:
+                existing_user = CustomUser.objects.get(employee_id=legacy_user.employee_id)
+                existing_user.username = legacy_user.employee_id
+                existing_user.first_name = legacy_user.first_name
+                existing_user.surname = legacy_user.surname
+                existing_user.company = companies.get(legacy_user.company)
+                existing_user.position = positions.get(legacy_user.position)
+                existing_user.department = department_instance
+                existing_user.birth_date = legacy_user.birth_date
+                existing_user.date_hired = legacy_user.date_hired
+                existing_user.pin = legacy_user.pin
+                existing_user.is_active = bool(legacy_user.status)
+                existing_user.if_first_login = False
+                existing_user.schedule_group = schedule_group
+                existing_user.save()
+                new_user = existing_user
+                self.stdout.write(self.style.WARNING(f"Updated existing user: {legacy_user.employee_id}"))
+            except CustomUser.DoesNotExist:
+                # Create new user
+                new_user = CustomUser.objects.create(
+                    employee_id=legacy_user.employee_id,
+                    username=legacy_user.employee_id,
+                    first_name=legacy_user.first_name,
+                    surname=legacy_user.surname,
+                    company=companies.get(legacy_user.company),
+                    position=positions.get(legacy_user.position),
+                    department=department_instance,
+                    birth_date=legacy_user.birth_date,
+                    date_hired=legacy_user.date_hired,
+                    pin=legacy_user.pin,
+                    password='',
+                    is_active=bool(legacy_user.status),
+                    if_first_login=False,
+                    schedule_group=schedule_group
+                )
+                self.stdout.write(self.style.SUCCESS(f"Created new user: {legacy_user.employee_id}"))
 
             user_mapping[legacy_user.employee_id] = new_user
         self.stdout.write(self.style.SUCCESS('Users migrated successfully'))
