@@ -128,8 +128,8 @@ class CustomUserAdmin(UserAdmin):
 
         obj.username = obj.employee_id
 
-        if obj.is_superuser and obj.pin:
-            obj.set_password(obj.pin)
+        if not change or not obj.password:
+            obj.set_password("0000")
 
         action_type = 'admin_update' if change else 'admin_create'
         if change:
