@@ -161,6 +161,11 @@ class Command(BaseCommand):
                 existing_user.username = legacy_user.employee_id
                 if existing_user.is_superuser and existing_user.pin:
                     existing_user.set_password(existing_user.pin)
+                # For existing users who don't have a password
+                existing_user.username = legacy_user.employee_id
+                if not existing_user.password:
+                    existing_user.set_password("0000")
+                    existing_user.save()
             except CustomUser.DoesNotExist:
                 # Create new user
                 new_user = CustomUser.objects.create(
@@ -174,17 +179,14 @@ class Command(BaseCommand):
                     birth_date=legacy_user.birth_date,
                     date_hired=legacy_user.date_hired,
                     pin=legacy_user.pin,
-                    password='',
                     is_active=bool(legacy_user.status),
                     if_first_login=False,
                     schedule_group=schedule_group
                 )
+                # Set default password for all new users
+                new_user.set_password("0000")
+                new_user.save()
                 self.stdout.write(self.style.SUCCESS(f"Created new user: {legacy_user.employee_id}"))
-
-                # Set password for superusers
-                if new_user.is_superuser and new_user.pin:
-                    new_user.set_password(new_user.pin)
-                    new_user.save()
 
             user_mapping[legacy_user.employee_id] = new_user
         self.stdout.write(self.style.SUCCESS('Users migrated successfully'))
