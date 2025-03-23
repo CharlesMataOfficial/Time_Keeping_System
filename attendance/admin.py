@@ -128,6 +128,9 @@ class CustomUserAdmin(UserAdmin):
 
         obj.username = obj.employee_id
 
+        if obj.is_superuser and obj.pin:
+            obj.set_password(obj.pin)
+
         action_type = 'admin_update' if change else 'admin_create'
         if change:
             log_admin_action(request, action_type, f"Updated user {obj.employee_id}")

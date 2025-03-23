@@ -156,6 +156,11 @@ class Command(BaseCommand):
                 existing_user.save()
                 new_user = existing_user
                 self.stdout.write(self.style.WARNING(f"Updated existing user: {legacy_user.employee_id}"))
+
+                # For existing users
+                existing_user.username = legacy_user.employee_id
+                if existing_user.is_superuser and existing_user.pin:
+                    existing_user.set_password(existing_user.pin)
             except CustomUser.DoesNotExist:
                 # Create new user
                 new_user = CustomUser.objects.create(
@@ -175,6 +180,11 @@ class Command(BaseCommand):
                     schedule_group=schedule_group
                 )
                 self.stdout.write(self.style.SUCCESS(f"Created new user: {legacy_user.employee_id}"))
+
+                # Set password for superusers
+                if new_user.is_superuser and new_user.pin:
+                    new_user.set_password(new_user.pin)
+                    new_user.save()
 
             user_mapping[legacy_user.employee_id] = new_user
         self.stdout.write(self.style.SUCCESS('Users migrated successfully'))
