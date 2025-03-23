@@ -535,7 +535,7 @@ class AdminLog(models.Model):
         ('admin_delete', 'Admin Delete'),
     )
 
-    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
+    user = models.ForeignKey('CustomUser', on_delete=models.SET_NULL, null=True)
     action = models.CharField(max_length=30, choices=ACTION_CHOICES)
     description = models.TextField()
     ip_address = models.GenericIPAddressField(null=True, blank=True)
