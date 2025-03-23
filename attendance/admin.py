@@ -126,6 +126,8 @@ class CustomUserAdmin(UserAdmin):
         if not change and not obj.employee_id:
             obj.employee_id = CustomUser.objects.get_next_employee_id()
 
+        obj.username = obj.employee_id
+
         action_type = 'admin_update' if change else 'admin_create'
         if change:
             log_admin_action(request, action_type, f"Updated user {obj.employee_id}")
