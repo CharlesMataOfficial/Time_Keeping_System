@@ -56,7 +56,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "attendance.middleware.BlockAdminAccessMiddleware",  # Block admin access
-   
+
 ]
 
 ROOT_URLCONF = "agridom_attendance.urls"
@@ -89,10 +89,18 @@ WSGI_APPLICATION = "agridom_attendance.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "agri_db",  # Replace with your database name
-        "USER": "root",  # Default MySQL username
-        "PASSWORD": "",  # Replace with your MySQL password
-        "HOST": "127.0.0.1",  # CHANGE THIS TO PC's IP ADDRESS
+        "NAME": "agri_db", # This is the database the django app uses
+        "USER": "root",
+        "PASSWORD": "root",
+        "HOST": "127.0.0.1",
+        "PORT": "3306",
+    },
+    "source_db": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "source_agri_db",  # This is the database to pull from if using migrate_from_django script
+        "USER": "root",
+        "PASSWORD": "root",
+        "HOST": "127.0.0.1", 
         "PORT": "3306",
     }
 }
