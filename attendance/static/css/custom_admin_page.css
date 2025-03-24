@@ -6,23 +6,22 @@
 
 body {
   background: linear-gradient(
-      rgba(200, 200, 200, 0.2),
-      rgba(200, 200, 200, 0.2)
+      rgba(255, 255, 255, 0.6),
+      rgba(255, 255, 255, 0.6)
     ),
-    url("/static/images/bg/agritech_bg.png");
+    url("/static/images/bg/new_bg.png");
   background-size: cover;
   background-position: center;
 }
-
 body,
 html {
   margin: 0;
   padding: 0;
   height: 100%;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  overflow: hidden;
+  justify-content: center; /* Horizontally center content */
+  align-items: flex-start; /* Align items at the top to avoid extra space */
+  overflow: hidden; /* Prevent both vertical and horizontal scrollbars */
 }
 
 h1,
@@ -38,7 +37,7 @@ h2 {
   position: relative;
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow: hidden; /* Prevent overflow inside container */
 }
 
 /* Menu Icon */
@@ -64,7 +63,7 @@ h2 {
 .menu {
   position: fixed;
   top: 0;
-  left: -300px;
+  left: -300px; /* Initially hidden */
   width: 260px;
   height: 100%;
   background-image: url("/static/images/red1.jpg");
@@ -73,7 +72,7 @@ h2 {
   color: white;
   transition: left 0.3s ease;
   padding: 20px;
-  z-index: 2;
+  z-index: 2; /* Lower z-index to ensure text stays on top */
 }
 
 .menu ul {
@@ -104,33 +103,33 @@ h2 {
 
 .sign-out {
   position: absolute;
-  bottom: 30px;
+  bottom: 30px; /* Moves it above the Sign Out button */
   left: 40%;
   width: max-content;
   text-align: center;
-  transition: none !important;
+  transition: none !important; /* Disable animations */
   font-size: 18px;
 }
 
 .menu-item.sign-out {
   color: #ffffff;
-  background-color: transparent !important;
+  background-color: transparent !important; /* Ensure no background change */
 }
 
 .menu-item.sign-out:hover {
   color: #621c1c;
-  background-color: transparent !important;
+  background-color: transparent !important; /* Prevent hover background */
 }
 
 .menu-item.sign-out:active {
-  background-color: transparent !important;
+  background-color: transparent !important; /* Prevent background when clicked */
 }
 
 .sign-out img {
-  width: 20px;
+  width: 20px; /* Adjust size as needed */
   height: auto;
   position: relative;
-  bottom: 3px;
+  bottom: 3px; /* Adjust this value to move the icon higher */
   left: 5%;
 }
 
@@ -140,22 +139,22 @@ h2 {
 
 /* Screens */
 .screen {
-  display: none;
-  position: absolute;
+  display: none; /* Hidden initially */
+  position: absolute; /* Prevent elements from moving up */
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   padding: 20px;
-  overflow-y: auto;
+  overflow-y: auto; /* Scroll only if content overflows */
 }
 
 #dashboard {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+  justify-content: center; /* Vertically center the content */
+  align-items: center; /* Horizontally center the content */
+  text-align: center; /* Center text inside */
   height: 100vh;
 }
 
@@ -171,9 +170,9 @@ h2 {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%); /* Perfectly centers the row */
   display: flex;
-  gap: 40px;
+  gap: 40px; /* Equal spacing between containers */
   justify-content: center;
   align-items: center;
 }
@@ -191,7 +190,7 @@ h2 {
   justify-content: center;
   align-items: center;
   position: relative;
-  top: 0;
+  top: 0; /* Aligns with the top of Late Employees */
 }
 
 .total-user-time-container h2 {
@@ -211,8 +210,8 @@ h2 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  height: 300px;
+  justify-content: space-between; /* Evenly distribute inside */
+  height: 300px; /* Same height as the Top 5 Late Employees container */
 }
 
 /* Total User Time Out - Same Style as Time In */
@@ -231,17 +230,17 @@ h2 {
 
 .total-user-timeout-container {
   position: relative;
-  bottom: 0;
+  bottom: 0; /* Aligns with bottom of Late Employees */
 }
 
 .total-user-timeout-container h2 {
-  font-size: 14px;
+  font-size: 14px; /* Same as Total User Time In */
   color: #621c1c;
   margin-bottom: 5px;
 }
 
 .total-user-timeout-container p {
-  font-size: 20px;
+  font-size: 20px; /* Same as Total User Time In */
   font-weight: bold;
   color: #333;
 }
@@ -262,15 +261,15 @@ h2 {
 }
 
 .total-late-employees {
-  font-size: 14px;
-  color: #621c1c;
+  font-size: 14px; /* Pareho sa Top 5 Late Employees */
+  color: #621c1c; /* Parehong kulay */
   font-weight: bold;
-  margin-top: 5px;
-  margin-bottom: 3px;
+  margin-top: 5px; /* Bawasan ang space sa taas */
+  margin-bottom: 3px; /* Bawasan ang space sa baba */
 }
 
 .total-late-employees span {
-  font-size: 20px;
+  font-size: 20px; /* Pareho sa Total User Time */
   font-weight: bold;
   color: #333;
 }
@@ -282,7 +281,7 @@ h2 {
 }
 
 .top-late-employees-container p {
-  font-size: 20px;
+  font-size: 20px; /* Same as Total User Time In */
   font-weight: bold;
   color: #333;
 }
@@ -290,21 +289,23 @@ h2 {
 /* Bigger Space for Late Employees Names */
 .late-employees-list {
   width: 100%;
-  height: 500px;
+  height: 500px; /* Gawing mas malaki ang height */
+  /* background: rgba(240, 240, 240, 0.9); */
   font-size: 14px;
   color: #333;
-  overflow-y: auto;
+  /* margin-bottom: 5px; */ /* Paliitin ang espasyo sa pagitan */
+  overflow-y: auto; /* Enables scrolling if names exceed space */
 }
 
 .total-late-employees h2 {
-  font-size: 14px;
-  color: #621c1c;
-  font-weight: bold;
+  font-size: 14px; /* Pareho sa Top 5 Late Employees */
+  color: #621c1c; /* Parehong kulay */
+  font-weight: bold; /* Optional: Para mas litaw */
   margin-bottom: 8px;
 }
 
 .total-late-employees p {
-  font-size: 20px;
+  font-size: 20px; /* Same as Total User Time In */
   font-weight: bold;
   color: #333;
 }
@@ -344,7 +345,7 @@ h2 {
   font-size: 14px;
   color: #621c1c;
   margin-bottom: 8px;
-  margin-top: 10px;
+  margin-top: 10px; /* Ensures it's at the top */
 }
 
 /* Bigger Space for Early Birds Names */
@@ -354,7 +355,7 @@ h2 {
   font-size: 14px;
   color: #333;
   margin-bottom: 8px;
-  overflow-y: auto;
+  overflow-y: auto; /* Enables scrolling if names exceed space */
 }
 
 button,
@@ -375,10 +376,10 @@ button:hover {
 }
 
 #log {
-  position: fixed;
+  position: fixed; /* Keep it fixed in place */
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%); /* Perfectly center it */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -405,12 +406,15 @@ button:hover {
 
 #log_rectangle {
   width: 1000px;
+  /* justify-content: center; */
   height: 500px;
   background-color: #f0f0f0;
   border-radius: 15px;
   overflow: hidden;
-  max-height: 70vh;
-  overflow-y: auto;
+  /* display: flex; */
+  /* align-items: center; */
+  max-height: 70vh; /* 70% of viewport height */
+  overflow-y: auto; /* Enable vertical scrolling */
   width: 100%;
   padding: 10px;
 }
@@ -421,19 +425,19 @@ button:hover {
   background-color: #f0f0f0;
   border-radius: 15px;
   margin: 100px auto;
-  margin-top: 10px;
+  margin-top: 10px; /* Adjust the space above the white rectangle */
   margin-bottom: 50px;
   box-sizing: border-box;
   position: relative;
-  max-height: 70vh;
-  overflow-y: auto;
+  max-height: 70vh; /* 70% of viewport height */
+  overflow-y: auto; /* Enables vertical scrolling */
 }
 
 #attendance-list h1 {
   position: absolute;
-  top: 70px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 70px; /* Keep it above the container */
+  left: 50%; /* Move to the center */
+  transform: translateX(-50%); /* Perfectly center it */
   font-size: 75px;
   text-align: center;
   width: auto;
@@ -449,17 +453,19 @@ button:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 90%;
-  max-width: 1200px;
-  min-width: 900px;
+
+  /* Maintain size but allow responsiveness */
+  width: 90%; /* Responsive width */
+  max-width: 1200px; /* Maximum size */
+  min-width: 900px; /* Prevent it from shrinking too much */
   height: auto;
-  min-height: 500px;
-  max-height: 750px;
+  min-height: 500px; /* Ensure it doesn’t shrink below this */
+  max-height: 750px; /* Optional: Limit max height */
 }
 
 /* Keeps the container centered always */
 .export-container {
-  position: fixed;
+  position: fixed; /* Prevents movement */
   top: 60%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -467,8 +473,8 @@ button:hover {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 600px;
-  height: 400px;
+  width: 600px; /* Do not change */
+  height: 400px; /* Do not change */
   background-size: cover;
   border-radius: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
@@ -483,12 +489,14 @@ button:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 90%;
-  max-width: 1200px;
-  min-width: 900px;
+
+  /* Maintain size but allow responsiveness */
+  width: 90%; /* Responsive width */
+  max-width: 1200px; /* Maximum size */
+  min-width: 900px; /* Prevent it from shrinking too much */
   height: auto;
-  min-height: 500px;
-  max-height: 750px;
+  min-height: 500px; /* Ensure it doesn’t shrink below this */
+  max-height: 750px; /* Optional: Limit max height */
 }
 
 /* Export Buttons */
@@ -512,9 +520,9 @@ button:hover {
 /* Ensures the title remains fixed and centered */
 #export-excel h1 {
   position: absolute;
-  top: 1px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 1px; /* Keep it above the container */
+  left: 50%; /* Move to the center */
+  transform: translateX(-50%); /* Perfectly center it */
   font-size: 75px;
   text-align: center;
   width: auto;
@@ -544,8 +552,8 @@ button:hover {
 /* Arrange containers side by side */
 .announcement-content {
   display: flex;
-  justify-content: center;
-  gap: 20px;
+  justify-content: center; /* Center horizontally */
+  gap: 20px; /* Space between containers */
   margin-top: 20px;
   width: 90%;
   max-width: 1000px;
@@ -589,12 +597,11 @@ button:hover {
   gap: 8px;
   margin-top: 8px;
 }
-
 /* Container for the list */
 .announcement-list-container {
-  overflow-y: auto;
-  border: 1px solid #ccc;
-  padding: 5px;
+  overflow-y: auto; /* Vertical scroll when content overflows */
+  border: 1px solid #ccc; /* Optional: add a border */
+  padding: 5px; /* Optional: add some padding */
   background-color: #ffffff;
   text-align: left;
   margin-top: 20px;
@@ -615,7 +622,7 @@ button:hover {
   display: flex;
   align-items: center;
   gap: 8px;
-  line-height: 1.4;
+  line-height: 1.4; /* Adjust as needed (1.2, 1.4, 1.5, etc.) */
   padding: 5px 0;
   border-bottom: 1px solid #eee;
 }
@@ -623,8 +630,12 @@ button:hover {
 /* Checkbox styling */
 #announcement-list li input[type="checkbox"] {
   flex: 0 0 auto;
-  vertical-align: middle;
-  margin-bottom: 10px;
+  vertical-align: middle; /* Align with text */
+  margin-bottom: 10px; /* Adjust the value as needed */
+  /* Optionally fix size for consistency:
+  width: 16px;
+  height: 16px;
+  */
 }
 
 /* Text styling */
@@ -632,7 +643,7 @@ button:hover {
   flex: 1 1 auto;
   display: inline-block;
   vertical-align: middle;
-  word-wrap: break-word;
+  word-wrap: break-word; /* Allows text wrapping if it's very long */
 }
 
 /* Dropdown Styling */
@@ -704,16 +715,16 @@ button:hover {
   width: 100%;
   display: flex;
   justify-content: center;
-  margin-top: 150px;
-  margin-bottom: 30px;
+  margin-top: 150px; /* Adds spacing below the header */
+  margin-bottom: 30px; /* Adjust this to control space below the dropdown */
 }
 
 /* Dropdown and Button Styling */
 .attendance-dropdown-container {
   display: flex;
   gap: 10px;
-  justify-content: center;
-  align-items: center;
+  justify-content: center; /* Center elements horizontally */
+  align-items: center; /* Align elements properly */
 }
 
 /* Dropdown Styling */
@@ -1571,6 +1582,182 @@ tr:hover {
   border-bottom: 1px solid #eee;
   font-size: 13px;
   color: #333;
+}
+
+/* Checkbox styling in announcement list */
+#announcement-list li input[type="checkbox"] {
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+/* Text in announcement list */
+#announcement-list li span {
+  flex: 1;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+/* Announcement list container - update to match other tables */
+.announcement-list-container {
+  overflow-y: auto;
+  background-color: #ffffff;
+  border-radius: 5px;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: 200px;
+  width: 440px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+/* Container styling for log and attendance */
+#log_rectangle,
+#attendance_rectangle {
+  height: 500px;
+  max-height: 70vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  background-color: #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  padding: 0;
+}
+
+/* Loading indicator styling */
+.loading-spinner {
+  text-align: center;
+  padding: 12px;
+  margin-top: 10px;
+  border-top: 1px solid #eee;
+  color: #666;
+  display: none;
+}
+
+.loading-spinner.visible {
+  display: block;
+}
+
+/* Add a title for the announcement container */
+.announcement-container h2 {
+  color: #333;
+  font-size: 18px;
+  margin-bottom: 10px;
+  text-align: center;
+  width: 100%;
+}
+
+/* Button styling for announcements */
+.save-button,
+.post-button,
+.delete-button,
+.view-button {
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.save-button {
+  background-color: #2980b9;
+  color: white;
+}
+
+.post-button {
+  background-color: #27ae60;
+  color: white;
+}
+
+.delete-button {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.save-button:hover,
+.post-button:hover,
+.delete-button:hover,
+.view-button:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+/* Ensure smooth scrolling for announcement list */
+.announcement-list-container {
+  scroll-behavior: smooth;
+}
+
+/* Animation for newly added announcements */
+@keyframes highlightNew {
+  0% {
+    background-color: #fffde7;
+  }
+  100% {
+    background-color: inherit;
+  }
+}
+
+/* Apply animation to new announcements */
+.highlight-new {
+  animation: highlightNew 2s ease-out;
+}
+
+/* Fix scrolling in log and attendance rectangles */
+#log_rectangle,
+#attendance_rectangle {
+  /* Keep the flex layout but allow scrolling */
+  overflow: auto !important; /* Force overflow to be auto */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Make sure tables take full width */
+.log-table,
+#attendance_rectangle table {
+  width: 100%;
+}
+
+/* Fix table display */
+.log-table tbody,
+#attendance_rectangle table tbody {
+  display: table-row-group; /* Reset to standard table display */
+  width: 100%;
+}
+
+/* Reset table row display */
+.log-table tr,
+#attendance_rectangle table tr {
+  display: table-row; /* Reset to standard table display */
+  width: 100%;
+}
+
+/* Remove fixed max-height that might be causing scrolling issues */
+.log-table tbody,
+#attendance_rectangle table tbody {
+  max-height: none;
+}
+
+/* Make sticky headers work properly */
+.log-table thead,
+#attendance_rectangle table thead {
+  display: table-header-group;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #f2f2f2;
+}
+
+/* Announcement item styling */
+#announcement-list li.announcement-item {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 10px 8px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+  color: #333;
   transition: background-color 0.2s ease;
 }
 
@@ -1629,7 +1816,7 @@ tr:hover {
   top: 0;
   z-index: 10;
   background-color: #f2f2f2;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   display: table-header-group;
 }
 
