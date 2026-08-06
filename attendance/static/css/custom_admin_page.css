@@ -46,7 +46,7 @@ h2 {
   top: 10px;
   left: 7px;
   cursor: pointer;
-  z-index: 10;
+  z-index: 1001;
 }
 
 .menu-icon img {
@@ -72,7 +72,7 @@ h2 {
   color: white;
   transition: left 0.3s ease;
   padding: 20px;
-  z-index: 2; /* Lower z-index to ensure text stays on top */
+  z-index: 1000;
 }
 
 .menu ul {
@@ -1898,4 +1898,583 @@ tr:hover {
 .reject-btn:hover {
   opacity: 0.9;
   transform: translateY(-2px);
+}
+
+@media screen and (max-width: 1200px) {
+  #dashboard_title {
+    font-size: 48px;
+    margin-top: -300px;
+    margin-right: 0;
+  }
+
+  .dashboard-stats-container {
+    gap: 20px;
+  }
+
+  .total-user-time-container,
+  .total-user-timeout-container {
+    width: 200px;
+    height: 100px;
+  }
+
+  .top-late-employees-container,
+  .top-early-birds-container {
+    width: 280px;
+  }
+
+  .top-late-employees-container {
+    height: 350px;
+  }
+
+  .top-early-birds-container {
+    height: 250px;
+  }
+
+  #log h1,
+  #attendance-list h1,
+  #export-excel h1,
+  #announcement h1,
+  #leave-approval h1,
+  #about h1 {
+    font-size: 48px;
+  }
+
+  #log_rectangle,
+  #leave-approval_rectangle {
+    width: 90%;
+    max-width: 900px;
+  }
+
+  #attendance_rectangle {
+    width: 90%;
+    max-width: 900px;
+  }
+
+  #attendance-list {
+    min-width: auto;
+  }
+
+  #export-excel {
+    min-width: auto;
+  }
+
+  .export-container {
+    width: 500px;
+  }
+
+  .about-container {
+    width: 90%;
+    max-width: 1000px;
+  }
+
+  .leave-table {
+    font-size: 13px;
+  }
+
+  .leave-table th,
+  .leave-table td {
+    padding: 8px 6px;
+  }
+}
+
+@media screen and (max-width: 992px) {
+  body, html {
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .screen {
+    position: relative;
+    height: auto;
+    min-height: 100vh;
+    overflow-y: visible;
+  }
+
+  #dashboard {
+    height: auto;
+    min-height: 100vh;
+    padding: 20px 10px;
+  }
+
+  #dashboard_title {
+    font-size: 36px;
+    margin-top: 0;
+    position: relative;
+    top: 10px;
+  }
+
+  .dashboard-stats-container {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-top: 40px;
+  }
+
+  .total-user-time-wrapper {
+    flex-direction: row;
+    gap: 15px;
+    height: auto;
+    justify-content: center;
+    width: 100%;
+    max-width: 440px;
+  }
+
+  .total-user-time-container,
+  .total-user-timeout-container {
+    width: 100%;
+    max-width: 200px;
+    height: 90px;
+  }
+
+  .top-late-employees-container,
+  .top-early-birds-container {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .top-late-employees-container {
+    height: 300px;
+  }
+
+  .top-early-birds-container {
+    height: 220px;
+  }
+
+  .dashboard-icon-top-right {
+    top: 10px;
+    right: 10px;
+  }
+
+  .dashboard-icon-top-right img {
+    width: 24px;
+  }
+
+  .log-filters-container {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .log-filters-container select,
+  .log-filters-container input {
+    font-size: 13px;
+    padding: 8px;
+  }
+
+  #log-search {
+    width: 160px;
+  }
+
+  #log {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: 95%;
+    height: auto;
+    min-height: auto;
+    padding: 20px 10px;
+    margin: 0 auto;
+  }
+
+  #log h1 {
+    margin-bottom: 15px;
+  }
+
+  .attendance-dropdown-container {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .attendance-dropdown-wrapper {
+    margin-top: 30px;
+  }
+
+  #attendance-list {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: 95%;
+    height: auto;
+    min-height: auto;
+    max-height: none;
+    padding: 10px;
+  }
+
+  .export-container {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: 90%;
+    max-width: 500px;
+    height: auto;
+    margin: 30px auto;
+    padding: 20px;
+  }
+
+  #export-excel {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: 95%;
+    height: auto;
+    min-height: auto;
+    max-height: none;
+    padding: 10px;
+  }
+
+  .announcement-content {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .announcement-container {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 40px;
+  }
+
+  .announcement-container textarea {
+    width: 100%;
+  }
+
+  .announcement-list-container {
+    width: 100%;
+  }
+
+  #announcement {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: 95%;
+    margin: 20px auto;
+  }
+
+  #announcement h1 {
+    margin-top: 20px;
+  }
+
+  #log_rectangle {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  #attendance_rectangle {
+    width: 100%;
+    max-width: 100%;
+    margin: 20px 0;
+  }
+
+  #leave-approval {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: 95%;
+    height: auto;
+    padding: 10px;
+    margin: 0 auto;
+  }
+
+  #leave-approval_rectangle {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  #about {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: 95%;
+    height: auto;
+    padding: 10px;
+    margin: 0 auto;
+  }
+
+  .about-container {
+    width: 100%;
+    padding: 15px;
+  }
+
+  .intern-info {
+    margin-left: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .about-description-container {
+    width: 95%;
+    padding: 15px;
+  }
+
+  .modal-content {
+    width: 90%;
+    margin: 10% auto;
+  }
+
+  .menu {
+    width: 220px;
+    z-index: 1000;
+  }
+
+  .menu-icon {
+    z-index: 1001;
+  }
+
+  .menu-item {
+    margin-left: 0;
+    padding: 12px 10px;
+  }
+
+  #attendance-list h1 {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin-bottom: 10px;
+  }
+
+  #export-excel h1 {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin-bottom: 20px;
+  }
+
+  #announcement h1 {
+    margin-bottom: 10px;
+    margin-top: 10px;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .screen {
+    padding: 10px;
+  }
+
+  #dashboard_title {
+    font-size: 28px;
+    margin-top: 5px;
+    top: 0;
+  }
+
+  .dashboard-stats-container {
+    margin-top: 20px;
+    gap: 10px;
+  }
+
+  .total-user-time-wrapper {
+    flex-direction: column;
+    gap: 10px;
+    max-width: 280px;
+  }
+
+  .total-user-time-container,
+  .total-user-timeout-container {
+    max-width: 100%;
+    height: 80px;
+  }
+
+  .top-late-employees-container {
+    max-width: 320px;
+    height: 280px;
+  }
+
+  .top-early-birds-container {
+    max-width: 320px;
+    height: 200px;
+  }
+
+  #log h1,
+  #attendance-list h1,
+  #export-excel h1,
+  #announcement h1,
+  #leave-approval h1,
+  #about h1 {
+    font-size: 32px;
+  }
+
+  #log {
+    width: 100%;
+    padding: 10px;
+  }
+
+  #log_rectangle,
+  #attendance_rectangle,
+  #leave-approval_rectangle {
+    max-height: 60vh;
+    min-height: 300px;
+    margin: 10px 0;
+  }
+
+  .attendance-dropdown-wrapper {
+    margin-top: 20px;
+  }
+
+  .attendance-dropdown-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .attendance-dropdown-container select,
+  .attendance-dropdown-container button {
+    width: 100%;
+    margin-right: 0;
+  }
+
+  #attendance-list {
+    width: 100%;
+    padding: 10px;
+  }
+
+  #export-excel {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .export-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 15px;
+  }
+
+  .modal_export_content {
+    width: 90%;
+    max-width: 350px;
+  }
+
+  #announcement {
+    width: 100%;
+  }
+
+  .announcement-container {
+    margin-top: 20px;
+    padding: 10px;
+  }
+
+  #leave-approval {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .leave-table {
+    font-size: 12px;
+  }
+
+  .leave-table th,
+  .leave-table td {
+    padding: 6px 4px;
+  }
+
+  .approve-btn,
+  .reject-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  #about {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .about-container {
+    padding: 10px;
+  }
+
+  .about-logo {
+    width: 80px;
+  }
+
+  .mapua-logo {
+    width: 85px;
+  }
+
+  .log-filters-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .log-filters-container select,
+  .log-filters-container input {
+    width: 100%;
+  }
+
+  #log-search {
+    width: 100%;
+  }
+
+  .log-table th,
+  .log-table td,
+  #attendance_rectangle table th,
+  #attendance_rectangle table td {
+    font-size: 11px;
+    padding: 6px 4px;
+  }
+
+  .menu {
+    width: 200px;
+    left: -220px;
+    padding: 15px;
+  }
+
+  .menu ul {
+    padding: 0;
+  }
+
+  .menu-item {
+    margin-left: 0;
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .menu-item img {
+    width: 24px;
+    height: 24px;
+  }
+
+  .sign-out {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .about-description-container {
+    width: 100%;
+    padding: 10px;
+  }
+
+  .intern-card {
+    width: 100%;
+    max-width: 150px;
+  }
+
+  .intern-photo {
+    width: 60px;
+  }
+
+  .intern-name {
+    font-size: 13px;
+  }
+
+  .modal-content {
+    width: 95%;
+    margin: 20% auto;
+    padding: 15px;
+  }
+
+  .preset-options {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
 }

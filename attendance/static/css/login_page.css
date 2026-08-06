@@ -137,17 +137,16 @@ header {
 }
 
 .partner-logos-inner {
-  display: inline-flex;
-  animation: scroll-logos 20s linear infinite;
   display: flex;
-  gap: 20px;
+  animation: scroll-logos 20s linear infinite;
+  will-change: transform;
 }
 
 .partner-logos-inner img {
   height: 60px;
   width: auto;
   border-radius: 5px;
-  margin: 0 10px;
+  margin: 0 20px;
   transition: transform 0.2s ease;
 }
 
@@ -160,7 +159,7 @@ header {
         transform: translateX(0);
     }
     100% {
-        transform: translateX(-100%);
+        transform: translateX(-50%);
     }
 }
 
@@ -205,4 +204,95 @@ header {
 .login-button:hover {
   background-color: #5f1f2f;
   transform: translateY(-5px);
+}
+
+@media screen and (max-width: 992px) {
+  h1 {
+    font-size: 40px;
+  }
+
+  .form-container {
+    height: auto;
+    padding: 30px 20px;
+    margin-top: 20px;
+  }
+
+  .login-container {
+    max-width: 90%;
+  }
+
+  .login-button {
+    width: 50%;
+    max-width: 200px;
+  }
+
+  .partner-logo img {
+    margin-right: 0;
+    margin-top: 80px;
+    width: 180px;
+  }
+
+  .partner-logos-inner img {
+    height: 40px;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  body {
+    height: 100vh;
+    justify-content: center;
+    padding-top: 60px;
+  }
+
+  h1 {
+    font-size: 28px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+  }
+
+  .form-container {
+    margin-top: 10px;
+    padding: 20px 15px;
+    border-radius: 8px;
+  }
+
+  .input-group input {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .login-button {
+    width: 60%;
+    padding: 10px 20px;
+    font-size: 16px;
+  }
+
+  header {
+    height: 60px;
+    padding: 0 10px;
+  }
+
+  .logo img {
+    width: 100px;
+  }
+
+  .partner-logos {
+    margin-right: 10px;
+    height: 70%;
+    gap: 5px;
+  }
+
+  .partner-logos img {
+    height: 25px;
+  }
+
+  .partner-logos-inner img {
+    height: 30px;
+  }
+
+  .partner-logo img {
+    margin-top: 40px;
+    width: 130px;
+    padding: 5px;
+  }
 }
