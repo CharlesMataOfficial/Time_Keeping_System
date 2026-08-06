@@ -27,6 +27,4 @@ urlpatterns = [
     path('leaves/process/', views.process_leave, name='process_leave'),
     path('export_time_entries_range/', views.export_time_entries_range, name='export_time_entries_range'),
     path('export_time_entries_by_date/', views.export_time_entries_by_date, name='export_time_entries_by_date'),
-    path('leaves/pending/', views.get_pending_leaves, name='get_pending_leaves'),
-    path('leaves/process/', views.process_leave, name='process_leave'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

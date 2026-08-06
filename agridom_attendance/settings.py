@@ -91,7 +91,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "agri_db", # This is the database the django app uses
         "USER": "root",
-        "PASSWORD": "",
+        "PASSWORD": "root",
         "HOST": "127.0.0.1",
     },
     "source_db": {

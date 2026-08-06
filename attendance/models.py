@@ -453,7 +453,7 @@ class ScheduleGroup(models.Model):
         """
         Save the ScheduleGroup object.
         """
-        if self.name is None or self.name == "":
+        if (self.name is None or self.name == "") and self.default_schedule:
             start_time = self.default_schedule.start_time.strftime("%I:%M %p")
             end_time = self.default_schedule.end_time.strftime("%I:%M %p")
             self.name = f"{start_time} - {end_time}"

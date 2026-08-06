@@ -24,14 +24,17 @@ class Command(BaseCommand):
             # Update existing manager properties
             manager.first_name = 'Manager'
             manager.surname = 'Test'
+            manager.is_staff = True
             manager.is_active = True
             manager.save()
         except CustomUser.DoesNotExist:
             manager = CustomUser.objects.create(
                 employee_id='100001',
+                username='100001',
                 first_name='Manager',
                 surname='Test',
                 pin='0000',
+                is_staff=True,
                 is_active=True
             )
 
@@ -40,15 +43,18 @@ class Command(BaseCommand):
             # Update existing HR properties
             hr_user.first_name = 'HR'
             hr_user.surname = 'Person'
+            hr_user.is_staff = True
             hr_user.is_hr = True
             hr_user.is_active = True
             hr_user.save()
         except CustomUser.DoesNotExist:
             hr_user = CustomUser.objects.create(
                 employee_id='100002',
+                username='100002',
                 first_name='HR',
                 surname='Person',
                 pin='0000',
+                is_staff=True,
                 is_hr=True,
                 is_active=True
             )
@@ -63,15 +69,18 @@ class Command(BaseCommand):
                 emp.first_name = f'Employee{i+1}'
                 emp.surname = 'Test'
                 emp.manager = manager
+                emp.is_guard = True
                 emp.is_active = True
                 emp.save()
             except CustomUser.DoesNotExist:
                 emp = CustomUser.objects.create(
                     employee_id=employee_id,
+                    username=employee_id,
                     first_name=f'Employee{i+1}',
                     surname='Test',
                     pin='0000',
                     manager=manager,
+                    is_guard=True,
                     is_active=True,
                 )
             employees.append(emp)

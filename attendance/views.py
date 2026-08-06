@@ -757,9 +757,9 @@ def attendance_list_json(request):
         if department_code != "all":
             if department_code in DEPARTMENT_CHOICES:
                 dept_name = DEPARTMENT_CHOICES[department_code]
-                qs = qs.filter(user__position__name=dept_name)
+                qs = qs.filter(user__department__name=dept_name)
             else:
-                qs = qs.filter(user__position__name=department_code)
+                qs = qs.filter(user__department__name=department_code)
 
         # Apply search filter
         if search_query:
@@ -842,7 +842,7 @@ def attendance_list_json(request):
 
         # Apply department filter
         if department_code != "all":
-            qs = qs.filter(position__name=department_code)
+            qs = qs.filter(department__name=department_code)
 
         # Apply search filter
         if search_query:
@@ -1135,10 +1135,9 @@ def export_time_entries_by_date(request):
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
     response["Content-Disposition"] = f"attachment; filename={filename}"
-
-    log_admin_action(request, "Excel Export", f"Exported {filename}")
     log_admin_action(request, "excel_export", f"Exported {filename}")
     return response
+
 
 @require_GET
 def export_time_entries_range(request):
@@ -1222,8 +1221,8 @@ def export_time_entries_range(request):
         output,
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-    response["Content-Disposition"] = f"attachment; filename=time_entries_{employee_id}.xlsx"
-    log_admin_action(request, "Excel Export", f"Exported time_entries_{employee_id}.xlsx")
+    response["Content-Disposition"] = f"attachment; filename={filename}"
+    log_admin_action(request, "excel_export", f"Exported {filename}")
     return response
 
 @login_required
@@ -1317,88 +1316,3 @@ def process_leave(request):
     log_admin_action(request, 'leave_approval', f"Leave request {action}d for {leave.employee.employee_id}")
 
     return JsonResponse({'success': True})
-
-@require_GET
-def export_time_entries_by_date(request):
-    """
-    API endpoint for exporting time entries to Excel by date.
-
-    Exports time entries for a specific date to an Excel file.
-
-    Args:
-        request: The HTTP request object containing the date parameter.
-
-    Returns:
-        HttpResponse: An Excel file containing the time entries.
-    """
-    # Get the date parameter from the request (e.g. from your date picker)
-    date_str = request.GET.get("date")
-    if not date_str:
-        return HttpResponse("Date parameter is required.", status=400)
-
-    selected_date = parse_date(date_str)
-    if not selected_date:
-        return HttpResponse("Invalid date format.", status=400)
-
-    # Create datetime range for the selected date
-    start_datetime = datetime.combine(selected_date, time.min)
-    end_datetime = datetime.combine(selected_date, time.max)
-
-    # Filter time entries that fall within the selected date
-    qs = TimeEntry.objects.filter(
-        time_in__gte=start_datetime,
-        time_in__lte=end_datetime
-    ).order_by("time_in")
-
-    # Create an Excel workbook and worksheet
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Time Entries"
-
-    # Define headers for the Excel sheet
-    headers = [
-        "ID",
-        "Employee ID",
-        "First Name",
-        "Surname",
-        "Company",
-        "Date",
-        "Time In",
-        "Time Out",
-        "Hours Worked",
-        "Is Late"
-    ]
-    ws.append(headers)
-
-    # Populate rows with time entry data
-    for entry in qs:
-        row = [
-            entry.id,
-            entry.user.employee_id,
-            entry.user.first_name,
-            entry.user.surname,
-            entry.user.company.name if entry.user.company else "",
-            entry.time_in.strftime("%Y-%m-%d"),
-            entry.time_in.strftime("%H:%M:%S"),
-            entry.time_out.strftime("%H:%M:%S") if entry.time_out else "",
-            entry.hours_worked,
-            "Yes" if entry.is_late else "No"
-        ]
-        ws.append(row)
-
-    # Save the workbook to an in-memory output buffer
-    output = BytesIO()
-    wb.save(output)
-    output.seek(0)
-
-    # Create the response with a dynamic filename
-    filename = f"time_entries_{date_str}.xlsx"
-    response = HttpResponse(
-        output,
-        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-    response["Content-Disposition"] = f"attachment; filename={filename}"
-
-    # Log the export action
-    log_admin_action(request, "Excel Export", f"Exported {filename}")
-    return response
